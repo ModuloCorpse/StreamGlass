@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Quicksand" Version="1.0.0" />
+    <PackageReference Include="Quicksand" Version="0.0.1" />
   </ItemGroup>
 
 </Project>
