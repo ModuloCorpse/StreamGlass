@@ -9,7 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Quicksand" Version="0.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Quicksand" Version="0.0.7" />
+    <PackageReference Include="TwitchLib" Version="3.4.1" />
+    <PackageReference Include="TwitchLib.Client" Version="3.2.6" />
   </ItemGroup>
 
 </Project>
