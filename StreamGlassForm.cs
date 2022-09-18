@@ -5,7 +5,7 @@ namespace StreamGlass
 {
     public partial class StreamGlassForm : Form
     {
-        private readonly static string CLIENT_ID = "azqkbuxql97vlhrfml3sbzklt3s4zg";
+        private readonly Settings m_Settings = new();
         private readonly Server m_WebServer = new();
         private readonly Twitch.Authenticator m_Authenticator;
         private TwitchBot? m_Bot = null;
@@ -13,27 +13,31 @@ namespace StreamGlass
         public StreamGlassForm()
         {
             InitializeComponent();
-            m_WebServer.StartListening();
+            m_WebServer.GetResourceManager().AddFramework();
+            m_WebServer.Start();
+            m_Settings.Load();
 
-            m_Authenticator = new(m_WebServer, CLIENT_ID);
-            Timer timer = new()
-            {
-                Interval = 50 //milliseconds
-            };
-            timer.Tick += StreamGlassForm_Tick;
-            timer.Start();
-        }
-
-        private void StreamGlassForm_Tick(object? sender, EventArgs e)
-        {
-            m_WebServer.Update();
+            m_Authenticator = new(m_WebServer, m_Settings.Twitch);
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            List<string> scopes = new() { "channel:manage:polls", "channel:read:polls", "chat:read", "chat:edit", "channel:moderate" };
-            string token = m_Authenticator.Authenticate(scopes);
-            m_Bot = new("StreamGlass", token, "chaporon_");
+            string token = m_Settings.Twitch.BotToken;
+            if (string.IsNullOrWhiteSpace(token))
+                token = m_Authenticator.Authenticate();
+            m_Bot = new(m_Settings.Twitch.BotName, token, m_Settings.Twitch.Channel);
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            m_Settings.Save();
+        }
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SettingsForm form = new(m_Settings);
+            form.ShowDialog(this);
         }
     }
 }
