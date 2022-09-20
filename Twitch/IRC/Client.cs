@@ -56,6 +56,7 @@ namespace StreamGlass.Twitch.IRC
                             m_Stream = sslStream;
                         }
                         StartReceiving();
+                        Send(new("CAP REQ", parameters: "twitch.tv/membership twitch.tv/tags twitch.tv/commands"));
                         Send(new("PASS", channel: string.Format("oauth:{0}", token)));
                         Send(new("NICK", channel: username));
                         return true;
@@ -101,11 +102,11 @@ namespace StreamGlass.Twitch.IRC
                                     case "PING":
                                         Send(new("PONG", parameters: message.GetParameters())); break;
                                     case "JOIN":
-                                        m_Listener?.OnJoinedChannel(message); break;
+                                        m_Listener?.OnJoinedChannel(message.GetCommand().GetChannel()); break;
                                     case "PRIVMSG":
-                                        m_Listener?.OnMessageReceived(message); break;
+                                        m_Listener?.OnMessageReceived(new(message)); break;
                                     case "LOGGED":
-                                        m_Listener?.OnConnected(message); break;
+                                        m_Listener?.OnConnected(); break;
                                 }
                             }
                         }
@@ -130,7 +131,12 @@ namespace StreamGlass.Twitch.IRC
 
         public void Join(string channel) => Send(new("JOIN", channel: string.Format("#{0}", channel)));
 
-        public void SendMessage(string channel, string message) => Send(new("PRIVMSG", channel: channel, parameters: message));
+        public void SendMessage(string channel, string message)
+        {
+            Message messageToSend = new("PRIVMSG", channel: channel, parameters: message);
+            Send(messageToSend);
+            m_Listener?.OnMessageReceived(new(messageToSend, true));
+        }
 
         private void Send(Message message)
         {

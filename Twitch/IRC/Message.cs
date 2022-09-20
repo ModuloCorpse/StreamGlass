@@ -71,6 +71,16 @@ namespace StreamGlass.Twitch.IRC
             private readonly Dictionary<string, string> m_BadgeInfos = new();
             private readonly Dictionary<int, Emote> m_Emotes = new();
 
+            internal bool HaveTag(string tag) => m_Tags.ContainsKey(tag);
+            internal bool HaveBadge(string badge) => m_Badges.ContainsKey(badge);
+
+            internal string GetTag(string tag)
+            {
+                if (m_Tags.TryGetValue(tag, out var value))
+                    return value;
+                return "";
+            }
+
             internal void AddTag(string tag, string value) => m_Tags[tag] = value;
             internal void AddBadge(string badge, string value) => m_Badges[badge] = value;
             internal void AddBadgeInfo(string badge, string info) => m_BadgeInfos[badge] = info;
@@ -175,6 +185,27 @@ namespace StreamGlass.Twitch.IRC
         public string GetNick() => m_Nick;
         public string GetHost() => m_Host;
         public string GetParameters() => m_Parameters;
+
+        public bool HaveTag(string tag)
+        {
+            if (m_Tags != null)
+                return m_Tags.HaveTag(tag);
+            return false;
+        }
+
+        public bool HaveBadge(string badge)
+        {
+            if (m_Tags != null)
+                return m_Tags.HaveBadge(badge);
+            return false;
+        }
+
+        public string GetTag(string tag)
+        {
+            if (m_Tags != null)
+                return m_Tags.GetTag(tag);
+            return "";
+        }
 
         internal static Message? Parse(string message)
         {

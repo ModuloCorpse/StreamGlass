@@ -3,11 +3,13 @@
     public partial class SettingsForm : Form
     {
         private readonly Settings m_Settings;
+        private readonly TwitchBot m_Bot;
 
-        public SettingsForm(Settings settings)
+        public SettingsForm(Settings settings, TwitchBot bot)
         {
             InitializeComponent();
             m_Settings = settings;
+            m_Bot = bot;
 
             SystemBrowserTextBox.Text = m_Settings.Get("system", "browser");
             //Twitch
@@ -40,18 +42,23 @@
                 SystemBrowserTextBox.Text = openFileDialog.FileName;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void TwitchBotSecretVisibility_Click(object sender, EventArgs e)
         {
             if (TwitchBotSecretTextBox.PasswordChar == '*')
             {
                 TwitchBotSecretTextBox.PasswordChar = '\0';
-                button1.BackgroundImage = Properties.Resources.sight_enabled;
+                TwitchBotSecretVisibility.BackgroundImage = Properties.Resources.sight_enabled;
             }
             else
             {
                 TwitchBotSecretTextBox.PasswordChar = '*';
-                button1.BackgroundImage = Properties.Resources.sight_disabled;
+                TwitchBotSecretVisibility.BackgroundImage = Properties.Resources.sight_disabled;
             }
+        }
+
+        private void TwitchConnectButton_Click(object sender, EventArgs e)
+        {
+            m_Bot.Connect();
         }
     }
 }

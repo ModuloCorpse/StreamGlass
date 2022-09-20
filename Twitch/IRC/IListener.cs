@@ -2,8 +2,8 @@
 {
     public interface IListener
     {
-        public void OnConnected(Message message);
-        public void OnJoinedChannel(Message message);
-        public void OnMessageReceived(Message message);
+        public void OnConnected();
+        public void OnJoinedChannel(string channel);
+        public void OnMessageReceived(UserMessage message);
     }
 }
