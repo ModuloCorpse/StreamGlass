@@ -9,70 +9,48 @@
             InitializeComponent();
             m_Settings = settings;
 
+            SystemBrowserTextBox.Text = m_Settings.Get("system", "browser");
             //Twitch
-            TwitchPublicTextBox.Text = m_Settings.Twitch.BotPublic;
-            TwitchSecretTextBox.Text = m_Settings.Twitch.BotSecret;
-            TwitchChannelTextBox.Text = m_Settings.Twitch.Channel;
-            TwitchBotNameTextBox.Text = m_Settings.Twitch.BotName;
-            TwitchBotTokenTextBox.Text = m_Settings.Twitch.BotToken;
-            //Discord
-            DiscordPublicTextBox.Text = m_Settings.Discord.BotPublic;
-            DiscordSecretTextBox.Text = m_Settings.Discord.BotSecret;
+            TwitchChannelTextBox.Text = m_Settings.Get("twitch", "channel");
+            TwitchBotPublicTextBox.Text = m_Settings.Get("twitch", "public_key");
+            TwitchBotSecretTextBox.Text = m_Settings.Get("twitch", "secret_key");
         }
 
         private void SaveButton_Click(object sender, EventArgs e)
         {
+            m_Settings.Set("system", "browser", SystemBrowserTextBox.Text);
             //Twitch
-            m_Settings.Twitch.BotPublic = TwitchPublicTextBox.Text;
-            m_Settings.Twitch.BotSecret = TwitchSecretTextBox.Text;
-            m_Settings.Twitch.Channel = TwitchChannelTextBox.Text;
-            m_Settings.Twitch.BotName = TwitchBotNameTextBox.Text;
-            m_Settings.Twitch.BotToken = TwitchBotTokenTextBox.Text;
-            //Discord
-            m_Settings.Discord.BotPublic = DiscordPublicTextBox.Text;
-            m_Settings.Discord.BotSecret = DiscordSecretTextBox.Text;
+            m_Settings.Set("twitch", "channel", TwitchChannelTextBox.Text);
+            m_Settings.Set("twitch", "public_key", TwitchBotPublicTextBox.Text);
+            m_Settings.Set("twitch", "secret_key", TwitchBotSecretTextBox.Text);
             Close();
         }
 
-        private void TwitchSecretVisibilityButton_Click(object sender, EventArgs e)
+        private void SystemBrowserFileDialog_Click(object sender, EventArgs e)
         {
-            if (TwitchBotTokenTextBox.PasswordChar == '*')
+            OpenFileDialog openFileDialog = new()
             {
-                TwitchSecretTextBox.PasswordChar = '\0';
-                TwitchSecretVisibilityButton.BackgroundImage = Properties.Resources.sight_enabled;
-            }
-            else
-            {
-                TwitchSecretTextBox.PasswordChar = '*';
-                TwitchSecretVisibilityButton.BackgroundImage = Properties.Resources.sight_disabled;
-            }
+                InitialDirectory = "C:\\",
+                Filter = "exe files (*.exe)|*.exe|All files (*.*)|*.*",
+                FilterIndex = 2,
+                RestoreDirectory = true
+            };
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+                SystemBrowserTextBox.Text = openFileDialog.FileName;
         }
 
-        private void TwitchTokenVisibilityButton_Click(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
-            if (TwitchBotTokenTextBox.PasswordChar == '*')
+            if (TwitchBotSecretTextBox.PasswordChar == '*')
             {
-                TwitchBotTokenTextBox.PasswordChar = '\0';
-                TwitchTokenVisibilityButton.BackgroundImage = Properties.Resources.sight_enabled;
+                TwitchBotSecretTextBox.PasswordChar = '\0';
+                button1.BackgroundImage = Properties.Resources.sight_enabled;
             }
             else
             {
-                TwitchBotTokenTextBox.PasswordChar = '*';
-                TwitchTokenVisibilityButton.BackgroundImage = Properties.Resources.sight_disabled;
-            }
-        }
-
-        private void DiscordSecretVisibilityButton_Click(object sender, EventArgs e)
-        {
-            if (DiscordSecretTextBox.PasswordChar == '*')
-            {
-                DiscordSecretTextBox.PasswordChar = '\0';
-                DiscordSecretVisibilityButton.BackgroundImage = Properties.Resources.sight_enabled;
-            }
-            else
-            {
-                DiscordSecretTextBox.PasswordChar = '*';
-                DiscordSecretVisibilityButton.BackgroundImage = Properties.Resources.sight_disabled;
+                TwitchBotSecretTextBox.PasswordChar = '*';
+                button1.BackgroundImage = Properties.Resources.sight_disabled;
             }
         }
     }

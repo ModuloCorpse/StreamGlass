@@ -1,70 +1,48 @@
-﻿using TwitchLib.Client;
-using TwitchLib.Client.Enums;
-using TwitchLib.Client.Events;
-using TwitchLib.Client.Extensions;
-using TwitchLib.Client.Models;
-using TwitchLib.Communication.Clients;
-using TwitchLib.Communication.Models;
+﻿using Quicksand.Web;
+using StreamGlass.Twitch.IRC;
+using Client = StreamGlass.Twitch.IRC.Client;
+using Message = StreamGlass.Twitch.IRC.Message;
 
 namespace StreamGlass
 {
-    internal class TwitchBot
+    internal class TwitchBot: IListener
     {
-        private readonly TwitchClient m_Client;
+        private bool m_IsConnected = false;
+        private readonly Settings m_Settings;
+        private readonly Client m_Client = new("irc.chat.twitch.tv", 6697, true);
+        private readonly Twitch.Authenticator m_Authenticator;
 
-        public TwitchBot(string botUserName, string botToken, string channel)
+        public TwitchBot(Server webServer, Settings settings)
         {
-            ConnectionCredentials credentials = new(botUserName, botToken);
-            var clientOptions = new ClientOptions
+            m_Settings = settings;
+            m_Authenticator = new(webServer, settings);
+            m_Client.SetListener(this);
+        }
+
+        public void Connect()
+        {
+            if (!m_IsConnected)
             {
-                MessagesAllowedInPeriod = 750,
-                ThrottlingPeriod = TimeSpan.FromSeconds(30)
-            };
-            WebSocketClient customClient = new(clientOptions);
-            m_Client = new(customClient);
-            m_Client.Initialize(credentials, channel);
-
-            m_Client.OnLog += Client_OnLog;
-            m_Client.OnJoinedChannel += Client_OnJoinedChannel;
-            m_Client.OnMessageReceived += Client_OnMessageReceived;
-            m_Client.OnWhisperReceived += Client_OnWhisperReceived;
-            m_Client.OnNewSubscriber += Client_OnNewSubscriber;
-            m_Client.OnConnected += Client_OnConnected;
-
-            m_Client.Connect();
+                m_IsConnected = true;
+                m_Client.Connect("StreamGlass", m_Authenticator.Authenticate(m_Settings.Get("system", "browser")));
+                m_Client.Join(m_Settings.Get("twitch", "channel"));
+            }
         }
 
-        private void Client_OnLog(object? sender, OnLogArgs e)
+        public void OnConnected(Message message) {}
+
+        public void OnJoinedChannel(Message message)
         {
-            Console.WriteLine($"{e.DateTime}: {e.BotUsername} - {e.Data}");
+            m_Client.SendMessage(message.GetCommand().GetChannel(), "Hello World! Je suis un bot connecté via StreamGlass!");
         }
 
-        private void Client_OnConnected(object? sender, OnConnectedArgs e)
+        public void OnMessageReceived(Message message)
         {
-            Console.WriteLine($"Connected to {e.AutoJoinChannel}");
+            if (message.GetParameters() == "ping")
+                m_Client.SendMessage(message.GetCommand().GetChannel(), "pong");
         }
 
-        private void Client_OnJoinedChannel(object? sender, OnJoinedChannelArgs e)
-        {
-            Console.WriteLine("Hey guys! I am a bot connected via TwitchLib!");
-            m_Client.SendMessage(e.Channel, "Hey guys! I am a bot connected via TwitchLib!");
-        }
-
-        private void Client_OnMessageReceived(object? sender, OnMessageReceivedArgs e)
-        {
-            if (e.ChatMessage.Message.Contains("badword"))
-                m_Client.TimeoutUser(e.ChatMessage.Channel, e.ChatMessage.Username, TimeSpan.FromMinutes(30), "Bad word! 30 minute timeout!");
-            else if (e.ChatMessage.Message == "ping")
-                m_Client.SendMessage(e.ChatMessage.Channel, "pong");
-        }
-
-        private void Client_OnWhisperReceived(object? sender, OnWhisperReceivedArgs e)
-        {
-            if (e.WhisperMessage.Username == "my_friend")
-                m_Client.SendWhisper(e.WhisperMessage.Username, "Hey! Whispers are so cool!!");
-        }
-
-        private void Client_OnNewSubscriber(object? sender, OnNewSubscriberArgs e)
+        /*private void Client_OnNewSubscriber(object? sender, OnNewSubscriberArgs e)
         {
             int tier = 1;
             bool isPrime = false;
@@ -74,6 +52,6 @@ namespace StreamGlass
                 case SubscriptionPlan.Tier2: tier = 2; break;
                 case SubscriptionPlan.Tier3: tier = 3; break;
             }
-        }
+        }*/
     }
 }

@@ -36,19 +36,13 @@ namespace StreamGlass.Twitch
                     if (request.TryGetParameter("scope", out string? scope))
                         scopes.AddRange(scope.Replace("%3A", ":").Split('+'));
                     if (request.TryGetParameter("code", out string? token))
-                    {
                         m_Authenticator.SetAuthToken(state, token, scopes);
-                        m_Model.GetBody().RemoveChild(m_WaitDiv);
-                        m_Model.GetBody().AddChild(m_CloseDiv);
-                    }
                     else if (request.TryGetParameter("error", out string? error))
                     {
                         if (request.TryGetParameter("error_description", out string? errorDescription))
                             m_Authenticator.SetError(state, error, errorDescription.Replace('+', ' '));
                         else
                             m_Authenticator.SetError(state, error, "");
-                        m_Model.GetBody().RemoveChild(m_WaitDiv);
-                        m_Model.GetBody().AddChild(m_CloseDiv);
                     }
                 }
             }
@@ -75,7 +69,7 @@ namespace StreamGlass.Twitch
 
         private readonly static string REDIRECT_URI = "http://localhost:80/twitch_authenticate/";
         private readonly static string TWITCH_AUTH_URI = "https://id.twitch.tv/oauth2/authorize?response_type=code";
-        private readonly Settings.TwitchSettings m_Settings;
+        private readonly Settings m_Settings;
         private string m_RefreshToken = "";
         private string m_State = "";
         private readonly List<string> m_Scopes = new() {
@@ -85,9 +79,9 @@ namespace StreamGlass.Twitch
             "chat:edit",
             "channel:moderate"
         };
-        private TaskCompletionSource<string> m_Task = new TaskCompletionSource<string>();
+        private TaskCompletionSource<string> m_Task = new();
 
-        public Authenticator(Server webServer, Settings.TwitchSettings twitchSettings)
+        public Authenticator(Server webServer, Settings settings)
         {
             Div waitDiv = new();
             waitDiv.AddContent("Waiting for authentification");
@@ -96,22 +90,34 @@ namespace StreamGlass.Twitch
             ResourceManager resourceManager = webServer.GetResourceManager();
             resourceManager.AddResource("/twitch_authenticate", () => new AuthenticatorWebController(this, model, waitDiv));
             resourceManager.AddResource("/twitch_authenticated", () => new AuthenticatorEndWebController());
-            m_Settings = twitchSettings;
+
+            m_Settings = settings;
         }
 
-        public string Authenticate()
+        private string GetOAuthToken(string token)
+        {
+            return GetAccessToken(string.Format("client_id={0}&client_secret={1}&code={2}&grant_type=authorization_code&redirect_uri={3}", m_Settings.Get("twitch", "public_key"), m_Settings.Get("twitch", "secret_key"), token, REDIRECT_URI));
+        }
+
+        public string Authenticate(string browser = "")
         {
             m_State = Guid.NewGuid().ToString();
             string scopeString = string.Join('+', m_Scopes).Replace(":", "%3A");
             string twitchAuthURI = string.Format("{0}&client_id={1}&redirect_uri={2}&scope={3}&state={4}",
-                TWITCH_AUTH_URI, m_Settings.BotPublic, REDIRECT_URI, scopeString, m_State);
+                TWITCH_AUTH_URI, m_Settings.Get("twitch", "public_key"), REDIRECT_URI, scopeString, m_State);
             Process myProcess = new();
             myProcess.StartInfo.UseShellExecute = true;
-            myProcess.StartInfo.FileName = twitchAuthURI;
+            if (string.IsNullOrWhiteSpace(browser))
+                myProcess.StartInfo.FileName = twitchAuthURI;
+            else
+            {
+                myProcess.StartInfo.FileName = browser;
+                myProcess.StartInfo.Arguments = twitchAuthURI;
+            }
             myProcess.Start();
             m_Task = new TaskCompletionSource<string>();
             if (m_Task.Task.Wait(TimeSpan.FromSeconds(300)))
-                return m_Task.Task.Result;
+                return GetOAuthToken(m_Task.Task.Result);
             return "";
         }
 
@@ -141,7 +147,7 @@ namespace StreamGlass.Twitch
 
         public string RefreshToken()
         {
-            return GetAccessToken(string.Format("grant_type=refresh_token&refresh_token={0}&client_id={1}&client_secret={2}", m_RefreshToken, m_Settings.BotPublic, m_Settings.BotSecret));
+            return GetAccessToken(string.Format("grant_type=refresh_token&refresh_token={0}&client_id={1}&client_secret={2}", m_RefreshToken, m_Settings.Get("twitch", "public_key"), m_Settings.Get("twitch", "secret_key")));
         }
 
         internal static void Use(string _) {}
@@ -164,7 +170,7 @@ namespace StreamGlass.Twitch
             if (m_State == state)
             {
                 if (CompareScopes(scopes))
-                    m_Task.SetResult(GetAccessToken(string.Format("client_id={0}&client_secret={1}&code={2}&grant_type=authorization_code&redirect_uri={3}", m_Settings.BotPublic, m_Settings.BotSecret, token, REDIRECT_URI)));
+                    m_Task.SetResult(token);
                 else
                     m_Task.SetResult("");
             }

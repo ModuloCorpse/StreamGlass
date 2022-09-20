@@ -1,5 +1,4 @@
 using Quicksand.Web;
-using Timer = System.Windows.Forms.Timer;
 
 namespace StreamGlass
 {
@@ -7,8 +6,7 @@ namespace StreamGlass
     {
         private readonly Settings m_Settings = new();
         private readonly Server m_WebServer = new();
-        private readonly Twitch.Authenticator m_Authenticator;
-        private TwitchBot? m_Bot = null;
+        private readonly TwitchBot m_Bot;
 
         public StreamGlassForm()
         {
@@ -17,15 +15,12 @@ namespace StreamGlass
             m_WebServer.Start();
             m_Settings.Load();
 
-            m_Authenticator = new(m_WebServer, m_Settings.Twitch);
+            m_Bot = new(m_WebServer, m_Settings);
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            string token = m_Settings.Twitch.BotToken;
-            if (string.IsNullOrWhiteSpace(token))
-                token = m_Authenticator.Authenticate();
-            m_Bot = new(m_Settings.Twitch.BotName, token, m_Settings.Twitch.Channel);
+            m_Bot.Connect();
         }
 
         protected override void OnClosed(EventArgs e)
