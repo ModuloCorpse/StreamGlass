@@ -1,14 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup />
   <ItemGroup>
-    <Compile Update="ChatMessage.cs">
-      <SubType>UserControl</SubType>
+    <ApplicationDefinition Update="App.xaml">
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="SettingsDialog.xaml.cs">
+      <SubType>Code</SubType>
     </Compile>
-    <Compile Update="SettingsForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="StreamGlassForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="SettingsDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="StreamGlassWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 </Project>

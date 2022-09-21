@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace StreamGlass.Twitch.IRC
 {
@@ -39,7 +41,7 @@ namespace StreamGlass.Twitch.IRC
 
             public Emote(int iD) => m_ID = iD;
 
-            internal void AddLocation(int start, int end) => m_Locations.Add(Tuple.Create(start, end));
+            internal void AddLocation(int start, int end) => m_Locations.Add(new(start, end));
 
             public int GetID() => m_ID;
             public List<Tuple<int, int>> GetLocations() => m_Locations;

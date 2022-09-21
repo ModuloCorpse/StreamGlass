@@ -1,0 +1,41 @@
+﻿<Window x:Class="StreamGlass.SettingsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="StreamGlass Settings" Height="300" Width="500" Icon="/Assets/stream-glass-settings.ico">
+    <StackPanel>
+        <TabControl TabStripPlacement="Left" Height="250" Width="500">
+            <TabItem>
+                <TabItem.Header>
+                    <Image Name="setting_img" Height="35" Width="35" Source="/Assets/tinker.png" />
+                </TabItem.Header>
+                <Grid Background="#FFE5E5E5">
+                    <TextBox Name="SystemBrowserTextBox" HorizontalAlignment="Center" Margin="0,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" Height="23"/>
+                    <Button Name="SystemBrowserFileDialog" HorizontalAlignment="Left" Margin="288,10,0,0" VerticalAlignment="Top" Click="SystemBrowserFileDialog_Click">
+                        <Image Name="SystemBrowserFileDialogImage" Height="23" Width="23" Source="/Assets/magnifying-glass.png" />
+                    </Button>
+                </Grid>
+            </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <Image Name="twitch_img" Height="35" Width="35" Source="/Assets/580b57fcd9996e24bc43c540.png" />
+                </TabItem.Header>
+                <Grid Background="#FFE5E5E5">
+                    <Button Content="Connect" HorizontalAlignment="Center" Margin="0,10,0,0" VerticalAlignment="Top" Click="TwitchConnectButton_Click"/>
+                    <TextBox Name="TwitchChannelTextBox" HorizontalAlignment="Center" Margin="0,35,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" Height="23"/>
+                    <TextBox Name="TwitchBotPublicTextBox" HorizontalAlignment="Center" Margin="0,70,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" Height="24"/>
+                    <PasswordBox Name="TwitchBotSecretPasswordBox" PasswordChar="*" HorizontalAlignment="Center" VerticalAlignment="Center" Width="120" Height="23"/>
+                    <TextBox Name="TwitchBotSecretTextBox" HorizontalAlignment="Center" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Visibility="Collapsed" Width="120" Height="23"/>
+                    <Button Name="TwitchBotSecretVisibility" HorizontalAlignment="Left" Margin="288,0,0,0" VerticalAlignment="Center" Click="TwitchBotSecretVisibility_Click">
+                        <Image Name="TwitchBotSecretVisibilityImage" Height="23" Width="23" Source="/Assets/sight-disabled.png" />
+                    </Button>
+                </Grid>
+            </TabItem>
+        </TabControl>
+        <Canvas Height="35" Width="500">
+            <Button Name="SaveButton" Content="Save" Height="25" Width="75" Canvas.Left="415" Canvas.Top="5" Click="SaveButton_Click"/>
+        </Canvas>
+    </StackPanel>
+</Window>

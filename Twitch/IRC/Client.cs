@@ -1,19 +1,23 @@
-﻿using Quicksand.Web.Http;
+﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace StreamGlass.Twitch.IRC
 {
     public class Client
     {
+        private UserInfo? m_SelfUserInfo = null;
         private readonly string m_IP;
         private readonly int m_Port;
         private readonly Socket m_Socket;
         private Stream m_Stream;
         private byte[] m_Buffer = new byte[1024];
         private string m_ReadBuffer = "";
+        private string m_Channel = "";
         private readonly bool m_IsSecured = false;
         private readonly bool m_CanConnect;
         private IListener? m_Listener = null;
@@ -27,6 +31,8 @@ namespace StreamGlass.Twitch.IRC
             m_CanConnect = true;
             m_IsSecured = isSecured;
         }
+
+        public void SetSelfUserInfo(UserInfo? info) => m_SelfUserInfo = info;
 
         public void SetListener(IListener listener) => m_Listener = listener;
 
@@ -56,15 +62,26 @@ namespace StreamGlass.Twitch.IRC
                             m_Stream = sslStream;
                         }
                         StartReceiving();
-                        Send(new("CAP REQ", parameters: "twitch.tv/membership twitch.tv/tags twitch.tv/commands"));
-                        Send(new("PASS", channel: string.Format("oauth:{0}", token)));
-                        Send(new("NICK", channel: username));
+                        SendAuth(username, token);
                         return true;
                     }
                 }
                 return false;
             }
             catch { return false; }
+        }
+
+        internal void SendAuth(string username, string token)
+        {
+            Send(new("CAP REQ", parameters: "twitch.tv/membership twitch.tv/tags twitch.tv/commands"));
+            Send(new("PASS", channel: string.Format("oauth:{0}", token)));
+            if (m_SelfUserInfo != null)
+                Send(new("NICK", channel: m_SelfUserInfo.DisplayName));
+            else
+                Send(new("NICK", channel: username));
+
+            if (!string.IsNullOrEmpty(m_Channel))
+                Send(new("JOIN", parameters: m_Channel));
         }
 
         internal void StartReceiving()
@@ -102,7 +119,9 @@ namespace StreamGlass.Twitch.IRC
                                     case "PING":
                                         Send(new("PONG", parameters: message.GetParameters())); break;
                                     case "JOIN":
-                                        m_Listener?.OnJoinedChannel(message.GetCommand().GetChannel()); break;
+                                        m_Channel = message.GetCommand().GetChannel();
+                                        m_Listener?.OnJoinedChannel(m_Channel);
+                                        break;
                                     case "PRIVMSG":
                                         m_Listener?.OnMessageReceived(new(message)); break;
                                     case "LOGGED":
@@ -135,7 +154,7 @@ namespace StreamGlass.Twitch.IRC
         {
             Message messageToSend = new("PRIVMSG", channel: channel, parameters: message);
             Send(messageToSend);
-            m_Listener?.OnMessageReceived(new(messageToSend, true));
+            m_Listener?.OnMessageReceived(new(messageToSend, m_SelfUserInfo));
         }
 
         private void Send(Message message)

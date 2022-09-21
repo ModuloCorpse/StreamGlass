@@ -4,46 +4,24 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>Assets\stream-glass-logo.ico</ApplicationIcon>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Assets\stream-glass-logo.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1343.22" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Quicksand" Version="0.0.9" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Update="Properties\Settings.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
+    <Resource Include="Assets\stream-glass-logo.ico" />
+    <Resource Include="Assets\580b57fcd9996e24bc43c540.png" />
+    <Resource Include="Assets\magnifying-glass.png" />
+    <Resource Include="Assets\sight-disabled.png" />
+    <Resource Include="Assets\sight-enabled.png" />
+    <Resource Include="Assets\stream-glass-logo.png" />
+    <Resource Include="Assets\stream-glass-settings.ico" />
+    <Resource Include="Assets\stream-glass-settings.png" />
+    <Resource Include="Assets\tinker.png" />
   </ItemGroup>
 
 </Project>

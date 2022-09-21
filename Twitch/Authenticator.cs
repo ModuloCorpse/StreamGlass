@@ -2,7 +2,11 @@
 using Quicksand.Web;
 using Quicksand.Web.Html;
 using Quicksand.Web.Http;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace StreamGlass.Twitch
 {
@@ -33,6 +37,8 @@ namespace StreamGlass.Twitch
                 if (request.TryGetParameter("state", out string? state))
                 {
                     List<string> scopes = new();
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8604 // Possibly null reference.
                     if (request.TryGetParameter("scope", out string? scope))
                         scopes.AddRange(scope.Replace("%3A", ":").Split('+'));
                     if (request.TryGetParameter("code", out string? token))
@@ -44,6 +50,8 @@ namespace StreamGlass.Twitch
                         else
                             m_Authenticator.SetError(state, error, "");
                     }
+#pragma warning restore CS8604 // Possibly null reference.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 }
             }
 
@@ -77,7 +85,8 @@ namespace StreamGlass.Twitch
             "channel:read:polls",
             "chat:read",
             "chat:edit",
-            "channel:moderate"
+            "channel:moderate",
+            "user:read:email"
         };
         private TaskCompletionSource<string> m_Task = new();
 

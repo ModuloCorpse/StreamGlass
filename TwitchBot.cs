@@ -1,5 +1,6 @@
 ﻿using Quicksand.Web;
 using StreamGlass.Twitch.IRC;
+using StreamGlass.Twitch;
 using Client = StreamGlass.Twitch.IRC.Client;
 
 namespace StreamGlass
@@ -8,17 +9,21 @@ namespace StreamGlass
     {
         private bool m_IsConnected = false;
         private string m_Channel = "";
+        private string m_Token = "";
         private readonly Settings m_Settings;
         private readonly Client m_Client = new("irc.chat.twitch.tv", 6697, true);
-        private readonly CommandManager m_CommandManager;
-        private readonly Twitch.Authenticator m_Authenticator;
+        private readonly ProfileManager m_Manager;
+        private readonly Authenticator m_Authenticator;
+        private readonly StreamGlassWindow m_Form;
 
-        public TwitchBot(Server webServer, Settings settings)
+        public TwitchBot(Server webServer, Settings settings, ProfileManager manager, StreamGlassWindow form)
         {
             m_Settings = settings;
+            m_Manager = manager;
+            m_Form = form;
             m_Authenticator = new(webServer, settings);
             m_Client.SetListener(this);
-            m_CommandManager = new(m_Client);
+            API.Init(m_Client, m_Authenticator);
         }
 
         public void Connect()
@@ -26,7 +31,11 @@ namespace StreamGlass
             if (!m_IsConnected)
             {
                 m_IsConnected = true;
-                m_Client.Connect("StreamGlass", m_Authenticator.Authenticate(m_Settings.Get("system", "browser")));
+                m_Token = m_Authenticator.Authenticate(m_Settings.Get("system", "browser"));
+                API.Authenticate(m_Settings.Get("twitch", "public_key"), m_Token);
+                string userID = API.GetSelfUserID();
+                m_Client.SetSelfUserInfo(API.GetUserInfoFromID(userID, new()));
+                m_Client.Connect("StreamGlass", m_Token);
                 m_Client.Join(m_Settings.Get("twitch", "channel"));
             }
         }
@@ -38,24 +47,18 @@ namespace StreamGlass
             if (m_Channel != channel)
             {
                 m_Channel = channel;
-                m_CommandManager.SetChannel(channel);
+                m_Manager.SetChannel(channel);
                 m_Client.SendMessage(channel, "Hello World! Je suis un bot connecté via StreamGlass!");
             }
         }
 
         public void OnMessageReceived(UserMessage message)
         {
-            m_CommandManager.OnMessage(message);
+            m_Form.AddMessage(message);
+            m_Manager.OnMessage(message);
         }
 
-        public void Update(long deltaTime)
-        {
-            m_CommandManager.Update(deltaTime);
-        }
-
-        public void AddCommand(string command, string message, UserMessage.UserType userType = UserMessage.UserType.NONE) => m_CommandManager.AddCommand(command, message, userType);
-
-        public void AddTimedCommand(long time, int nbMessage, string command) => m_CommandManager.AddTimedCommand(time, nbMessage, command);
+        public void Update(long _) {}
 
         /*private void Client_OnNewSubscriber(object? sender, OnNewSubscriberArgs e)
         {

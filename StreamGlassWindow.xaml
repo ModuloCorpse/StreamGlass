@@ -1,0 +1,18 @@
+﻿<Window x:Class="StreamGlass.StreamGlassWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="StreamGlass" Height="500" Width="850" Icon="/Assets/stream-glass-logo.ico">
+    <StackPanel>
+        <Menu>
+            <MenuItem Header="_File" />
+            <MenuItem Header="_Settings" Click="SettingsToolStripMenuItem_Click"/>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About" />
+            </MenuItem>
+        </Menu>
+        <ComboBox Name="CommandProfilesComboBox" Width="120" SelectionChanged="CommandProfilesComboBox_SelectionChanged"/>
+    </StackPanel>
+</Window>

@@ -20,7 +20,7 @@
         private readonly string m_Channel;
         private readonly UserType m_UserType;
 
-        internal UserMessage(Message message, bool isSelf = false)
+        internal UserMessage(Message message)
         {
             m_ID = message.GetTag("id");
             m_UserName = message.GetTag("display-name");
@@ -40,8 +40,19 @@
             }
             if (message.HaveBadge("broadcaster"))
                 m_UserType = UserType.BROADCASTER;
-            if (isSelf)
-                m_UserType = UserType.SELF;
+        }
+
+        internal UserMessage(Message message, UserInfo? selfInfo)
+        {
+            m_ID = message.GetTag("id");
+            if (selfInfo != null)
+                m_UserName = selfInfo.DisplayName;
+            else
+                m_UserName = "StreamGlass";
+            m_Color = "#6441a5";
+            m_Message = message.GetParameters();
+            m_Channel = message.GetCommand().GetChannel();
+            m_UserType = UserType.SELF;
         }
 
         public bool IsOfType(UserType type) => type <= m_UserType;
