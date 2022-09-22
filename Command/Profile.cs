@@ -1,14 +1,13 @@
 ﻿using Newtonsoft.Json.Linq;
 using StreamGlass.Twitch;
 using StreamGlass.Twitch.IRC;
-using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace StreamGlass.Command
 {
-    public class Profile
+    public class Profile: ManagedObject<Profile>
     {
         public delegate string CommandFunction(string[] args, APICache cache);
         private static readonly Dictionary<string, CommandFunction> ms_Functions = new();
@@ -39,60 +38,12 @@ namespace StreamGlass.Command
 
         public static void AddFunction(string functionName, CommandFunction fct) => ms_Functions[functionName] = fct;
 
-        private readonly string m_ID;
-        private readonly string m_Name;
         private string m_Channel = "";
-        private Profile? m_Parent = null;
         private readonly Dictionary<string, ChatCommand> m_Commands = new();
         private readonly List<TimedCommand> m_TimedCommands = new();
 
-        public Profile(string name)
-        {
-            m_ID = Guid.NewGuid().ToString();
-            m_Name = name;
-        }
-
-        internal Profile(JObject json)
-        {
-            string? id = (string?)json["id"];
-            if (id == null)
-                throw new NullReferenceException("Command profile ID is null");
-            m_ID = id;
-            string? name = (string?)json["name"];
-            if (name == null)
-                throw new NullReferenceException("Command profile name is null");
-            m_Name = name;
-            JArray? chatCommandArray = (JArray?)json["chat_commands"];
-            if (chatCommandArray != null)
-            {
-                foreach (JObject obj in chatCommandArray.Cast<JObject>())
-                {
-                    string? commandName = (string?)obj["command"];
-                    string? content = (string?)obj["content"];
-                    int? user = (int?)obj["user"];
-                    int? argc = (int?)obj["argc"];
-                    if (commandName != null && content != null && user != null && argc != null)
-                        AddCommand(commandName, content, (UserMessage.UserType)user, (int)argc);
-                }
-            }
-            JArray? timedCommandArray = (JArray?)json["timed_commands"];
-            if (timedCommandArray != null)
-            {
-                foreach (JObject obj in timedCommandArray.Cast<JObject>())
-                {
-                    int? time = (int?)obj["time"];
-                    int? messages = (int?)obj["messages"];
-                    string? command = (string?)obj["command"];
-                    if (time != null && messages != null && command != null)
-                        AddTimedCommand((int)time, (int)messages, command);
-                }
-            }
-        }
-
-        public string ID => m_ID;
-        public string Name => m_Name;
-
-        internal void SetParent(Profile parent) => m_Parent = parent;
+        public Profile(string name): base(name) {}
+        internal Profile(JObject json): base(json) {}
 
         internal void SetChannel(string channel) => m_Channel = channel;
 
@@ -154,7 +105,7 @@ namespace StreamGlass.Command
                 }
             }
             else
-                m_Parent?.TriggerCommand(command, userType);
+                Parent?.TriggerCommand(command, userType);
         }
 
         internal void OnMessage(UserMessage message)
@@ -174,23 +125,18 @@ namespace StreamGlass.Command
                     timedCommand.Reset();
                 }
             }
-            m_Parent?.Update(deltaTime, nbMessage);
+            Parent?.Update(deltaTime, nbMessage);
         }
 
         internal void Reset()
         {
             foreach (TimedCommand timedCommand in m_TimedCommands)
                 timedCommand.Reset();
-            m_Parent?.Reset();
+            Parent?.Reset();
         }
 
-        internal JObject Serialize()
+        protected override void Save(ref JObject json)
         {
-            JObject json = new();
-            json["id"] = m_ID;
-            json["name"] = m_Name;
-            if (m_Parent != null)
-                json["parent"] = m_Parent.ID;
             JArray chatCommandArray = new();
             foreach (var command in m_Commands)
             {
@@ -215,8 +161,35 @@ namespace StreamGlass.Command
                 });
             }
             json["timed_commands"] = timedCommandArray;
+        }
 
-            return json;
+        protected override void Load(JObject json)
+        {
+            JArray? chatCommandArray = (JArray?)json["chat_commands"];
+            if (chatCommandArray != null)
+            {
+                foreach (JObject obj in chatCommandArray.Cast<JObject>())
+                {
+                    string? commandName = (string?)obj["command"];
+                    string? content = (string?)obj["content"];
+                    int? user = (int?)obj["user"];
+                    int? argc = (int?)obj["argc"];
+                    if (commandName != null && content != null && user != null && argc != null)
+                        AddCommand(commandName, content, (UserMessage.UserType)user, (int)argc);
+                }
+            }
+            JArray? timedCommandArray = (JArray?)json["timed_commands"];
+            if (timedCommandArray != null)
+            {
+                foreach (JObject obj in timedCommandArray.Cast<JObject>())
+                {
+                    int? time = (int?)obj["time"];
+                    int? messages = (int?)obj["messages"];
+                    string? command = (string?)obj["command"];
+                    if (time != null && messages != null && command != null)
+                        AddTimedCommand((int)time, (int)messages, command);
+                }
+            }
         }
     }
 }

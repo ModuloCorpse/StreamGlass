@@ -1,11 +1,16 @@
 ﻿using Newtonsoft.Json.Linq;
 using Quicksand.Web.Http;
 using StreamGlass.Twitch.IRC;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace StreamGlass.Twitch
 {
     public static class API
     {
+        private static string ms_EmoteURLTemplate = "";
+        private static HashSet<string> ms_LoadedEmoteSets = new();
+        private static readonly Dictionary<string, EmoteInfo> ms_Emotes = new();
         private static Client? ms_IRCClient = null;
         private static Authenticator? ms_Authenticator = null;
         private static string ms_ClientID = "";
@@ -55,8 +60,112 @@ namespace StreamGlass.Twitch
             return response;
         }
 
+        private static void LoadEmoteContent(JObject data)
+        {
+            string? id = (string?)data["id"];
+            string? name = (string?)data["name"];
+            string? emoteType = (string?)data["emote_type"];
+            List<string> format = new();
+            {
+                JArray? formatArr = (JArray?)data["format"];
+                if (formatArr != null)
+                {
+                    foreach (JValue formatItem in formatArr.Cast<JValue>())
+                        format.Add(formatItem.ToString());
+                }
+            }
+            List<string> scale = new();
+            {
+                JArray? scaleArr = (JArray?)data["scale"];
+                if (scaleArr != null)
+                {
+                    foreach (JValue scaleItem in scaleArr.Cast<JValue>())
+                        scale.Add(scaleItem.ToString());
+                }
+            }
+            List<string> themeMode = new();
+            {
+                JArray? themeModeArr = (JArray?)data["theme_mode"];
+                if (themeModeArr != null)
+                {
+                    foreach (JValue themeModeItem in themeModeArr.Cast<JValue>())
+                        themeMode.Add(themeModeItem.ToString());
+                }
+            }
+            if (id != null && name != null && emoteType != null && format.Count != 0 && scale.Count != 0 && themeMode.Count != 0)
+                ms_Emotes[id] = new(id, name, emoteType, format, scale, themeMode);
+        }
+
+        private static void LoadEmoteSetContent(string content)
+        {
+            JObject responseJson = JObject.Parse(content);
+            JArray? datas = (JArray?)responseJson["data"];
+            if (datas != null && datas.Count > 0)
+            {
+                foreach (JObject data in datas.Cast<JObject>())
+                    LoadEmoteContent(data);
+            }
+        }
+
+        public static void LoadGlobalEmoteSet()
+        {
+            Response? response = APICall(() => new GetRequest("https://api.twitch.tv/helix/chat/emotes/global"));
+            if (response != null)
+            {
+                JObject responseJson = JObject.Parse(response.Body);
+                JArray? datas = (JArray?)responseJson["data"];
+                if (datas != null && datas.Count > 0)
+                {
+                    foreach (JObject data in datas.Cast<JObject>())
+                        LoadEmoteContent(data);
+                }
+                JValue? template = (JValue?)responseJson["template"];
+                if (template != null)
+                    ms_EmoteURLTemplate = template.ToString();
+            }
+        }
+
+        public static void LoadEmoteSet(string emoteSetID)
+        {
+            if (ms_LoadedEmoteSets.Contains(emoteSetID))
+                return;
+            ms_LoadedEmoteSets.Add(emoteSetID);
+            Response? response = APICall(() => new GetRequest(string.Format("https://api.twitch.tv/helix/chat/emotes/set?emote_set_id={0}", emoteSetID)));
+            if (response != null)
+            {
+                JObject responseJson = JObject.Parse(response.Body);
+                JArray? datas = (JArray?)responseJson["data"];
+                if (datas != null && datas.Count > 0)
+                {
+                    foreach (JObject data in datas.Cast<JObject>())
+                        LoadEmoteContent(data);
+                }
+            }
+        }
+
+        public static string GetEmoteURL(string id, BrushPalette.Type paletteType)
+        {
+            if (ms_Emotes.TryGetValue(id, out EmoteInfo? emoteInfo))
+            {
+                string format = "static";
+                string scale = "1.0";
+                string theme_mode = "dark";
+                return ms_EmoteURLTemplate.Replace("{{id}}", id).Replace("{{format}}", format).Replace("{{scale}}", scale).Replace("{{theme_mode}}", theme_mode);
+            }
+            return "";
+        }
+
+        public static EmoteInfo? GetEmoteFromID(string id)
+        {
+            if (ms_Emotes.TryGetValue(id, out EmoteInfo? emoteInfo))
+                return emoteInfo;
+            return null;
+        }
+
         private static UserInfo? GetUserInfo(string content)
         {
+            if (string.IsNullOrEmpty(content))
+                return null;
             JObject responseJson = JObject.Parse(content);
             JArray? datas = (JArray?)responseJson["data"];
             if (datas != null && datas.Count > 0)
@@ -76,7 +185,7 @@ namespace StreamGlass.Twitch
 
         public static string GetSelfUserID()
         {
-            Response? response = APICall(() => new GetRequest(string.Format("https://api.twitch.tv/helix/users")));
+            Response? response = APICall(() => new GetRequest("https://api.twitch.tv/helix/users"));
             if (response != null)
             {
                 UserInfo? ret = GetUserInfo(response.Body);
@@ -121,6 +230,8 @@ namespace StreamGlass.Twitch
 
         private static StreamInfo? GetStreamInfo(string content, APICache cache)
         {
+            if (string.IsNullOrEmpty(content))
+                return null;
             JObject responseJson = JObject.Parse(content);
             JArray? datas = (JArray?)responseJson["data"];
             if (datas != null && datas.Count > 0)
@@ -164,6 +275,8 @@ namespace StreamGlass.Twitch
 
         private static ChannelInfo? GetChannelInfo(string content, UserInfo broadcasterInfo)
         {
+            if (string.IsNullOrEmpty(content))
+                return null;
             JObject responseJson = JObject.Parse(content);
             JArray? datas = (JArray?)responseJson["data"];
             if (datas != null && datas.Count > 0)

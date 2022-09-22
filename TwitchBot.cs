@@ -33,6 +33,7 @@ namespace StreamGlass
                 m_IsConnected = true;
                 m_Token = m_Authenticator.Authenticate(m_Settings.Get("system", "browser"));
                 API.Authenticate(m_Settings.Get("twitch", "public_key"), m_Token);
+                API.LoadGlobalEmoteSet();
                 string userID = API.GetSelfUserID();
                 m_Client.SetSelfUserInfo(API.GetUserInfoFromID(userID, new()));
                 m_Client.Connect("StreamGlass", m_Token);

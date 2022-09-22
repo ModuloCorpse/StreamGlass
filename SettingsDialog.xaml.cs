@@ -22,6 +22,7 @@ namespace StreamGlass
 
             SystemBrowserTextBox.Text = m_Settings.Get("system", "browser");
             //Twitch
+            AutoConnectCheckBox.IsChecked = m_Settings.Get("twitch", "auto_connect") == "true";
             TwitchChannelTextBox.Text = m_Settings.Get("twitch", "channel");
             TwitchBotPublicTextBox.Text = m_Settings.Get("twitch", "public_key");
             TwitchBotSecretTextBox.Text = m_Settings.Get("twitch", "secret_key");
@@ -32,6 +33,7 @@ namespace StreamGlass
         {
             m_Settings.Set("system", "browser", SystemBrowserTextBox.Text);
             //Twitch
+            m_Settings.Set("twitch", "auto_connect", (AutoConnectCheckBox.IsChecked != null && (bool)AutoConnectCheckBox.IsChecked) ? "true" : "false");
             m_Settings.Set("twitch", "channel", TwitchChannelTextBox.Text);
             m_Settings.Set("twitch", "public_key", TwitchBotPublicTextBox.Text);
             if (m_ShowTwitchBotSecret)

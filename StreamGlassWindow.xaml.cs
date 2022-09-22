@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace StreamGlass
 {
@@ -13,65 +15,64 @@ namespace StreamGlass
     /// </summary>
     public partial class StreamGlassWindow : Window
     {
+        private readonly BrushPaletteManager m_ChatPalette = new();
         private readonly List<UserMessage> m_Messages = new();
+        private readonly object m_MessagesLock = new();
         private readonly Stopwatch m_Watch = new();
         private readonly Settings m_Settings = new();
         private readonly Server m_WebServer = new();
         private readonly ProfileManager m_Manager = new();
         private readonly TwitchBot m_Bot;
+        private bool m_AutoScroll = true;
 
         public StreamGlassWindow()
         {
             Profile.Init();
-            InitializeComponent();
-            m_WebServer.GetResourceManager().AddFramework();
-            m_WebServer.Start();
+            m_ChatPalette.Load();
             m_Settings.Load();
             m_Manager.Load();
+            InitializeComponent();
+            UpdateColorPalette();
+            m_WebServer.GetResourceManager().AddFramework();
+            m_WebServer.Start();
 
             m_Bot = new(m_WebServer, m_Settings, m_Manager, this);
 
-            UpdateCommandProfilesList();
+            m_ChatPalette.FillComboBox(ref ChatModeComboBox);
+            m_Manager.FillComboBox(ref CommandProfilesComboBox);
 
             System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
             dispatcherTimer.Tick += StreamGlassForm_Tick;
             dispatcherTimer.Interval = TimeSpan.FromMilliseconds(50);
             m_Watch.Start();
             dispatcherTimer.Start();
+
+            if (m_Settings.Get("twitch", "auto_connect") == "true")
+                m_Bot.Connect();
         }
 
-        private class CommandProfileSelector
+        private void UpdateColorPalette()
         {
-            private readonly string m_ID;
-            private readonly string m_Name;
-            public CommandProfileSelector(string id, string name)
+            ChatPanelHeader.Background = m_ChatPalette.GetColor("background");
+            ChatPanel.Background = m_ChatPalette.GetColor("background");
+            foreach (var child in ChatPanel.Children)
             {
-                m_ID = id;
-                m_Name = name;
-            }
-            public string ID => m_ID;
-            public string Name => m_Name;
-            public override string? ToString() => m_Name;
-        }
-
-        internal void UpdateCommandProfilesList()
-        {
-            string currentProfileID = m_Manager.CurrentProfileID;
-            List<Profile> profiles = m_Manager.Profiles;
-            CommandProfilesComboBox.Items.Clear();
-            foreach (Profile profile in profiles)
-            {
-                CommandProfileSelector selector = new(profile.ID, profile.Name);
-                CommandProfilesComboBox.Items.Add(selector);
-                if (selector.ID == currentProfileID)
-                    CommandProfilesComboBox.SelectedItem = selector;
+                if (child is ChatMessage chatMessage)
+                    chatMessage.UpdatePalette();
             }
         }
 
         private void CommandProfilesComboBox_SelectionChanged(object sender, EventArgs e)
         {
-            CommandProfileSelector selector = (CommandProfileSelector)CommandProfilesComboBox.SelectedItem;
+            Profile.Info selector = (Profile.Info)CommandProfilesComboBox.SelectedItem;
             m_Manager.SetCurrentProfile(selector.ID);
+        }
+
+        private void ChatModeComboBox_SelectionChanged(object sender, EventArgs e)
+        {
+            BrushPalette.Info selector = (BrushPalette.Info)ChatModeComboBox.SelectedItem;
+            m_ChatPalette.SetCurrentPalette(selector.ID);
+            UpdateColorPalette();
         }
 
         protected override void OnClosed(EventArgs e)
@@ -79,19 +80,26 @@ namespace StreamGlass
             base.OnClosed(e);
             m_Settings.Save();
             m_Manager.Save();
+            m_ChatPalette.Save();
         }
 
         private void SettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SettingsDialog dialog = new(m_Settings, m_Bot);
-            dialog.Width = 500;
-            dialog.Height = 300;
-            dialog.Owner = this;
-            dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            SettingsDialog dialog = new(m_Settings, m_Bot)
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
             dialog.Show();
         }
 
-        internal void AddMessage(UserMessage message) => m_Messages.Add(message);
+        internal void AddMessage(UserMessage message)
+        {
+            lock (m_MessagesLock)
+            {
+                m_Messages.Add(message);
+            }
+        }
 
         private void StreamGlassForm_Tick(object? sender, EventArgs e)
         {
@@ -101,16 +109,24 @@ namespace StreamGlass
             m_Manager.Update(deltaTime);
             m_Watch.Restart();
 
-            foreach (UserMessage message in m_Messages)
+            lock (m_MessagesLock)
             {
-                /*ChatMessage chatMessage = new(message)
+                foreach (UserMessage message in m_Messages)
                 {
-                    Dock = DockStyle.Top,
-                    Visible = true
-                };
-                ChatPanel.Controls.Add(chatMessage);*/
+                    ChatMessage chatMessage = new(m_ChatPalette, message, false);
+                    ChatPanel.Children.Add(chatMessage);
+                }
+                m_Messages.Clear();
             }
-            m_Messages.Clear();
+        }
+
+        private void ChatScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e)
+        {
+            if (e.ExtentHeightChange == 0)
+                m_AutoScroll = (ChatScrollViewer.VerticalOffset == ChatScrollViewer.ScrollableHeight);
+
+            if (m_AutoScroll && e.ExtentHeightChange != 0)
+                ChatScrollViewer.ScrollToVerticalOffset(ChatScrollViewer.ExtentHeight);
         }
     }
 }

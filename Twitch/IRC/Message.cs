@@ -27,25 +27,50 @@ namespace StreamGlass.Twitch.IRC
                 m_BotCommandParams = param;
             }
 
-            public string GetName() => m_Name;
-            public string GetChannel() => m_Channel;
-            public bool IsCapRequestEnabled() => m_IsCapRequestEnabled;
-            public string GetBotCommand() => m_BotCommand;
-            public string GetBotCommandParameters() => m_BotCommandParams;
+            public string Name => m_Name;
+            public string Channel => m_Channel;
+            public bool IsCapRequestEnabled => m_IsCapRequestEnabled;
+            public string BotCommand => m_BotCommand;
+            public string BotCommandParameters => m_BotCommandParams;
+        }
+
+        public class SimpleEmote : IComparable<SimpleEmote>
+        {
+            private readonly string m_ID;
+            private readonly int m_Start;
+            private readonly int m_End;
+
+            public SimpleEmote(string id, int start, int end)
+            {
+                m_ID = id;
+                m_Start = start;
+                m_End = end;
+            }
+
+            public int CompareTo(SimpleEmote? comparePart)
+            {
+                if (comparePart == null || m_Start > comparePart.m_End)
+                    return 1;
+                return -1;
+            }
+
+            public string ID => m_ID;
+            public int Start => m_Start;
+            public int End => m_End;
         }
 
         public class Emote
         {
-            private readonly int m_ID;
+            private readonly string m_ID;
             private readonly List<Tuple<int, int>> m_Locations = new();
 
-            public Emote(int iD) => m_ID = iD;
+            public Emote(string iD) => m_ID = iD;
 
             internal void AddLocation(int start, int end) => m_Locations.Add(new(start, end));
 
-            public int GetID() => m_ID;
-            public List<Tuple<int, int>> GetLocations() => m_Locations;
-            public bool HaveLocations() => m_Locations.Count != 0;
+            public string ID => m_ID;
+            public List<Tuple<int, int>> Locations => m_Locations;
+            public bool HaveLocations => m_Locations.Count != 0;
 
             internal string ToTagStr()
             {
@@ -71,7 +96,12 @@ namespace StreamGlass.Twitch.IRC
             private readonly Dictionary<string, string> m_Tags = new();
             private readonly Dictionary<string, string> m_Badges = new();
             private readonly Dictionary<string, string> m_BadgeInfos = new();
-            private readonly Dictionary<int, Emote> m_Emotes = new();
+            private readonly Dictionary<string, Emote> m_Emotes = new();
+            private readonly List<SimpleEmote> m_OrderedEmotes = new();
+            private readonly HashSet<string> m_EmotesSets = new();
+
+            public HashSet<string> EmotesSets => m_EmotesSets;
+            public List<SimpleEmote> OrderedEmotes => m_OrderedEmotes;
 
             internal bool HaveTag(string tag) => m_Tags.ContainsKey(tag);
             internal bool HaveBadge(string badge) => m_Badges.ContainsKey(badge);
@@ -86,11 +116,14 @@ namespace StreamGlass.Twitch.IRC
             internal void AddTag(string tag, string value) => m_Tags[tag] = value;
             internal void AddBadge(string badge, string value) => m_Badges[badge] = value;
             internal void AddBadgeInfo(string badge, string info) => m_BadgeInfos[badge] = info;
-            internal void AddEmote(int id) => m_Emotes.TryAdd(id, new Emote(id));
-            internal void AddEmoteLocation(int id, int start, int end)
+            internal void AddEmoteSet(string id) => m_EmotesSets.Add(id);
+            internal void AddEmote(string id, int start, int end)
             {
-                if (m_Emotes.TryGetValue(id, out Emote? emote))
-                    emote.AddLocation(start, end);
+                m_OrderedEmotes.Add(new(id, start, end));
+                m_OrderedEmotes.Sort();
+                Emote emote = new(id);
+                emote.AddLocation(start, end);
+                m_Emotes[id] = emote;
             }
             internal string ToTagStr()
             {
@@ -107,6 +140,7 @@ namespace StreamGlass.Twitch.IRC
                     builder.Append(badgeInfo.Value);
                     ++i;
                 }
+                builder.Append(';');
                 builder.Append("badges=");
                 i = 0;
                 foreach (var badge in m_Badges)
@@ -118,6 +152,7 @@ namespace StreamGlass.Twitch.IRC
                     builder.Append(badge.Value);
                     ++i;
                 }
+                builder.Append(';');
                 foreach (var tag in m_Tags)
                 {
                     builder.Append(tag.Key);
@@ -125,10 +160,26 @@ namespace StreamGlass.Twitch.IRC
                     builder.Append(tag.Value);
                     builder.Append(';');
                 }
-                if (m_Emotes.Count != 0)
+                builder.Append("emote-sets=");
+                i = 0;
+                foreach (var emoteSetID in m_EmotesSets)
                 {
-
+                    if (i != 0)
+                        builder.Append(',');
+                    builder.Append(emoteSetID);
+                    ++i;
                 }
+                builder.Append(';');
+                builder.Append("emote=");
+                i = 0;
+                foreach (var emote in m_Emotes)
+                {
+                    if (i != 0)
+                        builder.Append(',');
+                    builder.Append(emote.Value.ToTagStr());
+                    ++i;
+                }
+                builder.Append(';');
                 return builder.ToString();
             }
         }
@@ -165,11 +216,11 @@ namespace StreamGlass.Twitch.IRC
                 builder.Append(m_Tags.ToTagStr());
                 builder.Append(' ');
             }
-            builder.Append(m_Command.GetName());
-            if (!string.IsNullOrWhiteSpace(m_Command.GetChannel()))
+            builder.Append(m_Command.Name);
+            if (!string.IsNullOrWhiteSpace(m_Command.Channel))
             {
                 builder.Append(' ');
-                builder.Append(m_Command.GetChannel());
+                builder.Append(m_Command.Channel);
             }
             if (!string.IsNullOrWhiteSpace(m_Parameters))
             {
@@ -182,11 +233,13 @@ namespace StreamGlass.Twitch.IRC
         }
 
         public Command GetCommand() => m_Command;
-        public bool HaveTags() => m_Tags != null;
+        public bool HaveTags => m_Tags != null;
         public Tags? GetTags() => m_Tags;
-        public string GetNick() => m_Nick;
-        public string GetHost() => m_Host;
-        public string GetParameters() => m_Parameters;
+        public string Nick => m_Nick;
+        public string Host => m_Host;
+        public string Parameters => m_Parameters;
+
+        public List<SimpleEmote> Emotes => (m_Tags != null) ? m_Tags.OrderedEmotes : new();
 
         public bool HaveTag(string tag)
         {
@@ -288,12 +341,11 @@ namespace StreamGlass.Twitch.IRC
                                 foreach (string emote in emotes)
                                 {
                                     string[] emoteParts = emote.Split(':');
-                                    int emodeID = int.Parse(emoteParts[0]);
                                     string[] positions = emoteParts[1].Split(',');
                                     foreach (string position in positions)
                                     {
                                         string[] positionParts = position.Split('-');
-                                        tags.AddEmoteLocation(emodeID, int.Parse(positionParts[0]), int.Parse(positionParts[1]));
+                                        tags.AddEmote(emoteParts[0], int.Parse(positionParts[0]), int.Parse(positionParts[1]));
                                     }
                                 }
                             }
@@ -302,7 +354,10 @@ namespace StreamGlass.Twitch.IRC
                         {
                             string[] emoteSetIds = tagValue.Split(',');
                             foreach (string emoteSetID in emoteSetIds)
-                                tags.AddEmote(int.Parse(emoteSetID));
+                            {
+                                tags.AddEmoteSet(emoteSetID);
+                                API.LoadEmoteSet(emoteSetID);
+                            }
                         }
                         else
                         {
@@ -316,17 +371,6 @@ namespace StreamGlass.Twitch.IRC
                     string[] sourceParts = rawSourceComponent.Split('!');
                     nick = (sourceParts.Length == 2) ? sourceParts[0] : "";
                     host = (sourceParts.Length == 2) ? sourceParts[1] : sourceParts[0];
-                }
-                if (!string.IsNullOrWhiteSpace(rawParametersComponent) && rawParametersComponent[0] == '!')
-                {
-                    int idx = 0;
-                    string commandParametersParts = rawParametersComponent[(idx + 1)..].Trim();
-                    int paramsIdx = commandParametersParts.IndexOf(' ');
-
-                    if (paramsIdx == -1)
-                        command.SetBotCommand(commandParametersParts, "");
-                    else
-                        command.SetBotCommand(commandParametersParts[..paramsIdx], commandParametersParts[paramsIdx..].Trim());
                 }
                 return new(command, tags, nick, host, rawParametersComponent);
             }

@@ -40,35 +40,31 @@ namespace StreamGlass.Twitch.IRC
         {
             if (!m_CanConnect)
                 return false;
-            try
+            foreach (IPAddress ip in Dns.GetHostEntry(m_IP).AddressList)
             {
-                foreach (IPAddress ip in Dns.GetHostEntry(m_IP).AddressList)
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    if (ip.AddressFamily == AddressFamily.InterNetwork)
+                    IPEndPoint endpoint = new(ip, m_Port);
+                    m_Socket.Connect(endpoint);
+                    m_Stream = new NetworkStream(m_Socket);
+                    if (m_IsSecured)
                     {
-                        IPEndPoint endpoint = new(ip, m_Port);
-                        m_Socket.Connect(endpoint);
-                        m_Stream = new NetworkStream(m_Socket);
-                        if (m_IsSecured)
+                        SslStream sslStream = new(m_Stream, leaveInnerStreamOpen: false);
+                        var options = new SslClientAuthenticationOptions()
                         {
-                            SslStream sslStream = new(m_Stream, leaveInnerStreamOpen: false);
-                            var options = new SslClientAuthenticationOptions()
-                            {
-                                TargetHost = m_IP,
-                                RemoteCertificateValidationCallback = (sender, certificate, chain, errors) => errors == SslPolicyErrors.None,
-                            };
+                            TargetHost = m_IP,
+                            RemoteCertificateValidationCallback = (sender, certificate, chain, errors) => errors == SslPolicyErrors.None,
+                        };
 
-                            sslStream.AuthenticateAsClientAsync(options, CancellationToken.None).Wait();
-                            m_Stream = sslStream;
-                        }
-                        StartReceiving();
-                        SendAuth(username, token);
-                        return true;
+                        sslStream.AuthenticateAsClientAsync(options, CancellationToken.None).Wait();
+                        m_Stream = sslStream;
                     }
+                    StartReceiving();
+                    SendAuth(username, token);
+                    return true;
                 }
-                return false;
             }
-            catch { return false; }
+            return false;
         }
 
         internal void SendAuth(string username, string token)
@@ -86,12 +82,8 @@ namespace StreamGlass.Twitch.IRC
 
         internal void StartReceiving()
         {
-            try
-            {
-                m_Buffer = new byte[1024];
-                m_Stream.BeginRead(m_Buffer, 0, m_Buffer.Length, ReceiveCallback, null);
-            }
-            catch { }
+            m_Buffer = new byte[1024];
+            m_Stream.BeginRead(m_Buffer, 0, m_Buffer.Length, ReceiveCallback, null);
         }
 
         private void ReceiveCallback(IAsyncResult AR)
@@ -114,13 +106,16 @@ namespace StreamGlass.Twitch.IRC
                             Message? message = Message.Parse(data);
                             if (message != null)
                             {
-                                switch (message.GetCommand().GetName())
+                                switch (message.GetCommand().Name)
                                 {
                                     case "PING":
-                                        Send(new("PONG", parameters: message.GetParameters())); break;
+                                        Send(new("PONG", parameters: message.Parameters)); break;
                                     case "JOIN":
-                                        m_Channel = message.GetCommand().GetChannel();
-                                        m_Listener?.OnJoinedChannel(m_Channel);
+                                        if (m_SelfUserInfo?.Login == message.Nick)
+                                        {
+                                            m_Channel = message.GetCommand().Channel;
+                                            m_Listener?.OnJoinedChannel(m_Channel);
+                                        }
                                         break;
                                     case "PRIVMSG":
                                         m_Listener?.OnMessageReceived(new(message)); break;
