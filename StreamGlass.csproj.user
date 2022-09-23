@@ -7,7 +7,7 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="ChatMessage.xaml.cs">
+    <Compile Update="StreamChatMessage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="SettingsDialog.xaml.cs">
@@ -18,7 +18,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="ChatMessage.xaml">
+    <Page Update="StreamChatMessage.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="SettingsDialog.xaml">

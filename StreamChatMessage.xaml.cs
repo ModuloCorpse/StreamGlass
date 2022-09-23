@@ -11,16 +11,18 @@ namespace StreamGlass
     /// <summary>
     /// Interaction logic for ChatMessage.xaml
     /// </summary>
-    public partial class ChatMessage : UserControl
+    public partial class StreamChatMessage : UserControl
     {
         private static readonly int EMOTE_SIZE = 20;
+        private readonly StreamChat m_StreamChat;
         private readonly BrushPaletteManager m_Palette;
         private readonly UserMessage m_Message;
         private readonly bool m_IsHighlighted;
 
-        public ChatMessage(BrushPaletteManager palette, UserMessage message, bool isHighligted)
+        public StreamChatMessage(StreamChat streamChat, BrushPaletteManager palette, UserMessage message, bool isHighligted)
         {
             InitializeComponent();
+            m_StreamChat = streamChat;
             m_Palette = palette;
             m_Message = message;
             MessageSender.Text = message.UserName;
@@ -75,6 +77,11 @@ namespace StreamGlass
         {
             UpdatePaletteColor();
             UpdateEmotes();
+        }
+
+        private void ToggleHighlight_Click(object sender, RoutedEventArgs e)
+        {
+            m_StreamChat.ToggleHighlightedUser(m_Message.UserName);
         }
     }
 }

@@ -4,8 +4,20 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="435" d:DesignWidth="370">
-    <ScrollViewer Name="ChatScrollViewer" ScrollChanged="ChatScrollViewer_ScrollChanged">
-        <StackPanel Name="ChatPanel" Background="#FF18181B"></StackPanel>
-    </ScrollViewer>
+             d:DesignHeight="466" d:DesignWidth="370">
+    <StackPanel Name="ChatPanelBackground" Width="370" Height="466">
+        <StackPanel Orientation="Horizontal" Margin="0,5,0,5" Name="ChatPanelHeader" Height="26" Background="#FF18181B">
+            <Border BorderBrush="{x:Null}" Height="26">
+                <TextBlock VerticalAlignment="Center" TextAlignment="Right" Text="Chat Theme:" Foreground="White" Width="75"/>
+            </Border>
+            <ComboBox Margin="5,0,0,0" Name="ChatColorModeComboBox" Height="26" Width="100" SelectionChanged="ChatColorModeComboBox_SelectionChanged"/>
+            <Border BorderBrush="{x:Null}" Height="26">
+                <TextBlock VerticalAlignment="Center" TextAlignment="Right" Text="Chat Mode:" Foreground="White" Width="75"/>
+            </Border>
+            <ComboBox Margin="5,0,0,0" Name="ChatModeComboBox" Height="26" Width="100" SelectionChanged="ChatModeComboBox_SelectionChanged"/>
+        </StackPanel>
+        <ScrollViewer Name="ChatScrollViewer" ScrollChanged="ChatScrollViewer_ScrollChanged" Height="430">
+            <StackPanel Name="ChatPanel" Background="#FF18181B"></StackPanel>
+        </ScrollViewer>
+    </StackPanel>
 </UserControl>

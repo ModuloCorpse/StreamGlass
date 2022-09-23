@@ -14,12 +14,7 @@
             </MenuItem>
         </Menu>
         <StackPanel Orientation="Horizontal">
-            <StackPanel Width="370">
-                <StackPanel Name="ChatPanelHeader" Width="370" Height="31">
-                    <ComboBox Margin="5,5,0,0" Name="ChatModeComboBox" Height="26" Width="120" SelectionChanged="ChatModeComboBox_SelectionChanged"/>
-                </StackPanel>
-                <streamglass:StreamChat x:Name="StreamChatPanel" Height="435"/>
-            </StackPanel>
+            <streamglass:StreamChat x:Name="StreamChatPanel"/>
             <StackPanel Width="500">
                 <ComboBox Margin="5,5,0,0" Name="CommandProfilesComboBox" Height="26" Width="120" SelectionChanged="CommandProfilesComboBox_SelectionChanged"/>
             </StackPanel>

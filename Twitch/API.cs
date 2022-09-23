@@ -96,7 +96,7 @@ namespace StreamGlass.Twitch
                 ms_Emotes[id] = new(id, name, emoteType, format, scale, themeMode);
         }
 
-        private static void LoadEmoteSetContent(string content)
+        private static JObject LoadEmoteSetContent(string content)
         {
             JObject responseJson = JObject.Parse(content);
             JArray? datas = (JArray?)responseJson["data"];
@@ -105,6 +105,7 @@ namespace StreamGlass.Twitch
                 foreach (JObject data in datas.Cast<JObject>())
                     LoadEmoteContent(data);
             }
+            return responseJson;
         }
 
         public static void LoadGlobalEmoteSet()
@@ -112,13 +113,7 @@ namespace StreamGlass.Twitch
             Response? response = APICall(() => new GetRequest("https://api.twitch.tv/helix/chat/emotes/global"));
             if (response != null)
             {
-                JObject responseJson = JObject.Parse(response.Body);
-                JArray? datas = (JArray?)responseJson["data"];
-                if (datas != null && datas.Count > 0)
-                {
-                    foreach (JObject data in datas.Cast<JObject>())
-                        LoadEmoteContent(data);
-                }
+                JObject responseJson = LoadEmoteSetContent(response.Body);
                 JValue? template = (JValue?)responseJson["template"];
                 if (template != null)
                     ms_EmoteURLTemplate = template.ToString();
@@ -129,15 +124,7 @@ namespace StreamGlass.Twitch
         {
             Response? response = APICall(() => new GetRequest(string.Format("https://api.twitch.tv/helix/chat/emotes?broadcaster_id={0}", id)));
             if (response != null)
-            {
-                JObject responseJson = JObject.Parse(response.Body);
-                JArray? datas = (JArray?)responseJson["data"];
-                if (datas != null && datas.Count > 0)
-                {
-                    foreach (JObject data in datas.Cast<JObject>())
-                        LoadEmoteContent(data);
-                }
-            }
+                LoadEmoteSetContent(response.Body);
         }
 
         public static void LoadChannelEmoteSetFromLogin(string login)
@@ -154,15 +141,7 @@ namespace StreamGlass.Twitch
             ms_LoadedEmoteSets.Add(emoteSetID);
             Response? response = APICall(() => new GetRequest(string.Format("https://api.twitch.tv/helix/chat/emotes/set?emote_set_id={0}", emoteSetID)));
             if (response != null)
-            {
-                JObject responseJson = JObject.Parse(response.Body);
-                JArray? datas = (JArray?)responseJson["data"];
-                if (datas != null && datas.Count > 0)
-                {
-                    foreach (JObject data in datas.Cast<JObject>())
-                        LoadEmoteContent(data);
-                }
-            }
+                LoadEmoteSetContent(response.Body);
         }
 
         public static string GetEmoteURL(string id, BrushPalette.Type paletteType)
