@@ -16,14 +16,11 @@ namespace StreamGlass
     public partial class StreamGlassWindow : Window
     {
         private readonly BrushPaletteManager m_ChatPalette = new();
-        private readonly List<UserMessage> m_Messages = new();
-        private readonly object m_MessagesLock = new();
         private readonly Stopwatch m_Watch = new();
         private readonly Settings m_Settings = new();
         private readonly Server m_WebServer = new();
         private readonly ProfileManager m_Manager = new();
         private readonly TwitchBot m_Bot;
-        private bool m_AutoScroll = true;
 
         public StreamGlassWindow()
         {

@@ -35,18 +35,11 @@ namespace StreamGlass
         private bool m_Reversed = false;
         private bool m_IsOnBottom = true;
         private double m_MessagesHeight = 0;
-        private readonly List<UserMessage> m_Messages = new();
-        private readonly object m_MessagesLock = new();
         private readonly List<ChatMessage> m_ControlMessages = new();
 
         public StreamChat()
         {
             InitializeComponent();
-
-            System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
-            dispatcherTimer.Tick += StreamChat_Tick;
-            dispatcherTimer.Interval = TimeSpan.FromSeconds(1);
-            dispatcherTimer.Start();
         }
 
         internal void SetDisplayType(DisplayType displayType)
@@ -129,25 +122,12 @@ namespace StreamGlass
 
         public void AddMessage(UserMessage message)
         {
-            lock (m_MessagesLock)
-            {
-                m_Messages.Add(message);
-            }
-        }
-
-        private void StreamChat_Tick(object? sender, EventArgs e)
-        {
-            lock (m_MessagesLock)
-            {
-                foreach (UserMessage message in m_Messages)
-                {
-                    ChatMessage chatMessage = new(m_ChatPalette, message, false);
-                    chatMessage.MessageContent.Loaded += ChatMessage_Loaded;
-                    ChatPanel.Children.Add(chatMessage);
-                    m_ControlMessages.Add(chatMessage);
-                }
-                m_Messages.Clear();
-            }
+            Dispatcher.Invoke(() => {
+                ChatMessage chatMessage = new(m_ChatPalette, message, false);
+                chatMessage.MessageContent.Loaded += ChatMessage_Loaded;
+                ChatPanel.Children.Add(chatMessage);
+                m_ControlMessages.Add(chatMessage);
+            });
         }
 
         private void ChatScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e)
