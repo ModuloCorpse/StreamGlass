@@ -13,6 +13,7 @@ namespace StreamGlass
     /// </summary>
     public partial class ChatMessage : UserControl
     {
+        private static readonly int EMOTE_SIZE = 20;
         private readonly BrushPaletteManager m_Palette;
         private readonly UserMessage m_Message;
         private readonly bool m_IsHighlighted;
@@ -32,14 +33,14 @@ namespace StreamGlass
             UpdatePaletteColor();
         }
 
-        private void UpdateEmotes()
+        internal void UpdateEmotes()
         {
-            EmoteLayer.Height = MessageContent.Height;
+            EmoteLayer.Height = MessageContent.ActualHeight;
             EmoteLayer.Children.Clear();
             foreach (var emoteData in m_Message.Emotes)
             {
                 Rect charRect = MessageContent.GetRectFromCharacterIndex(emoteData.Item1);
-                double emoteX = charRect.X + 2 + MessageSender.Width + MessageSender.Margin.Left + MessageSender.Margin.Right + MessageContent.Margin.Left + Margin.Left;
+                double emoteX = charRect.X + MessageSender.Width + MessageSender.Margin.Left + MessageSender.Margin.Right + MessageContent.Margin.Left + Margin.Left;
                 double emoteY = charRect.Y + MessageContent.Margin.Top + Margin.Top;
                 string emoteURL = API.GetEmoteURL(emoteData.Item2, m_Palette.GetPaletteType());
                 BitmapImage bitmap = new();
@@ -48,8 +49,8 @@ namespace StreamGlass
                 bitmap.EndInit();
                 EmoteLayer.Children.Add(new Image()
                 {
-                    Width = MessageContent.FontSize,
-                    Height = MessageContent.FontSize,
+                    Width = EMOTE_SIZE,
+                    Height = EMOTE_SIZE,
                     Source = bitmap,
                     Margin = new(emoteX, emoteY, 0, 0)
                 });
@@ -73,11 +74,6 @@ namespace StreamGlass
         internal void UpdatePalette()
         {
             UpdatePaletteColor();
-            UpdateEmotes();
-        }
-
-        private void MessageContent_Loaded(object sender, RoutedEventArgs e)
-        {
             UpdateEmotes();
         }
     }

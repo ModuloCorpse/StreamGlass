@@ -125,6 +125,28 @@ namespace StreamGlass.Twitch
             }
         }
 
+        public static void LoadChannelEmoteSetFromID(string id)
+        {
+            Response? response = APICall(() => new GetRequest(string.Format("https://api.twitch.tv/helix/chat/emotes?broadcaster_id={0}", id)));
+            if (response != null)
+            {
+                JObject responseJson = JObject.Parse(response.Body);
+                JArray? datas = (JArray?)responseJson["data"];
+                if (datas != null && datas.Count > 0)
+                {
+                    foreach (JObject data in datas.Cast<JObject>())
+                        LoadEmoteContent(data);
+                }
+            }
+        }
+
+        public static void LoadChannelEmoteSetFromLogin(string login)
+        {
+            UserInfo? userInfo = GetUserInfoFromLogin(login, new());
+            if (userInfo != null)
+                LoadChannelEmoteSetFromID(userInfo.ID);
+        }
+
         public static void LoadEmoteSet(string emoteSetID)
         {
             if (ms_LoadedEmoteSets.Contains(emoteSetID))

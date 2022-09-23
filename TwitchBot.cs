@@ -48,6 +48,7 @@ namespace StreamGlass
             if (m_Channel != channel)
             {
                 m_Channel = channel;
+                API.LoadChannelEmoteSetFromLogin(channel[1..]);
                 m_Manager.SetChannel(channel);
                 m_Client.SendMessage(channel, "Hello World! Je suis un bot connecté via StreamGlass!");
             }

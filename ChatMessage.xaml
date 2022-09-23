@@ -7,8 +7,8 @@
     <StackPanel StackPanel.ZIndex="1" Width="350" Height="auto">
         <Canvas Width="350" Height="auto">
             <StackPanel Canvas.ZIndex="1" Name="MessagePanel" Orientation="Horizontal" Width="350" Height="auto">
-                <TextBlock Name="MessageSender" Margin="2,3,3,3" Text="StreamGlass" TextAlignment="Right" Width="100" Height="auto" Foreground="#FF6441A5" FontWeight="Bold"/>
-                <TextBox Name="MessageContent" Loaded="MessageContent_Loaded" IsReadOnly="True" Margin="0,2,0,0" Text="HelloWorld" TextWrapping="Wrap" Width="245" Height="auto" Foreground="#FFFFFF" Background="{x:Null}" BorderBrush="{x:Null}"/>
+                <TextBlock Name="MessageSender" Margin="2,3,3,3" Text="StreamGlass" TextAlignment="Right" Width="100" Height="auto" Foreground="#FF6441A5" FontWeight="Bold" FontSize="14"/>
+                <TextBox Name="MessageContent" IsReadOnly="True" Margin="0,2,0,0" Text="HelloWorld" TextWrapping="Wrap" Width="245" Height="auto" Foreground="#FFFFFF" Background="{x:Null}" BorderBrush="{x:Null}" FontSize="14"/>
             </StackPanel>
             <Canvas Name="EmoteLayer" Canvas.ZIndex="2"  Width="350" Height="auto"/>
         </Canvas>

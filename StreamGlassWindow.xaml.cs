@@ -32,6 +32,7 @@ namespace StreamGlass
             m_Settings.Load();
             m_Manager.Load();
             InitializeComponent();
+            StreamChatPanel.InitBrushPalette(m_ChatPalette);
             UpdateColorPalette();
             m_WebServer.GetResourceManager().AddFramework();
             m_WebServer.Start();
@@ -54,12 +55,7 @@ namespace StreamGlass
         private void UpdateColorPalette()
         {
             ChatPanelHeader.Background = m_ChatPalette.GetColor("background");
-            ChatPanel.Background = m_ChatPalette.GetColor("background");
-            foreach (var child in ChatPanel.Children)
-            {
-                if (child is ChatMessage chatMessage)
-                    chatMessage.UpdatePalette();
-            }
+            StreamChatPanel.UpdateColorPalette();
         }
 
         private void CommandProfilesComboBox_SelectionChanged(object sender, EventArgs e)
@@ -93,13 +89,7 @@ namespace StreamGlass
             dialog.Show();
         }
 
-        internal void AddMessage(UserMessage message)
-        {
-            lock (m_MessagesLock)
-            {
-                m_Messages.Add(message);
-            }
-        }
+        internal void AddMessage(UserMessage message) => StreamChatPanel.AddMessage(message);
 
         private void StreamGlassForm_Tick(object? sender, EventArgs e)
         {
@@ -108,25 +98,6 @@ namespace StreamGlass
             m_Bot.Update(deltaTime);
             m_Manager.Update(deltaTime);
             m_Watch.Restart();
-
-            lock (m_MessagesLock)
-            {
-                foreach (UserMessage message in m_Messages)
-                {
-                    ChatMessage chatMessage = new(m_ChatPalette, message, false);
-                    ChatPanel.Children.Add(chatMessage);
-                }
-                m_Messages.Clear();
-            }
-        }
-
-        private void ChatScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e)
-        {
-            if (e.ExtentHeightChange == 0)
-                m_AutoScroll = (ChatScrollViewer.VerticalOffset == ChatScrollViewer.ScrollableHeight);
-
-            if (m_AutoScroll && e.ExtentHeightChange != 0)
-                ChatScrollViewer.ScrollToVerticalOffset(ChatScrollViewer.ExtentHeight);
         }
     }
 }

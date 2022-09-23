@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Documents;
 using static StreamGlass.Twitch.IRC.Message;
 
 namespace StreamGlass.Twitch.IRC
@@ -66,7 +65,7 @@ namespace StreamGlass.Twitch.IRC
 
         private string ComputeEmotelessString(Message message)
         {
-            string replacement = "    ";
+            string replacement = "     ";
             int offset = 0;
             string ret = message.Parameters;
             List<SimpleEmote> emotes = message.Emotes;
