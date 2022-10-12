@@ -4,7 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="StreamGlass Settings" Height="323" Width="516" Icon="/Assets/stream-glass-settings.ico">
+        Title="StreamGlass Settings"
+        d:DesignHeight="300"
+        d:DesignWidth="500"
+        Height="323"
+        Width="516"
+        Icon="/Assets/stream-glass-settings.ico"
+        ResizeMode="NoResize">
     <StackPanel Orientation="Horizontal">
         <StackPanel Width="500">
             <TabControl TabStripPlacement="Left" Height="250" Width="500">
@@ -13,15 +19,7 @@
                         <Image Name="setting_img" Height="35" Width="35" Source="/Assets/tinker.png" />
                     </TabItem.Header>
                     <StackPanel Background="#FFE5E5E5">
-                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                            <Border BorderBrush="{x:Null}" Height="25">
-                                <TextBlock Margin="0,0,5,0" Text="Browser:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="100"/>
-                            </Border>
-                            <TextBox Name="SystemBrowserTextBox" HorizontalAlignment="Center" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="250" Height="25"/>
-                            <Button Name="SystemBrowserFileDialog" Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Click="SystemBrowserFileDialog_Click">
-                                <Image Name="SystemBrowserFileDialogImage" Height="20" Width="20" Source="/Assets/magnifying-glass.png" />
-                            </Button>
-                        </StackPanel>
+                        
                     </StackPanel>
                 </TabItem>
                 <TabItem>
@@ -35,6 +33,15 @@
                             </Border>
                             <CheckBox Name="AutoConnectCheckBox" VerticalAlignment="Center" Margin="5,0,0,0"/>
                             <Button Content="Connect" Margin="5,0,0,0" VerticalAlignment="Center" Click="TwitchConnectButton_Click" Width="75" Height="25"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <Border BorderBrush="{x:Null}" Height="25">
+                                <TextBlock Margin="0,0,5,0" Text="Browser:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="100"/>
+                            </Border>
+                            <TextBox Name="SystemBrowserTextBox" HorizontalAlignment="Center" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="250" Height="25"/>
+                            <Button Name="SystemBrowserFileDialog" Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Click="SystemBrowserFileDialog_Click">
+                                <Image Name="SystemBrowserFileDialogImage" Height="20" Width="20" Source="/Assets/magnifying-glass.png" />
+                            </Button>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                             <Border BorderBrush="{x:Null}" Height="25">
@@ -64,8 +71,6 @@
             <Canvas Height="35" Width="500">
                 <Button Name="SaveButton" Content="Save" Height="25" Width="75" Canvas.Left="415" Canvas.Top="5" Click="SaveButton_Click"/>
             </Canvas>
-            <Canvas Height="23" Background="Red"></Canvas>
         </StackPanel>
-        <Canvas Width="16" Background="Red"></Canvas>
     </StackPanel>
 </Window>

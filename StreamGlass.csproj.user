@@ -7,6 +7,12 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="LogWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="NumericUpDown.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="StreamChatMessage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -16,8 +22,17 @@
     <Compile Update="StreamChat.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="StreamChatSettingsDialog.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="LogWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="NumericUpDown.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="StreamChatMessage.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -25,6 +40,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="StreamChat.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="StreamChatSettingsDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="StreamGlassWindow.xaml">

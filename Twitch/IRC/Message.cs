@@ -295,12 +295,12 @@ namespace StreamGlass.Twitch.IRC
             string[] commandParts = rawCommandComponent.Split(' ');
             Command? command = commandParts[0] switch
             {
-                "JOIN" or "PART" or "NOTICE" or "CLEARCHAT" or "HOSTTARGET" or "PRIVMSG" or "USERSTATE" or "ROOMSTATE" => new(commandParts[0], commandParts[1]),
                 "PING" or "GLOBALUSERSTATE" or "RECONNECT" => new(commandParts[0]),
                 "CAP" => new(commandParts[0], isCapRequestEnabled: (commandParts[2] == "ACK")),
                 "421" => new("UNSUPPORTED", commandParts[2]),
                 "001" => new("LOGGED"),
-                _ => null,
+                "353" => new("USERLIST"),
+                "JOIN" or "PART" or "NOTICE" or "CLEARCHAT" or "HOSTTARGET" or "PRIVMSG" or "USERSTATE" or "ROOMSTATE" or _ => new(commandParts[0], commandParts[1]),
             };
             if (command != null)
             {

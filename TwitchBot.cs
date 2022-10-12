@@ -2,46 +2,64 @@
 using StreamGlass.Twitch.IRC;
 using StreamGlass.Twitch;
 using Client = StreamGlass.Twitch.IRC.Client;
+using System.Windows.Documents;
+using System.Collections.Generic;
 
 namespace StreamGlass
 {
     public class TwitchBot: IListener
     {
+        private readonly bool m_UseSameToken = false;
         private bool m_IsConnected = false;
         private string m_Channel = "";
-        private string m_Token = "";
         private readonly Settings m_Settings;
-        private readonly Client m_Client = new("irc.chat.twitch.tv", 6697, true);
+        private readonly Client m_Client;
         private readonly ProfileManager m_Manager;
         private readonly Authenticator m_Authenticator;
         private readonly StreamGlassWindow m_Form;
 
-        public TwitchBot(Server webServer, Settings settings, ProfileManager manager, StreamGlassWindow form)
+        public TwitchBot(Server webServer, Settings settings, ProfileManager manager, Client client, StreamGlassWindow form)
         {
             m_Settings = settings;
+            m_Client = client;
             m_Manager = manager;
             m_Form = form;
             m_Authenticator = new(webServer, settings);
             m_Client.SetListener(this);
-            API.Init(m_Client, m_Authenticator);
         }
 
         public void Connect()
         {
             if (!m_IsConnected)
             {
-                m_IsConnected = true;
-                m_Token = m_Authenticator.Authenticate(m_Settings.Get("system", "browser"));
-                API.Authenticate(m_Settings.Get("twitch", "public_key"), m_Token);
-                API.LoadGlobalEmoteSet();
-                string userID = API.GetSelfUserID();
-                m_Client.SetSelfUserInfo(API.GetUserInfoFromID(userID, new()));
-                m_Client.Connect("StreamGlass", m_Token);
-                m_Client.Join(m_Settings.Get("twitch", "channel"));
+                OAuthToken? apiToken = m_Authenticator.Authenticate();
+                if (apiToken != null)
+                {
+                    m_IsConnected = true;
+                    API.Authenticate(m_Settings.Get("twitch", "public_key"), apiToken);
+                    API.LoadGlobalEmoteSet();
+                    API.LoadChannelEmoteSetFromLogin("chaporon_");
+                    OAuthToken? ircToken;
+                    if (m_UseSameToken)
+                        ircToken = apiToken;
+                    else
+                        ircToken = m_Authenticator.Authenticate(m_Settings.Get("system", "browser"));
+                    if (ircToken != null)
+                    {
+                        UserInfo? userInfoOfToken = API.GetUserInfoOfToken(ircToken);
+                        m_Client.SetSelfUserInfo(userInfoOfToken);
+                        if (userInfoOfToken != null)
+                            API.LoadEmoteSetFromFollowedChannelOfID(userInfoOfToken.ID);
+                        m_Client.Connect("StreamGlass", ircToken);
+                    }
+                }
             }
         }
 
-        public void OnConnected() {}
+        public void OnConnected()
+        {
+            m_Client.Join(m_Settings.Get("twitch", "channel"));
+        }
 
         public void OnJoinedChannel(string channel)
         {
@@ -62,6 +80,11 @@ namespace StreamGlass
         }
 
         public void Update(long _) {}
+
+        public void OnUserJoinedChannel(string login)
+        {
+            API.LoadEmoteSetFromFollowedChannelOfLogin(login);
+        }
 
         /*private void Client_OnNewSubscriber(object? sender, OnNewSubscriberArgs e)
         {

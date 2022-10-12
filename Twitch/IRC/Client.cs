@@ -4,13 +4,16 @@ using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace StreamGlass.Twitch.IRC
 {
     public class Client
     {
         private UserInfo? m_SelfUserInfo = null;
+        private string m_ChatColor = "";
         private readonly string m_IP;
         private readonly int m_Port;
         private readonly Socket m_Socket;
@@ -21,6 +24,8 @@ namespace StreamGlass.Twitch.IRC
         private readonly bool m_IsSecured = false;
         private readonly bool m_CanConnect;
         private IListener? m_Listener = null;
+        private OAuthToken? m_AccessToken = null;
+        private string m_UserName = "";
 
         public Client(string ip, int port = 80, bool isSecured = false)
         {
@@ -36,7 +41,7 @@ namespace StreamGlass.Twitch.IRC
 
         public void SetListener(IListener listener) => m_Listener = listener;
 
-        public bool Connect(string username, string token)
+        public bool Connect(string username, OAuthToken token)
         {
             if (!m_CanConnect)
                 return false;
@@ -60,30 +65,85 @@ namespace StreamGlass.Twitch.IRC
                         m_Stream = sslStream;
                     }
                     StartReceiving();
-                    SendAuth(username, token);
+                    m_UserName = username;
+                    m_AccessToken = token;
+                    m_AccessToken.Refreshed += (_) => SendAuth();
+                    SendAuth();
                     return true;
                 }
             }
             return false;
         }
 
-        internal void SendAuth(string username, string token)
+        internal void SendAuth()
         {
+            if (m_AccessToken == null)
+                return;
             Send(new("CAP REQ", parameters: "twitch.tv/membership twitch.tv/tags twitch.tv/commands"));
-            Send(new("PASS", channel: string.Format("oauth:{0}", token)));
+            Send(new("PASS", channel: string.Format("oauth:{0}", m_AccessToken.Token)));
             if (m_SelfUserInfo != null)
                 Send(new("NICK", channel: m_SelfUserInfo.DisplayName));
             else
-                Send(new("NICK", channel: username));
-
-            if (!string.IsNullOrEmpty(m_Channel))
-                Send(new("JOIN", parameters: m_Channel));
+                Send(new("NICK", channel: m_UserName));
         }
 
         internal void StartReceiving()
         {
             m_Buffer = new byte[1024];
             m_Stream.BeginRead(m_Buffer, 0, m_Buffer.Length, ReceiveCallback, null);
+        }
+
+        private void TreatReceivedBuffer(string dataBuffer)
+        {
+            int position;
+            do
+            {
+                position = dataBuffer.IndexOf("\r\n");
+                if (position >= 0)
+                {
+                    string data = dataBuffer[..position];
+                    Logger.Log("Twitch IRC", string.Format("<= {0}", data));
+                    dataBuffer = dataBuffer[(position + 2)..];
+                    Message? message = Message.Parse(data);
+                    if (message != null)
+                    {
+                        switch (message.GetCommand().Name)
+                        {
+                            case "PING":
+                                Send(new("PONG", parameters: message.Parameters)); break;
+                            case "USERSTATE":
+                                m_Channel = message.GetCommand().Channel;
+                                m_Listener?.OnJoinedChannel(m_Channel);
+                                break;
+                            case "JOIN":
+                                if (m_SelfUserInfo?.Login != message.Nick)
+                                    m_Listener?.OnUserJoinedChannel(message.Nick);
+                                break;
+                            case "USERLIST":
+                                string[] users = message.Parameters.Split(' ');
+                                foreach (string user in users)
+                                {
+                                    if (m_SelfUserInfo?.Login != user)
+                                        m_Listener?.OnUserJoinedChannel(user);
+                                }
+                                break;
+                            case "PRIVMSG":
+                                m_Listener?.OnMessageReceived(new(message));
+                                if (m_SelfUserInfo?.Login != message.Nick)
+                                    m_Listener?.OnUserJoinedChannel(message.Nick);
+                                break;
+                            case "LOGGED":
+                                m_Listener?.OnConnected();
+                                if (!string.IsNullOrEmpty(m_Channel))
+                                    Send(new("JOIN", parameters: m_Channel));
+                                break;
+                            case "GLOBALUSERSTATE":
+                                m_ChatColor = message.GetTag("color");
+                                break;
+                        }
+                    }
+                }
+            } while (position >= 0);
         }
 
         private void ReceiveCallback(IAsyncResult AR)
@@ -93,43 +153,32 @@ namespace StreamGlass.Twitch.IRC
                 int bytesRead = m_Stream.EndRead(AR);
                 if (bytesRead > 1)
                 {
-                    Array.Resize(ref m_Buffer, bytesRead);
-                    m_ReadBuffer += Encoding.UTF8.GetString(m_Buffer, 0, m_Buffer.Length);
-                    int position;
-                    do
+                    byte[] buffer = new byte[bytesRead];
+                    for (int i = 0; i < bytesRead; ++i)
+                        buffer[i] = m_Buffer[i];
+                    while (bytesRead == m_Buffer.Length)
                     {
-                        position = m_ReadBuffer.IndexOf("\r\n");
-                        if (position >= 0)
-                        {
-                            string data = m_ReadBuffer[..position];
-                            m_ReadBuffer = m_ReadBuffer[(position + 2)..];
-                            Message? message = Message.Parse(data);
-                            if (message != null)
-                            {
-                                switch (message.GetCommand().Name)
-                                {
-                                    case "PING":
-                                        Send(new("PONG", parameters: message.Parameters)); break;
-                                    case "JOIN":
-                                        if (m_SelfUserInfo?.Login == message.Nick)
-                                        {
-                                            m_Channel = message.GetCommand().Channel;
-                                            m_Listener?.OnJoinedChannel(m_Channel);
-                                        }
-                                        break;
-                                    case "PRIVMSG":
-                                        m_Listener?.OnMessageReceived(new(message)); break;
-                                    case "LOGGED":
-                                        m_Listener?.OnConnected(); break;
-                                }
-                            }
-                        }
-                    } while (position >= 0);
+                        int bufferLength = buffer.Length;
+                        bytesRead = m_Stream.Read(m_Buffer, 0, m_Buffer.Length);
+                        Array.Resize(ref buffer, bufferLength + bytesRead);
+                        for (int i = 0; i < bytesRead; ++i)
+                            buffer[i + bufferLength] = m_Buffer[i];
+                    }
+                    m_ReadBuffer += Encoding.UTF8.GetString(buffer, 0, buffer.Length);
+                    string dataBuffer;
+                    int position = m_ReadBuffer.LastIndexOf("\r\n");
+                    if (position >= 0)
+                    {
+                        dataBuffer = m_ReadBuffer[..(position + 2)];
+                        m_ReadBuffer = m_ReadBuffer[(position + 2)..];
+                        Task.Factory.StartNew(() => TreatReceivedBuffer(dataBuffer));
+                    }
                     StartReceiving();
                 }
             }
-            catch
+            catch (Exception e)
             {
+                Logger.Log("Network", string.Format("On receive exception: {0}", e));
                 if (!m_Socket.Connected)
                     Disconnect();
                 else
@@ -137,10 +186,10 @@ namespace StreamGlass.Twitch.IRC
             }
         }
 
-        internal void Disconnect()
+        public void Disconnect()
         {
-            m_Stream.Close();
             m_Socket.Disconnect(true);
+            m_Stream.Close();
         }
 
         public void Join(string channel) => Send(new("JOIN", channel: string.Format("#{0}", channel)));
@@ -149,7 +198,7 @@ namespace StreamGlass.Twitch.IRC
         {
             Message messageToSend = new("PRIVMSG", channel: channel, parameters: message);
             Send(messageToSend);
-            m_Listener?.OnMessageReceived(new(messageToSend, m_SelfUserInfo));
+            m_Listener?.OnMessageReceived(new(messageToSend, m_SelfUserInfo, m_ChatColor));
         }
 
         private void Send(Message message)
@@ -157,11 +206,15 @@ namespace StreamGlass.Twitch.IRC
             try
             {
                 string messageData = message.ToString();
+                Logger.Log("Twitch IRC", string.Format("=> {0}", Regex.Replace(messageData.Trim(), "(oauth:).+", "oauth:*****")));
                 byte[] data = Encoding.UTF8.GetBytes(messageData);
                 if (m_Stream.CanWrite)
                     m_Stream.Write(data);
             }
-            catch { }
+            catch (Exception e)
+            {
+                Logger.Log("Network", string.Format("On send exception: {0}", e));
+            }
         }
     }
 }

@@ -3,20 +3,25 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             mc:Ignorable="d">
-    <StackPanel StackPanel.ZIndex="1" Width="350" Height="auto">
-        <Canvas Width="350" Height="auto">
-            <StackPanel Canvas.ZIndex="1" Name="MessagePanel" Orientation="Horizontal" Width="350" Height="auto">
-                <TextBlock Name="MessageSender" Margin="2,3,3,3" Text="StreamGlass" TextAlignment="Right" Width="100" Height="auto" Foreground="#FF6441A5" FontWeight="Bold" FontSize="14">
-                    <TextBlock.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="Toggle Highlight" Click="ToggleHighlight_Click"/>
-                        </ContextMenu>
-                    </TextBlock.ContextMenu>
-                </TextBlock>
-                <TextBox Name="MessageContent" IsReadOnly="True" Margin="0,2,0,0" Text="HelloWorld" TextWrapping="Wrap" Width="245" Height="auto" Foreground="#FFFFFF" Background="{x:Null}" BorderBrush="{x:Null}" FontSize="14"/>
-            </StackPanel>
-            <Canvas Name="EmoteLayer" Canvas.ZIndex="2"  Width="350" Height="auto"/>
+             mc:Ignorable="d"
+             d:DesignWidth="350"
+             d:DesignHeight="30"
+             SizeChanged="UserControl_SizeChanged">
+    <Grid Name="MessagePanel" ShowGridLines="False">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition  Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBlock Name="MessageSender" Width="100" Height="Auto" Grid.Column="0" Text="StreamGlass" TextAlignment="Right" Foreground="#FF6441A5" FontWeight="Bold" FontSize="14">
+            <TextBlock.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Toggle Highlight" Click="ToggleHighlight_Click"/>
+                </ContextMenu>
+            </TextBlock.ContextMenu>
+        </TextBlock>
+        <Canvas Name="MessageContentCanvas" Margin="100,0,0,0">
+            <TextBox Name="MessageContent" Canvas.ZIndex="1" Grid.Column="1" IsReadOnly="True" Text="HelloWorld" TextWrapping="Wrap" Foreground="#FFFFFF" Background="{x:Null}" BorderBrush="{x:Null}" FontSize="14"/>
+            <Canvas Name="EmoteLayer" Canvas.ZIndex="2"/>
         </Canvas>
-    </StackPanel>
+    </Grid>
 </UserControl>

@@ -1,17 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace StreamGlass.Twitch
 {
     public class APICache
     {
+        private readonly Dictionary<string, EmoteInfo> m_Emotes = new();
         private readonly Dictionary<string, ChannelInfo> m_ChannelInfoFromLogin = new();
         private readonly Dictionary<string, ChannelInfo> m_ChannelInfoFromID = new();
         private readonly Dictionary<string, StreamInfo> m_StreamInfoFromLogin = new();
         private readonly Dictionary<string, StreamInfo> m_StreamInfoFromID = new();
         private readonly Dictionary<string, UserInfo> m_UserInfoFromLogin = new();
         private readonly Dictionary<string, UserInfo> m_UserInfoFromID = new();
+
+        internal void AddEmote(EmoteInfo info)
+        {
+            m_Emotes[info.ID] = info;
+        }
+
+        public EmoteInfo? GetEmote(string id)
+        {
+            if (m_Emotes.TryGetValue(id, out EmoteInfo? info))
+                return info;
+            return null;
+        }
 
         internal void AddChannelInfo(ChannelInfo info)
         {

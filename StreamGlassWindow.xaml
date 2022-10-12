@@ -4,22 +4,28 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:streamglass="clr-namespace:StreamGlass"
         mc:Ignorable="d"
-        Title="StreamGlass" Height="523" Width="866" Icon="/Assets/stream-glass-logo.ico">
-    <StackPanel>
-        <Menu>
+        Title="StreamGlass"
+        MinHeight="500"
+        MinWidth="800"
+        Icon="/Assets/stream-glass-logo.ico">
+    <DockPanel LastChildFill="True">
+        <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File" />
             <MenuItem Header="_Settings" Click="SettingsToolStripMenuItem_Click"/>
             <MenuItem Header="_Help">
+                <MenuItem Header="_Logs"  Click="LogsToolStripMenuItem_Click" />
                 <MenuItem Header="_About" />
             </MenuItem>
         </Menu>
-        <StackPanel Orientation="Horizontal">
-            <streamglass:StreamChat x:Name="StreamChatPanel"/>
-            <StackPanel Width="500">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2.2*"></ColumnDefinition>
+                <ColumnDefinition Width="2.8*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <streamglass:StreamChat x:Name="StreamChatPanel" Grid.Column="0"/>
+            <StackPanel Grid.Column="1">
                 <ComboBox Margin="5,5,0,0" Name="CommandProfilesComboBox" Height="26" Width="120" SelectionChanged="CommandProfilesComboBox_SelectionChanged"/>
             </StackPanel>
-            <Canvas Width="16" Background="Red"></Canvas>
-        </StackPanel>
-        <Canvas Height="23" Background="Red"></Canvas>
-    </StackPanel>
+        </Grid>
+    </DockPanel>
 </Window>

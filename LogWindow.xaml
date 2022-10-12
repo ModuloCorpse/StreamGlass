@@ -1,0 +1,18 @@
+﻿<Window x:Class="StreamGlass.LogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="LogWindow"
+        d:DesignHeight="400"
+        d:DesignWidth="600"
+        Height="423"
+        Width="616">
+    <StackPanel>
+        <StackPanel Margin="5" Orientation="Horizontal">
+            <ComboBox Name="LogDisplayComboBox" Width="300" Height="25" SelectionChanged="LogDisplayComboBox_SelectionChanged"/>
+        </StackPanel>
+        <ListView Name="LogsListView" Margin="5" Height="335" Background="LightGray" />
+    </StackPanel>
+</Window>

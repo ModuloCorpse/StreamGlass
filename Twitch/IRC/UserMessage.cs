@@ -17,6 +17,25 @@ namespace StreamGlass.Twitch.IRC
             SELF
         }
 
+        private static readonly List<string> ms_Colors = new()
+        {
+            "#ff0000",
+            "#00ff00",
+            "#0000ff",
+            "#b22222",
+            "#ff7f50",
+            "#9acd32",
+            "#ff4500",
+            "#2e8b57",
+            "#daa520",
+            "#d2691e",
+            "#5f9ea0",
+            "#1e90ff",
+            "#ff69b4",
+            "#8a2be2",
+            "#00ff7f"
+        };
+
         private readonly string m_ID;
         private readonly string m_UserName;
         private readonly string m_Color;
@@ -33,6 +52,14 @@ namespace StreamGlass.Twitch.IRC
             if (string.IsNullOrEmpty(m_UserName))
                 m_UserName = message.Nick;
             m_Color = message.GetTag("color");
+            if (string.IsNullOrEmpty(m_Color))
+            {
+                int colorIdx = 0;
+                foreach (char c in m_UserName)
+                    colorIdx += c;
+                colorIdx %= ms_Colors.Count;
+                m_Color = ms_Colors[colorIdx];
+            }
             m_Message = message.Parameters;
             m_EmotelessMessage = ComputeEmotelessString(message);
             m_Channel = message.GetCommand().Channel;
@@ -49,14 +76,22 @@ namespace StreamGlass.Twitch.IRC
                 m_UserType = UserType.BROADCASTER;
         }
 
-        internal UserMessage(Message message, UserInfo? selfInfo)
+        internal UserMessage(Message message, UserInfo? selfInfo, string color)
         {
             m_ID = message.GetTag("id");
             if (selfInfo != null)
                 m_UserName = selfInfo.DisplayName;
             else
                 m_UserName = "StreamGlass";
-            m_Color = "#6441a5";
+            m_Color = color;
+            if (string.IsNullOrEmpty(m_Color))
+            {
+                int colorIdx = 0;
+                foreach (char c in m_UserName)
+                    colorIdx += c;
+                colorIdx %= ms_Colors.Count;
+                m_Color = ms_Colors[colorIdx];
+            }
             m_Message = message.Parameters;
             m_EmotelessMessage = ComputeEmotelessString(message);
             m_Channel = message.GetCommand().Channel;

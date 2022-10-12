@@ -39,11 +39,15 @@ namespace StreamGlass.Command
         public static void AddFunction(string functionName, CommandFunction fct) => ms_Functions[functionName] = fct;
 
         private string m_Channel = "";
+        private string m_StreamTitle = "";
+        private string m_StreamCategory = "";
+        private string m_StreamLanguage = "";
         private readonly Dictionary<string, ChatCommand> m_Commands = new();
         private readonly List<TimedCommand> m_TimedCommands = new();
+        private readonly Client m_Client;
 
-        public Profile(string name): base(name) {}
-        internal Profile(JObject json): base(json) {}
+        public Profile(Client client, string name): base(name) => m_Client = client;
+        internal Profile(Client client, JObject json): base(json) => m_Client = client;
 
         internal void SetChannel(string channel) => m_Channel = channel;
 
@@ -101,7 +105,7 @@ namespace StreamGlass.Command
                     }
                     for (int i = 1; i < arguments.Length; ++i)
                         contentToSend = contentToSend.Replace(string.Format("${0}", i), arguments[i]);
-                    API.SendIRCMessage(m_Channel, contentToSend);
+                    m_Client.SendMessage(m_Channel, contentToSend);
                 }
             }
             else
@@ -127,6 +131,35 @@ namespace StreamGlass.Command
             }
             Parent?.Update(deltaTime, nbMessage);
         }
+
+        private string GetStreamTitle()
+        {
+            if (!string.IsNullOrEmpty(m_StreamTitle))
+                return m_StreamTitle;
+            else if (Parent != null)
+                return Parent.GetStreamTitle();
+            return "";
+        }
+
+        private string GetStreamCategory()
+        {
+            if (!string.IsNullOrEmpty(m_StreamCategory))
+                return m_StreamCategory;
+            else if (Parent != null)
+                return Parent.GetStreamCategory();
+            return "";
+        }
+
+        private string GetStreamLanguage()
+        {
+            if (!string.IsNullOrEmpty(m_StreamLanguage))
+                return m_StreamLanguage;
+            else if (Parent != null)
+                return Parent.GetStreamLanguage();
+            return "";
+        }
+
+        internal bool UpdateStreamInfo(string broadcasterID) => API.SetChannelInfoFromID(broadcasterID, GetStreamTitle(), GetStreamCategory(), GetStreamLanguage());
 
         internal void Reset()
         {
@@ -161,6 +194,12 @@ namespace StreamGlass.Command
                 });
             }
             json["timed_commands"] = timedCommandArray;
+            if (!string.IsNullOrEmpty(m_StreamTitle))
+                json["stream_title"] = m_StreamTitle;
+            if (!string.IsNullOrEmpty(m_StreamCategory))
+                json["stream_category"] = m_StreamCategory;
+            if (!string.IsNullOrEmpty(m_StreamLanguage))
+                json["stream_language"] = m_StreamLanguage;
         }
 
         protected override void Load(JObject json)
@@ -190,6 +229,15 @@ namespace StreamGlass.Command
                         AddTimedCommand((int)time, (int)messages, command);
                 }
             }
+            JValue? titleValue = (JValue?)json["stream_title"];
+            if (titleValue != null)
+                m_StreamTitle = titleValue.ToString();
+            JValue? categoryValue = (JValue?)json["stream_category"];
+            if (categoryValue != null)
+                m_StreamCategory = categoryValue.ToString();
+            JValue? languageValue = (JValue?)json["stream_language"];
+            if (languageValue != null)
+                m_StreamLanguage = languageValue.ToString();
         }
     }
 }

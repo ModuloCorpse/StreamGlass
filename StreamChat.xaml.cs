@@ -22,26 +22,28 @@ namespace StreamGlass
 
         private readonly BrushPaletteManager m_ChatPalette = new();
         private bool m_AutoScroll = true;
+        private bool m_ForceAutoScroll = false;
         private bool m_Reversed = false;
-        private bool m_IsOnBottom = true;
-        private double m_MessagesHeight = 0;
+        private bool m_IsOnBottom = false;
+        private double m_MessageSenderFontSize = 14;
+        private double m_MessageSenderWidth = 100;
+        private double m_MessageContentFontSize = 14;
         private string m_CurrentChannel = "";
         private readonly Dictionary<string, List<StreamChatMessage>> m_ControlMessages = new();
         private readonly Dictionary<string, HashSet<string>> m_ChatHighlightedUsers = new();
+        private readonly Dictionary<TextBox, StreamChatMessage> m_Converter = new();
 
         public StreamChat()
         {
             Loaded += StreamChat_Loaded;
             InitializeComponent();
             m_ChatPalette.Load();
-            m_ChatPalette.FillComboBox(ref ChatColorModeComboBox);
-            ChatModeComboBox.Items.Add("To bottom");
-            ChatModeComboBox.Items.Add("Reversed to bottom");
-            ChatModeComboBox.Items.Add("To top");
-            ChatModeComboBox.Items.Add("Reversed to top");
-            ChatModeComboBox.SelectedIndex = 0;
             UpdateColorPalette();
         }
+
+        internal double MessageSenderFontSize => m_MessageSenderFontSize;
+        internal double MessageSenderWidth => m_MessageSenderWidth;
+        internal double MessageContentFontSize => m_MessageContentFontSize;
 
         internal void SetChannel(string channel)
         {
@@ -66,23 +68,12 @@ namespace StreamGlass
             m_ChatPalette.Save();
         }
 
-        private void ChatColorModeComboBox_SelectionChanged(object sender, EventArgs e)
-        {
-            BrushPalette.Info selector = (BrushPalette.Info)ChatColorModeComboBox.SelectedItem;
-            m_ChatPalette.SetCurrentPalette(selector.ID);
-            UpdateColorPalette();
-        }
+        internal BrushPaletteManager GetBrushPalette() => m_ChatPalette;
 
-        private void ChatModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        internal void SetChatPalette(string paletteID)
         {
-            string displayType = (string)ChatModeComboBox.SelectedItem;
-            switch (displayType)
-            {
-                case "To bottom": SetDisplayType(DisplayType.TOP_TO_BOTTOM); break;
-                case "Reversed to bottom": SetDisplayType(DisplayType.REVERSED_TOP_TO_BOTTOM); break;
-                case "To top": SetDisplayType(DisplayType.BOTTOM_TO_TOP); break;
-                case "Reversed to top": SetDisplayType(DisplayType.REVERSED_BOTTOM_TO_TOP); break;
-            }
+            m_ChatPalette.SetCurrentPalette(paletteID);
+            UpdateColorPalette();
         }
 
         internal void SetDisplayType(DisplayType displayType)
@@ -118,40 +109,57 @@ namespace StreamGlass
             UpdateScrollBar(false);
         }
 
+        internal void SetSenderWidth(double width)
+        {
+            m_MessageSenderWidth = width;
+            if (m_ControlMessages.TryGetValue(m_CurrentChannel, out var chatMessageList))
+            {
+                foreach (StreamChatMessage message in chatMessageList)
+                    message.SetSenderNameWidth(m_MessageSenderWidth);
+            }
+        }
+
+        internal void SetSenderFontSize(double fontSize)
+        {
+            m_MessageSenderFontSize = fontSize;
+            if (m_ControlMessages.TryGetValue(m_CurrentChannel, out var chatMessageList))
+            {
+                foreach (StreamChatMessage message in chatMessageList)
+                    message.SetSenderNameFontSize(m_MessageSenderFontSize);
+            }
+        }
+
+        internal void SetContentFontSize(double fontSize)
+        {
+            m_MessageContentFontSize = fontSize;
+            if (m_ControlMessages.TryGetValue(m_CurrentChannel, out var chatMessageList))
+            {
+                foreach (StreamChatMessage message in chatMessageList)
+                    message.SetMessageFontSize(m_MessageContentFontSize);
+            }
+        }
+
         private void UpdateMessagePosition()
         {
             if (m_ControlMessages.TryGetValue(m_CurrentChannel, out var chatMessageList))
             {
-                double posY = 0;
-                if (m_IsOnBottom && m_MessagesHeight < (ChatScrollViewer.ActualHeight - 5))
-                    posY = ChatScrollViewer.ActualHeight - m_MessagesHeight - 5;
-                ChatPanel.Children.Clear();
-                if (m_Reversed)
-                {
-                    for (int i = (chatMessageList.Count - 1); i >= 0; --i)
-                    {
-                        StreamChatMessage message = chatMessageList[i];
-                        if (message.MessageContent.IsLoaded)
-                        {
-                            message.Margin = new(0, posY, 0, 0);
-                            posY = message.MessageContent.ActualHeight;
-                        }
-                        ChatPanel.Children.Add(message);
-                    }
-                }
+                if (m_IsOnBottom)
+                    DockPanel.SetDock(ChatPanel, Dock.Bottom);
                 else
+                    DockPanel.SetDock(ChatPanel, Dock.Top);
+                double chatPanelHeight = 0;
+                ChatPanel.Children.Clear();
+                int i = (m_Reversed) ? chatMessageList.Count - 1 : 0;
+                int last = (m_Reversed) ? -1 : chatMessageList.Count;
+                int increment = (m_Reversed) ? -1 : 1;
+                while (i != last)
                 {
-                    for (int i = 0; i != chatMessageList.Count; ++i)
-                    {
-                        StreamChatMessage message = chatMessageList[i];
-                        if (message.MessageContent.IsLoaded)
-                        {
-                            message.Margin = new(0, posY, 0, 0);
-                            posY = message.MessageContent.ActualHeight;
-                        }
-                        ChatPanel.Children.Add(message);
-                    }
+                    StreamChatMessage message = chatMessageList[i];
+                    chatPanelHeight += message.ActualHeight;
+                    ChatPanel.Children.Add(message);
+                    i += increment;
                 }
+                ChatPanelDock.Height = chatPanelHeight;
             }
         }
 
@@ -183,7 +191,14 @@ namespace StreamGlass
             Dispatcher.Invoke((Delegate)(() => {
                 if (m_ControlMessages.TryGetValue(message.Channel, out var chatMessageList))
                 {
-                    StreamChatMessage chatMessage = new(this, m_ChatPalette, message, m_ChatHighlightedUsers[message.Channel].Contains(message.UserName));
+                    StreamChatMessage chatMessage = new(this,
+                        m_ChatPalette,
+                        message,
+                        m_ChatHighlightedUsers[message.Channel].Contains(message.UserName),
+                        m_MessageSenderWidth,
+                        m_MessageSenderFontSize,
+                        m_MessageContentFontSize);
+                    m_Converter[chatMessage.MessageContent] = chatMessage;
                     chatMessage.MessageContent.Loaded += ChatMessage_Loaded;
                     ChatPanel.Children.Add(chatMessage);
                     chatMessageList.Add(chatMessage);
@@ -193,18 +208,18 @@ namespace StreamGlass
 
         private void UpdateScrollBar(bool extentHeightChange)
         {
-            if (m_IsOnBottom != m_Reversed)
+            if (m_IsOnBottom == m_Reversed)
             {
                 if (!extentHeightChange)
                     m_AutoScroll = (ChatScrollViewer.VerticalOffset == ChatScrollViewer.ScrollableHeight);
-                if (m_AutoScroll && extentHeightChange)
+                if ((m_AutoScroll && extentHeightChange) || m_ForceAutoScroll)
                     ChatScrollViewer.ScrollToVerticalOffset(ChatScrollViewer.ExtentHeight);
             }
             else
             {
                 if (!extentHeightChange)
                     m_AutoScroll = (ChatScrollViewer.VerticalOffset == 0);
-                if (m_AutoScroll && extentHeightChange)
+                if ((m_AutoScroll && extentHeightChange) || m_ForceAutoScroll)
                     ChatScrollViewer.ScrollToVerticalOffset(0);
             }
         }
@@ -216,10 +231,34 @@ namespace StreamGlass
 
         private void ChatMessage_Loaded(object sender, RoutedEventArgs e)
         {
-            StreamChatMessage chatMessage = (StreamChatMessage)((StackPanel)((Canvas)((StackPanel)((TextBox)sender).Parent).Parent).Parent).Parent;
-            chatMessage.UpdateEmotes();
-            m_MessagesHeight += chatMessage.MessageContent.ActualHeight;
+            if (m_Converter.TryGetValue((TextBox)sender, out var chatMessage))
+            {
+                chatMessage.UpdateEmotes();
+                UpdateMessagePosition();
+            }
+        }
+
+        private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ChatPanelDock.MinHeight = ChatScrollViewer.ActualHeight;
+            ChatPanel.Width = e.NewSize.Width - 20;
+            if (m_ControlMessages.TryGetValue(m_CurrentChannel, out var chatMessageList))
+            {
+                foreach (StreamChatMessage message in chatMessageList)
+                    message.Width = ChatPanel.Width;
+            }
             UpdateMessagePosition();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            StreamChatSettingsDialog dialog = new(this)
+            {
+                Owner = Window.GetWindow(this),
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            dialog.Show();
+
         }
     }
 }

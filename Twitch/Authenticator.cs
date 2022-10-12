@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using Quicksand.Web;
+﻿using Quicksand.Web;
 using Quicksand.Web.Html;
 using Quicksand.Web.Http;
 using System;
@@ -75,17 +74,17 @@ namespace StreamGlass.Twitch
             protected override void OnUpdate(long deltaTime) { }
         }
 
-        private readonly static string REDIRECT_URI = "http://localhost:80/twitch_authenticate/";
+        internal readonly static string REDIRECT_URI = "http://localhost:80/twitch_authenticate/";
         private readonly static string TWITCH_AUTH_URI = "https://id.twitch.tv/oauth2/authorize?response_type=code";
         private readonly Settings m_Settings;
-        private string m_RefreshToken = "";
         private string m_State = "";
         private readonly List<string> m_Scopes = new() {
             "channel:manage:polls",
+            "channel:manage:broadcast",
+            "channel:moderate",
             "channel:read:polls",
             "chat:read",
             "chat:edit",
-            "channel:moderate",
             "user:read:email"
         };
         private TaskCompletionSource<string> m_Task = new();
@@ -103,12 +102,7 @@ namespace StreamGlass.Twitch
             m_Settings = settings;
         }
 
-        private string GetOAuthToken(string token)
-        {
-            return GetAccessToken(string.Format("client_id={0}&client_secret={1}&code={2}&grant_type=authorization_code&redirect_uri={3}", m_Settings.Get("twitch", "public_key"), m_Settings.Get("twitch", "secret_key"), token, REDIRECT_URI));
-        }
-
-        public string Authenticate(string browser = "")
+        public OAuthToken? Authenticate(string browser = "")
         {
             m_State = Guid.NewGuid().ToString();
             string scopeString = string.Join('+', m_Scopes).Replace(":", "%3A");
@@ -126,37 +120,8 @@ namespace StreamGlass.Twitch
             myProcess.Start();
             m_Task = new TaskCompletionSource<string>();
             if (m_Task.Task.Wait(TimeSpan.FromSeconds(300)))
-                return GetOAuthToken(m_Task.Task.Result);
-            return "";
-        }
-
-        private string GetAccessToken(string request)
-        {
-            Response? response = new PostRequest("https://id.twitch.tv/oauth2/token", request).AddHeaderField("Content-Type", "application/x-www-form-urlencoded").Send();
-            if (response != null)
-            {
-                string responseJsonStr = response.Body;
-                JObject responseJson = JObject.Parse(responseJsonStr);
-                string? access_token = (string?)responseJson["access_token"];
-                string? refresh_token = (string?)responseJson["refresh_token"];
-                string? token_type = (string?)responseJson["token_type"];
-                List<string>? scope = responseJson["scope"]?.ToObject<List<string>>();
-                if (access_token != null &&
-                    refresh_token != null &&
-                    token_type != null && token_type == "bearer" &&
-                    scope != null && CompareScopes(scope))
-                {
-                    m_RefreshToken = refresh_token;
-                    return access_token;
-                }
-            }
-            m_RefreshToken = "";
-            return "";
-        }
-
-        public string RefreshToken()
-        {
-            return GetAccessToken(string.Format("grant_type=refresh_token&refresh_token={0}&client_id={1}&client_secret={2}", m_RefreshToken, m_Settings.Get("twitch", "public_key"), m_Settings.Get("twitch", "secret_key")));
+                return new(m_Scopes, m_Settings.Get("twitch", "public_key"), m_Settings.Get("twitch", "secret_key"), m_Task.Task.Result);
+            return null;
         }
 
         internal static void Use(string _) {}
@@ -169,16 +134,11 @@ namespace StreamGlass.Twitch
                 m_Task.SetResult("");
         }
 
-        private bool CompareScopes(List<string> scopes)
-        {
-            return m_Scopes.All(item => scopes.Contains(item)) && scopes.All(item => m_Scopes.Contains(item));
-        }
-
         internal void SetAuthToken(string state, string token, List<string> scopes)
         {
             if (m_State == state)
             {
-                if (CompareScopes(scopes))
+                if (m_Scopes.All(item => scopes.Contains(item)) && scopes.All(item => m_Scopes.Contains(item)))
                     m_Task.SetResult(token);
                 else
                     m_Task.SetResult("");
