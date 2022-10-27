@@ -76,7 +76,7 @@ namespace StreamGlass.Twitch
 
         internal readonly static string REDIRECT_URI = "http://localhost:80/twitch_authenticate/";
         private readonly static string TWITCH_AUTH_URI = "https://id.twitch.tv/oauth2/authorize?response_type=code";
-        private readonly Settings m_Settings;
+        private readonly Settings.Data m_Settings;
         private string m_State = "";
         private readonly List<string> m_Scopes = new() {
             "channel:manage:polls",
@@ -89,7 +89,7 @@ namespace StreamGlass.Twitch
         };
         private TaskCompletionSource<string> m_Task = new();
 
-        public Authenticator(Server webServer, Settings settings)
+        public Authenticator(Server webServer, Settings.Data settings)
         {
             Div waitDiv = new();
             waitDiv.AddContent("Waiting for authentification");

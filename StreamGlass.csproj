@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <Resource Include="Assets\stream-glass-logo.ico" />
-    <Resource Include="Assets\580b57fcd9996e24bc43c540.png" />
+    <Resource Include="Assets\twitch-logo.png" />
     <Resource Include="Assets\magnifying-glass.png" />
     <Resource Include="Assets\sight-disabled.png" />
     <Resource Include="Assets\sight-enabled.png" />

@@ -13,16 +13,16 @@
     <Compile Update="NumericUpDown.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="StreamChatMessage.xaml.cs">
+    <Compile Update="StreamChat\Message.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="SettingsDialog.xaml.cs">
+    <Compile Update="Settings\Dialog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="StreamChat.xaml.cs">
+    <Compile Update="StreamChat\Chat.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="StreamChatSettingsDialog.xaml.cs">
+    <Compile Update="StreamChat\SettingsDialog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -33,16 +33,16 @@
     <Page Update="NumericUpDown.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="StreamChatMessage.xaml">
+    <Page Update="StreamChat\Message.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="SettingsDialog.xaml">
+    <Page Update="Settings\Dialog.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="StreamChat.xaml">
+    <Page Update="StreamChat\Chat.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="StreamChatSettingsDialog.xaml">
+    <Page Update="StreamChat\SettingsDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="StreamGlassWindow.xaml">

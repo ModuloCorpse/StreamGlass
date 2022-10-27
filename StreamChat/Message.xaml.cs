@@ -1,21 +1,16 @@
-﻿using StreamGlass.Twitch;
-using StreamGlass.Twitch.IRC;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace StreamGlass
+namespace StreamGlass.StreamChat
 {
-    /// <summary>
-    /// Interaction logic for ChatMessage.xaml
-    /// </summary>
-    public partial class StreamChatMessage : UserControl
+    public partial class Message : UserControl
     {
         private static readonly int EMOTE_SIZE = 20;
-        private readonly StreamChat m_StreamChat;
+        private readonly Chat m_StreamChat;
         private readonly BrushPaletteManager m_Palette;
         private readonly UserMessage m_Message;
         private readonly bool m_IsHighlighted;
@@ -37,7 +32,7 @@ namespace StreamGlass
             return fontSize;
         }
 
-        public StreamChatMessage(StreamChat streamChat, BrushPaletteManager palette, UserMessage message, bool isHighligted, double senderWidth, double senderFontSize, double contentFontSize)
+        public Message(Chat streamChat, BrushPaletteManager palette, UserMessage message, bool isHighligted, double senderWidth, double senderFontSize, double contentFontSize)
         {
             InitializeComponent();
             m_StreamChat = streamChat;
@@ -88,7 +83,7 @@ namespace StreamGlass
             foreach (var emoteData in m_Message.Emotes)
             {
                 Rect charRect = MessageContent.GetRectFromCharacterIndex(emoteData.Item1);
-                string emoteURL = API.GetEmoteURL(emoteData.Item2, m_Palette.GetPaletteType());
+                string emoteURL = m_StreamChat.GetEmoteURL(emoteData.Item2);
                 BitmapImage bitmap = new();
                 bitmap.BeginInit();
                 bitmap.UriSource = new Uri(emoteURL, UriKind.Absolute);

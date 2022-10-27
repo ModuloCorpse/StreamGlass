@@ -1,4 +1,4 @@
-﻿<Window x:Class="StreamGlass.StreamGlassWindow"
+﻿<Window xmlns:StreamChat="clr-namespace:StreamGlass.StreamChat"  x:Class="StreamGlass.StreamGlassWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -22,7 +22,7 @@
                 <ColumnDefinition Width="2.2*"></ColumnDefinition>
                 <ColumnDefinition Width="2.8*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <streamglass:StreamChat x:Name="StreamChatPanel" Grid.Column="0"/>
+            <StreamChat:Chat x:Name="StreamChatPanel" Grid.Column="0"/>
             <StackPanel Grid.Column="1">
                 <ComboBox Margin="5,5,0,0" Name="CommandProfilesComboBox" Height="26" Width="120" SelectionChanged="CommandProfilesComboBox_SelectionChanged"/>
             </StackPanel>

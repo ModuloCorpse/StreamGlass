@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace StreamGlass
+namespace StreamGlass.Settings
 {
-    public class Settings
+    public class Data
     {
         private Dictionary<string, Dictionary<string, string>> m_Settings = new();
 

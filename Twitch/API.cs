@@ -12,7 +12,7 @@ namespace StreamGlass.Twitch
         private static readonly HashSet<string> ms_LoadedChannelIDEmoteSets = new();
         private static readonly HashSet<string> ms_LoadedChannelEmoteSets = new();
         private static readonly HashSet<string> ms_LoadedEmoteSets = new();
-        private static readonly APICache ms_GlobalCache = new();
+        private static readonly APICache ms_Cache = new();
         private static string ms_ClientID = "";
         private static OAuthToken? ms_AccessToken = null;
 
@@ -78,7 +78,7 @@ namespace StreamGlass.Twitch
                 }
             }
             if (id != null && name != null && emoteType != null && format.Count != 0 && scale.Count != 0 && themeMode.Count != 0)
-                ms_GlobalCache.AddEmote(new(id, name, emoteType, format, scale, themeMode));
+                ms_Cache.AddEmote(new(id, name, emoteType, format, scale, themeMode));
         }
 
         private static JObject JsonParse(string content)
@@ -180,7 +180,7 @@ namespace StreamGlass.Twitch
 
         public static string GetEmoteURL(string id, BrushPalette.Type paletteType)
         {
-            EmoteInfo? emoteInfo = ms_GlobalCache.GetEmote(id);
+            EmoteInfo? emoteInfo = ms_Cache.GetEmote(id);
             if (emoteInfo != null)
             {
                 //TODO
@@ -194,7 +194,7 @@ namespace StreamGlass.Twitch
 
         public static EmoteInfo? GetEmoteFromID(string id)
         {
-            EmoteInfo? emoteInfo = ms_GlobalCache.GetEmote(id);
+            EmoteInfo? emoteInfo = ms_Cache.GetEmote(id);
             if (emoteInfo != null)
                 return emoteInfo;
             return null;
@@ -240,12 +240,10 @@ namespace StreamGlass.Twitch
             return "";
         }
 
-        public static UserInfo? GetUserInfoFromID(string id, APICache? cache = null)
+        public static UserInfo? GetUserInfoFromID(string id)
         {
             UserInfo? userInfo = null;
-            if (cache != null)
-                userInfo = cache.GetUserInfoByID(id);
-            userInfo ??= ms_GlobalCache.GetUserInfoByID(id);
+            userInfo ??= ms_Cache.GetUserInfoByID(id);
             if (userInfo != null)
                 return userInfo;
             Response? response = APICall(ms_AccessToken, new GetRequest(string.Format("https://api.twitch.tv/helix/users?id={0}", id)));
@@ -253,21 +251,16 @@ namespace StreamGlass.Twitch
             {
                 UserInfo? ret = GetUserInfo(response.Body);
                 if (ret != null)
-                {
-                    cache?.AddUserInfo(ret);
-                    ms_GlobalCache.AddUserInfo(ret);
-                }
+                    ms_Cache.AddUserInfo(ret);
                 return ret;
             }
             return null;
         }
 
-        public static UserInfo? GetUserInfoFromLogin(string login, APICache? cache = null)
+        public static UserInfo? GetUserInfoFromLogin(string login)
         {
             UserInfo? userInfo = null;
-            if (cache != null)
-                userInfo = cache.GetUserInfoByLogin(login);
-            userInfo ??= ms_GlobalCache.GetUserInfoByLogin(login);
+            userInfo ??= ms_Cache.GetUserInfoByLogin(login);
             if (userInfo != null)
                 return userInfo;
             Response? response = APICall(ms_AccessToken, new GetRequest(string.Format("https://api.twitch.tv/helix/users?login={0}", login)));
@@ -275,16 +268,13 @@ namespace StreamGlass.Twitch
             {
                 UserInfo? ret = GetUserInfo(response.Body);
                 if (ret != null)
-                {
-                    cache?.AddUserInfo(ret);
-                    ms_GlobalCache.AddUserInfo(ret);
-                }
+                    ms_Cache.AddUserInfo(ret);
                 return ret;
             }
             return null;
         }
 
-        private static StreamInfo? GetStreamInfo(string content, APICache? cache)
+        private static StreamInfo? GetStreamInfo(string content)
         {
             JObject responseJson = JsonParse(content);
             JArray? datas = (JArray?)responseJson["data"];
@@ -295,7 +285,7 @@ namespace StreamGlass.Twitch
                 string? userID = (string?)data["user_id"];
                 UserInfo? broadcasterInfo = null;
                 if (userID != null)
-                    broadcasterInfo = GetUserInfoFromID(userID, cache);
+                    broadcasterInfo = GetUserInfoFromID(userID);
                 string? gameID = (string?)data["game_id"];
                 string? gameName = (string?)data["game_name"];
                 string? type = (string?)data["type"];
@@ -311,21 +301,14 @@ namespace StreamGlass.Twitch
             return null;
         }
 
-        public static StreamInfo? GetStreamInfoFromLogin(string login, APICache? cache = null)
+        public static StreamInfo? GetStreamInfoFromLogin(string login)
         {
             StreamInfo? streamInfo = null;
-            if (cache != null)
-                streamInfo = cache.GetStreamInfoByLogin(login);
             if (streamInfo != null)
                 return streamInfo;
             Response? response = APICall(ms_AccessToken, new GetRequest(string.Format("https://api.twitch.tv/helix/streams?user_login={0}", login)));
             if (response != null)
-            {
-                StreamInfo? ret = GetStreamInfo(response.Body, cache);
-                if (ret != null)
-                    cache?.AddStreamInfo(ret);
-                return ret;
-            }
+                return GetStreamInfo(response.Body);
             return null;
         }
 
@@ -346,24 +329,17 @@ namespace StreamGlass.Twitch
             return null;
         }
 
-        public static ChannelInfo? GetChannelInfoFromLogin(string login, APICache? cache = null)
+        public static ChannelInfo? GetChannelInfoFromLogin(string login)
         {
             ChannelInfo? channelInfo = null;
-            if (cache != null)
-                channelInfo = cache.GetChannelInfoByLogin(login);
             if (channelInfo != null)
                 return channelInfo;
-            UserInfo? broadcasterInfo = GetUserInfoFromLogin(login, cache);
+            UserInfo? broadcasterInfo = GetUserInfoFromLogin(login);
             if (broadcasterInfo != null)
             {
                 Response? response = APICall(ms_AccessToken, new GetRequest(string.Format("https://api.twitch.tv/helix/channels?broadcaster_id={0}", broadcasterInfo.ID)));
                 if (response != null)
-                {
-                    ChannelInfo? ret = GetChannelInfo(response.Body, broadcasterInfo);
-                    if (ret != null)
-                        cache?.AddChannelInfo(ret);
-                    return ret;
-                }
+                    return GetChannelInfo(response.Body, broadcasterInfo);
             }
             return null;
         }
@@ -415,9 +391,9 @@ namespace StreamGlass.Twitch
             return ret;
         }
 
-        public static List<string> GetChannelFollowedByLogin(string login, APICache? cache = null)
+        public static List<string> GetChannelFollowedByLogin(string login)
         {
-            UserInfo? broadcasterInfo = GetUserInfoFromLogin(login, cache);
+            UserInfo? broadcasterInfo = GetUserInfoFromLogin(login);
             if (broadcasterInfo != null)
                 return GetChannelFollowedByID(broadcasterInfo.ID);
             return new();

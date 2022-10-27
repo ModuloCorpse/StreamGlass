@@ -1,4 +1,6 @@
-﻿using System;
+﻿using StreamGlass.StreamChat;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Security;
@@ -7,11 +9,32 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using static StreamGlass.StreamChat.UserMessage;
+using static StreamGlass.Twitch.IRC.Message;
 
 namespace StreamGlass.Twitch.IRC
 {
     public class Client
     {
+        private static readonly List<string> ms_Colors = new()
+        {
+            "#ff0000",
+            "#00ff00",
+            "#0000ff",
+            "#b22222",
+            "#ff7f50",
+            "#9acd32",
+            "#ff4500",
+            "#2e8b57",
+            "#daa520",
+            "#d2691e",
+            "#5f9ea0",
+            "#1e90ff",
+            "#ff69b4",
+            "#8a2be2",
+            "#00ff7f"
+        };
+
         private UserInfo? m_SelfUserInfo = null;
         private string m_ChatColor = "";
         private readonly string m_IP;
@@ -23,7 +46,6 @@ namespace StreamGlass.Twitch.IRC
         private string m_Channel = "";
         private readonly bool m_IsSecured = false;
         private readonly bool m_CanConnect;
-        private IListener? m_Listener = null;
         private OAuthToken? m_AccessToken = null;
         private string m_UserName = "";
 
@@ -38,8 +60,6 @@ namespace StreamGlass.Twitch.IRC
         }
 
         public void SetSelfUserInfo(UserInfo? info) => m_SelfUserInfo = info;
-
-        public void SetListener(IListener listener) => m_Listener = listener;
 
         public bool Connect(string username, OAuthToken token)
         {
@@ -93,6 +113,85 @@ namespace StreamGlass.Twitch.IRC
             m_Stream.BeginRead(m_Buffer, 0, m_Buffer.Length, ReceiveCallback, null);
         }
 
+        private string ComputeEmotelessString(Message message, ref List<Tuple<int, string>> emoteRet)
+        {
+            string replacement = "     ";
+            int offset = 0;
+            string ret = message.Parameters;
+            List<SimpleEmote> emotes = message.Emotes;
+            foreach (SimpleEmote emote in emotes)
+            {
+                EmoteInfo? emoteInfo = API.GetEmoteFromID(emote.ID);
+                if (emoteInfo != null)
+                {
+                    int emoteLength = (emote.End + 1) - emote.Start;
+                    int idx = emote.Start + offset;
+                    offset += replacement.Length - emoteLength;
+                    ret = ret[..idx] + replacement + ret[(idx + emoteLength)..];
+                    emoteRet.Add(new(idx, emote.ID));
+                }
+            }
+            return ret;
+        }
+
+        private string GetUserMessageColor(string username, string color)
+        {
+            if (string.IsNullOrEmpty(color))
+            {
+                int colorIdx = 0;
+                foreach (char c in username)
+                    colorIdx += c;
+                colorIdx %= ms_Colors.Count;
+                return ms_Colors[colorIdx];
+            }
+            return color;
+        }
+
+        private void CreateUsermessage(Message message, bool self)
+        {
+            string username;
+            if (self)
+            {
+                if (m_SelfUserInfo != null)
+                    username = m_SelfUserInfo.DisplayName;
+                else
+                    username = "StreamGlass";
+            }
+            else
+            {
+                username = message.GetTag("display-name");
+                if (string.IsNullOrEmpty(username))
+                    username = message.Nick;
+            }
+            UserType userType = UserType.NONE;
+            if (self)
+                userType = UserType.SELF;
+            else
+            {
+                if (message.GetTag("mod") == "1")
+                    userType = UserType.MOD;
+                switch (message.GetTag("user-type"))
+                {
+                    case "admin": userType = UserType.ADMIN; break;
+                    case "global_mod": userType = UserType.GLOBAL_MOD; break;
+                    case "staff": userType = UserType.STAFF; break;
+                }
+                if (message.HaveBadge("broadcaster"))
+                    userType = UserType.BROADCASTER;
+            }
+            List<Tuple<int, string>> emotes = new();
+            UserMessage userMessage = new(message.GetTag("id"),
+                username,
+                GetUserMessageColor(username, (self) ? m_ChatColor : message.GetTag("color")),
+                message.Parameters,
+                ComputeEmotelessString(message, ref emotes),
+                message.GetCommand().Channel,
+                userType);
+            foreach (Tuple<int, string> emote in emotes)
+                userMessage.AddEmote(emote.Item1, emote.Item2);
+            CanalManager.Emit(StreamGlassCanals.CHAT_MESSAGE, userMessage);
+        }
+
         private void TreatReceivedBuffer(string dataBuffer)
         {
             int position;
@@ -113,27 +212,27 @@ namespace StreamGlass.Twitch.IRC
                                 Send(new("PONG", parameters: message.Parameters)); break;
                             case "USERSTATE":
                                 m_Channel = message.GetCommand().Channel;
-                                m_Listener?.OnJoinedChannel(m_Channel);
+                                CanalManager.Emit(StreamGlassCanals.CHAT_JOINED, m_Channel);
                                 break;
                             case "JOIN":
                                 if (m_SelfUserInfo?.Login != message.Nick)
-                                    m_Listener?.OnUserJoinedChannel(message.Nick);
+                                    CanalManager.Emit(StreamGlassCanals.USER_JOINED, message.Nick);
                                 break;
                             case "USERLIST":
                                 string[] users = message.Parameters.Split(' ');
                                 foreach (string user in users)
                                 {
                                     if (m_SelfUserInfo?.Login != user)
-                                        m_Listener?.OnUserJoinedChannel(user);
+                                        CanalManager.Emit(StreamGlassCanals.USER_JOINED, user);
                                 }
                                 break;
                             case "PRIVMSG":
-                                m_Listener?.OnMessageReceived(new(message));
+                                CreateUsermessage(message, false);
                                 if (m_SelfUserInfo?.Login != message.Nick)
-                                    m_Listener?.OnUserJoinedChannel(message.Nick);
+                                    CanalManager.Emit(StreamGlassCanals.USER_JOINED, message.Nick);
                                 break;
                             case "LOGGED":
-                                m_Listener?.OnConnected();
+                                CanalManager.Emit(StreamGlassCanals.CHAT_CONNECTED);
                                 if (!string.IsNullOrEmpty(m_Channel))
                                     Send(new("JOIN", parameters: m_Channel));
                                 break;
@@ -188,7 +287,7 @@ namespace StreamGlass.Twitch.IRC
 
         public void Disconnect()
         {
-            m_Socket.Disconnect(true);
+            m_Socket.Close();
             m_Stream.Close();
         }
 
@@ -198,7 +297,7 @@ namespace StreamGlass.Twitch.IRC
         {
             Message messageToSend = new("PRIVMSG", channel: channel, parameters: message);
             Send(messageToSend);
-            m_Listener?.OnMessageReceived(new(messageToSend, m_SelfUserInfo, m_ChatColor));
+            CreateUsermessage(messageToSend, true);
         }
 
         private void Send(Message message)

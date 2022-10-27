@@ -1,16 +1,12 @@
-﻿using StreamGlass.Twitch.IRC;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace StreamGlass
+namespace StreamGlass.StreamChat
 {
-    /// <summary>
-    /// Interaction logic for StreamChat.xaml
-    /// </summary>
-    public partial class StreamChat : UserControl
+    public partial class Chat : UserControl
     {
         public enum DisplayType
         {
@@ -29,17 +25,23 @@ namespace StreamGlass
         private double m_MessageSenderWidth = 100;
         private double m_MessageContentFontSize = 14;
         private string m_CurrentChannel = "";
-        private readonly Dictionary<string, List<StreamChatMessage>> m_ControlMessages = new();
+        private readonly Dictionary<string, List<Message>> m_ControlMessages = new();
         private readonly Dictionary<string, HashSet<string>> m_ChatHighlightedUsers = new();
-        private readonly Dictionary<TextBox, StreamChatMessage> m_Converter = new();
+        private readonly Dictionary<TextBox, Message> m_Converter = new();
+        private IStreamChat? m_StreamChat = null;
 
-        public StreamChat()
+        public Chat()
         {
             Loaded += StreamChat_Loaded;
             InitializeComponent();
             m_ChatPalette.Load();
             UpdateColorPalette();
+            CanalManager.Register(StreamGlassCanals.CHAT_MESSAGE, (int _, UserMessage message) => OnChatMessage(message));
         }
+
+        public void SetStreamChat(IStreamChat streamChat) => m_StreamChat = streamChat;
+
+        public string GetEmoteURL(string id) => m_StreamChat!.GetEmoteURL(id, m_ChatPalette);
 
         internal double MessageSenderFontSize => m_MessageSenderFontSize;
         internal double MessageSenderWidth => m_MessageSenderWidth;
@@ -114,8 +116,9 @@ namespace StreamGlass
             m_MessageSenderWidth = width;
             if (m_ControlMessages.TryGetValue(m_CurrentChannel, out var chatMessageList))
             {
-                foreach (StreamChatMessage message in chatMessageList)
+                foreach (Message message in chatMessageList)
                     message.SetSenderNameWidth(m_MessageSenderWidth);
+                UpdateMessagePosition();
             }
         }
 
@@ -124,8 +127,9 @@ namespace StreamGlass
             m_MessageSenderFontSize = fontSize;
             if (m_ControlMessages.TryGetValue(m_CurrentChannel, out var chatMessageList))
             {
-                foreach (StreamChatMessage message in chatMessageList)
+                foreach (Message message in chatMessageList)
                     message.SetSenderNameFontSize(m_MessageSenderFontSize);
+                UpdateMessagePosition();
             }
         }
 
@@ -134,8 +138,9 @@ namespace StreamGlass
             m_MessageContentFontSize = fontSize;
             if (m_ControlMessages.TryGetValue(m_CurrentChannel, out var chatMessageList))
             {
-                foreach (StreamChatMessage message in chatMessageList)
+                foreach (Message message in chatMessageList)
                     message.SetMessageFontSize(m_MessageContentFontSize);
+                UpdateMessagePosition();
             }
         }
 
@@ -154,7 +159,7 @@ namespace StreamGlass
                 int increment = (m_Reversed) ? -1 : 1;
                 while (i != last)
                 {
-                    StreamChatMessage message = chatMessageList[i];
+                    Message message = chatMessageList[i];
                     chatPanelHeight += message.ActualHeight;
                     ChatPanel.Children.Add(message);
                     i += increment;
@@ -170,7 +175,7 @@ namespace StreamGlass
             ChatPanel.Background = m_ChatPalette.GetColor("background");
             foreach (var child in ChatPanel.Children)
             {
-                if (child is StreamChatMessage chatMessage)
+                if (child is Message chatMessage)
                     chatMessage.UpdatePalette();
             }
         }
@@ -186,12 +191,12 @@ namespace StreamGlass
             }
         }
 
-        public void AddMessage(UserMessage message)
+        private void OnChatMessage(UserMessage message)
         {
             Dispatcher.Invoke((Delegate)(() => {
                 if (m_ControlMessages.TryGetValue(message.Channel, out var chatMessageList))
                 {
-                    StreamChatMessage chatMessage = new(this,
+                    Message chatMessage = new(this,
                         m_ChatPalette,
                         message,
                         m_ChatHighlightedUsers[message.Channel].Contains(message.UserName),
@@ -244,21 +249,20 @@ namespace StreamGlass
             ChatPanel.Width = e.NewSize.Width - 20;
             if (m_ControlMessages.TryGetValue(m_CurrentChannel, out var chatMessageList))
             {
-                foreach (StreamChatMessage message in chatMessageList)
+                foreach (Message message in chatMessageList)
                     message.Width = ChatPanel.Width;
             }
             UpdateMessagePosition();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void ChatSettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            StreamChatSettingsDialog dialog = new(this)
+            SettingsDialog dialog = new(this)
             {
                 Owner = Window.GetWindow(this),
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             dialog.Show();
-
         }
     }
 }

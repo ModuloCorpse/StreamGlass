@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using StreamGlass.Command;
-using StreamGlass.Twitch.IRC;
+using StreamGlass.StreamChat;
 
 namespace StreamGlass
 {
@@ -8,20 +8,35 @@ namespace StreamGlass
     {
         private string m_Channel = "";
         private int m_NbMessage = 0;
-        private readonly Client m_Client;
+        private readonly IStreamChat m_StreamChat;
 
-        public ProfileManager(Client client): base("profiles.json") => m_Client = client;
+        public ProfileManager(IStreamChat client) : base("profiles.json")
+        {
+            m_StreamChat = client;
+            CanalManager.Register(StreamGlassCanals.CHAT_MESSAGE, (int _, UserMessage message) => OnChatMessage(message));
+            CanalManager.Register(StreamGlassCanals.CHAT_JOINED, (int _, string channel) => OnJoinedChannel(channel));
+        }
 
         public Profile NewProfile(string name)
         {
-            Profile profile = new(m_Client, name);
+            Profile profile = new(m_StreamChat, name);
             if (!string.IsNullOrEmpty(m_Channel))
                 profile.SetChannel(m_Channel);
             AddObject(profile);
             return profile;
         }
 
-        public bool UpdateStreamInfo(string broadcasterID) => (CurrentObject != null) && CurrentObject.UpdateStreamInfo(broadcasterID);
+        public void UpdateStreamInfo() => CurrentObject?.UpdateStreamInfo();
+
+        public void OnJoinedChannel(string channel)
+        {
+            if (m_Channel != channel)
+            {
+                m_Channel = channel;
+                foreach (Profile profile in Objects)
+                    profile.SetChannel(channel);
+            }
+        }
 
         internal void SetChannel(string channel)
         {
@@ -36,7 +51,7 @@ namespace StreamGlass
                 CurrentObject?.Reset();
         }
 
-        internal void OnMessage(UserMessage message)
+        private void OnChatMessage(UserMessage message)
         {
             ++m_NbMessage;
             CurrentObject?.OnMessage(message);
@@ -48,6 +63,6 @@ namespace StreamGlass
             m_NbMessage = 0;
         }
 
-        protected override Profile? DeserializeObject(JObject obj) => new(m_Client, obj);
+        protected override Profile? DeserializeObject(JObject obj) => new(m_StreamChat, obj);
     }
 }

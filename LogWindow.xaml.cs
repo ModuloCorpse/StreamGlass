@@ -5,9 +5,6 @@ using System.Windows.Controls;
 
 namespace StreamGlass
 {
-    /// <summary>
-    /// Interaction logic for LogWindow.xaml
-    /// </summary>
     public partial class LogWindow : Window
     {
         private bool m_IsRefreshingComboBox = false;

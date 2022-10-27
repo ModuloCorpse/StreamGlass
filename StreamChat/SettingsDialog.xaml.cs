@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using static StreamGlass.StreamChat;
+using static StreamGlass.StreamChat.Chat;
 
-namespace StreamGlass
+namespace StreamGlass.StreamChat
 {
-    public partial class StreamChatSettingsDialog : Window
+    public partial class SettingsDialog : Window
     {
-        private readonly StreamChat m_StreamChat;
+        private readonly Chat m_StreamChat;
 
-        public StreamChatSettingsDialog(StreamChat streamChat)
+        public SettingsDialog(Chat streamChat)
         {
             m_StreamChat = streamChat;
             InitializeComponent();

@@ -1,138 +1,65 @@
 ﻿using Newtonsoft.Json.Linq;
-using StreamGlass.Twitch;
-using StreamGlass.Twitch.IRC;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using StreamGlass.StreamChat;
 
 namespace StreamGlass.Command
 {
     public class Profile: ManagedObject<Profile>
     {
-        public delegate string CommandFunction(string[] args, APICache cache);
-        private static readonly Dictionary<string, CommandFunction> ms_Functions = new();
-
-        public static void Init()
-        {
-            ms_Functions["Game"] = (variables, cache) => {
-                var channelInfo = API.GetChannelInfoFromLogin(variables[0], cache);
-                if (channelInfo != null)
-                    return channelInfo.GameName;
-                return variables[0];
-            };
-            ms_Functions["DisplayName"] = (variables, cache) => {
-                var userInfo = API.GetUserInfoFromLogin(variables[0], cache);
-                if (userInfo != null)
-                    return userInfo.DisplayName;
-                return variables[0];
-            };
-            ms_Functions["Channel"] = (variables, cache) => {
-                var userInfo = API.GetUserInfoFromLogin(variables[0], cache);
-                if (userInfo != null)
-                    return userInfo.Login;
-                return variables[0];
-            };
-            ms_Functions["Lower"] = (variables, _) => variables[0].ToLower();
-            ms_Functions["Upper"] = (variables, _) => variables[0].ToUpper();
-        }
-
-        public static void AddFunction(string functionName, CommandFunction fct) => ms_Functions[functionName] = fct;
-
         private string m_Channel = "";
         private string m_StreamTitle = "";
+        private string m_StreamDescription = "";
         private string m_StreamCategory = "";
         private string m_StreamLanguage = "";
-        private readonly Dictionary<string, ChatCommand> m_Commands = new();
-        private readonly List<TimedCommand> m_TimedCommands = new();
-        private readonly Client m_Client;
+        private readonly Dictionary<string, int> m_CommandLocation = new();
+        private readonly List<ChatCommand> m_Commands = new();
+        private readonly IStreamChat m_StreamChat;
 
-        public Profile(Client client, string name): base(name) => m_Client = client;
-        internal Profile(Client client, JObject json): base(json) => m_Client = client;
+        public Profile(IStreamChat client, string name): base(name) => m_StreamChat = client;
+        internal Profile(IStreamChat client, JObject json): base(json) => m_StreamChat = client;
 
         internal void SetChannel(string channel) => m_Channel = channel;
 
-        public void AddCommand(string command, string message, UserMessage.UserType userType = UserMessage.UserType.NONE, int nbArguments = -1) => m_Commands[command] = new(message, nbArguments, userType);
-
-        public void AddTimedCommand(long time, int nbMessage, string command) => m_TimedCommands.Add(new(time, nbMessage, command));
-
-        private static string TreatVariable(string content, Dictionary<string, string> variables, APICache cache)
-        {
-            if (content[0] == '$')
-            {
-                if (content.Length > 1 && variables.TryGetValue(content[1..], out var value))
-                    return value;
-                return content;
-            }
-            else if (content[0] == '@')
-            {
-                if (content.Length > 1)
-                    return content[1..];
-                return content;
-            }
-            else if (content.Contains('('))
-            {
-                int pos = content.IndexOf('(');
-                string functionName = content[..pos];
-                string functionVariables = content[(pos + 1)..content.LastIndexOf(')')];
-                string[] arguments = functionVariables.Split(',').Select(str => TreatVariable(str.Trim(), variables, cache)).ToArray();
-                if (ms_Functions.TryGetValue(functionName, out var func))
-                    return func(arguments, cache);
-                return content;
-            }
-            return content;
-        }
-
-        private void TriggerCommand(string command, UserMessage.UserType userType)
+        private void TriggerCommand(string command, UserMessage.UserType userType, bool isForced)
         {
             string[] arguments = command.Split(' ');
-            if (m_Commands.TryGetValue(arguments[0], out var content))
+            if (m_CommandLocation.TryGetValue(arguments[0], out var contentIdx))
             {
-                if (content.CanTrigger(arguments.Length - 1, userType))
-                {
-                    APICache localCache = new();
-                    HashSet<string> treatedMatches = new();
-                    Dictionary<string, string> variables = new();
-                    string contentToSend = content.Content;
-                    for (int i = 1; i < arguments.Length; ++i)
-                        variables[i.ToString()] = arguments[i];
-                    foreach (Match match in Regex.Matches(contentToSend, @"\${[^}]*}").Cast<Match>())
-                    {
-                        if (!treatedMatches.Contains(match.Value))
-                        {
-                            contentToSend = contentToSend.Replace(match.Value, TreatVariable(match.Value[2..^1], variables, localCache));
-                            treatedMatches.Add(match.Value);
-                        }
-                    }
-                    for (int i = 1; i < arguments.Length; ++i)
-                        contentToSend = contentToSend.Replace(string.Format("${0}", i), arguments[i]);
-                    m_Client.SendMessage(m_Channel, contentToSend);
-                }
+                ChatCommand content = m_Commands[contentIdx];
+                if (isForced || content.CanTrigger(arguments.Length - 1, userType))
+                    content.Trigger(arguments, m_StreamChat, m_Channel);
+                List<string> childrens = content.GetCommands();
+                foreach (string child in childrens)
+                    TriggerCommand(child, userType, isForced);
             }
             else
-                Parent?.TriggerCommand(command, userType);
+                Parent?.TriggerCommand(command, userType, isForced);
         }
 
         internal void OnMessage(UserMessage message)
         {
             if (message.Message[0] == '!')
-                TriggerCommand(message.Message[1..], message.SenderType);
+                TriggerCommand(message.Message[1..], message.SenderType, false);
         }
 
         internal void Update(long deltaTime, int nbMessage)
         {
-            foreach (TimedCommand timedCommand in m_TimedCommands)
+            foreach (ChatCommand command in m_Commands)
             {
-                timedCommand.Update(deltaTime, nbMessage);
-                if (timedCommand.CanTrigger())
+                command.Update(deltaTime, nbMessage);
+                if (command.CanAutoTrigger())
                 {
-                    TriggerCommand(timedCommand.GetCommand(), UserMessage.UserType.SELF);
-                    timedCommand.Reset();
+                    command.Trigger(command.GetDefaultArguments(), m_StreamChat, m_Channel);
+                    List<string> childrens = command.GetCommands();
+                    foreach (string child in childrens)
+                        TriggerCommand(child, UserMessage.UserType.SELF, true);
                 }
             }
             Parent?.Update(deltaTime, nbMessage);
         }
 
-        private string GetStreamTitle()
+        public string GetStreamTitle()
         {
             if (!string.IsNullOrEmpty(m_StreamTitle))
                 return m_StreamTitle;
@@ -141,7 +68,16 @@ namespace StreamGlass.Command
             return "";
         }
 
-        private string GetStreamCategory()
+        public string GetStreamDescription()
+        {
+            if (!string.IsNullOrEmpty(m_StreamDescription))
+                return m_StreamDescription;
+            else if (Parent != null)
+                return Parent.GetStreamTitle();
+            return "";
+        }
+
+        public string GetStreamCategory()
         {
             if (!string.IsNullOrEmpty(m_StreamCategory))
                 return m_StreamCategory;
@@ -150,7 +86,7 @@ namespace StreamGlass.Command
             return "";
         }
 
-        private string GetStreamLanguage()
+        public string GetStreamLanguage()
         {
             if (!string.IsNullOrEmpty(m_StreamLanguage))
                 return m_StreamLanguage;
@@ -159,12 +95,12 @@ namespace StreamGlass.Command
             return "";
         }
 
-        internal bool UpdateStreamInfo(string broadcasterID) => API.SetChannelInfoFromID(broadcasterID, GetStreamTitle(), GetStreamCategory(), GetStreamLanguage());
+        internal void UpdateStreamInfo() => CanalManager.Emit(StreamGlassCanals.UPDATE_STREAM_INFO, new UpdateStreamInfoArgs(GetStreamTitle(), GetStreamDescription(), GetStreamCategory(), GetStreamLanguage()));
 
         internal void Reset()
         {
-            foreach (TimedCommand timedCommand in m_TimedCommands)
-                timedCommand.Reset();
+            foreach (ChatCommand command in m_Commands)
+                command.Reset();
             Parent?.Reset();
         }
 
@@ -173,29 +109,14 @@ namespace StreamGlass.Command
             JArray chatCommandArray = new();
             foreach (var command in m_Commands)
             {
-                chatCommandArray.Add(new JObject()
-                {
-                    ["command"] = command.Key,
-                    ["content"] = command.Value.Content,
-                    ["user"] = (int)command.Value.UserType,
-                    ["argc"] = command.Value.NBArguments
-                });
+                chatCommandArray.Add(command.Serialize());
             }
             json["chat_commands"] = chatCommandArray;
 
-            JArray timedCommandArray = new();
-            foreach (var command in m_TimedCommands)
-            {
-                timedCommandArray.Add(new JObject()
-                {
-                    ["time"] = command.Time,
-                    ["messages"] = command.NbMessage,
-                    ["command"] = command.Command
-                });
-            }
-            json["timed_commands"] = timedCommandArray;
             if (!string.IsNullOrEmpty(m_StreamTitle))
                 json["stream_title"] = m_StreamTitle;
+            if (!string.IsNullOrEmpty(m_StreamDescription))
+                json["stream_description"] = m_StreamDescription;
             if (!string.IsNullOrEmpty(m_StreamCategory))
                 json["stream_category"] = m_StreamCategory;
             if (!string.IsNullOrEmpty(m_StreamLanguage))
@@ -209,29 +130,19 @@ namespace StreamGlass.Command
             {
                 foreach (JObject obj in chatCommandArray.Cast<JObject>())
                 {
-                    string? commandName = (string?)obj["command"];
-                    string? content = (string?)obj["content"];
-                    int? user = (int?)obj["user"];
-                    int? argc = (int?)obj["argc"];
-                    if (commandName != null && content != null && user != null && argc != null)
-                        AddCommand(commandName, content, (UserMessage.UserType)user, (int)argc);
-                }
-            }
-            JArray? timedCommandArray = (JArray?)json["timed_commands"];
-            if (timedCommandArray != null)
-            {
-                foreach (JObject obj in timedCommandArray.Cast<JObject>())
-                {
-                    int? time = (int?)obj["time"];
-                    int? messages = (int?)obj["messages"];
-                    string? command = (string?)obj["command"];
-                    if (time != null && messages != null && command != null)
-                        AddTimedCommand((int)time, (int)messages, command);
+                    string? commandName = JsonHelper.Get(obj, "name");
+                    ChatCommand newCommand = new(obj);
+                    if (commandName != null)
+                        m_CommandLocation[commandName] = m_Commands.Count;
+                    m_Commands.Add(newCommand);
                 }
             }
             JValue? titleValue = (JValue?)json["stream_title"];
             if (titleValue != null)
                 m_StreamTitle = titleValue.ToString();
+            JValue? descriptionValue = (JValue?)json["stream_description"];
+            if (descriptionValue != null)
+                m_StreamDescription = descriptionValue.ToString();
             JValue? categoryValue = (JValue?)json["stream_category"];
             if (categoryValue != null)
                 m_StreamCategory = categoryValue.ToString();
