@@ -48,6 +48,15 @@ namespace StreamGlass.Settings
             m_Settings[section][name] = value;
         }
 
+        public void Create(string section, string name, string value)
+        {
+            if (!m_Settings.ContainsKey(section))
+            {
+                m_Settings.Add(section, new());
+                m_Settings[section][name] = value;
+            }
+        }
+
         public void Save()
         {
             JObject json = new();

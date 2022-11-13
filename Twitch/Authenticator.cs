@@ -79,13 +79,17 @@ namespace StreamGlass.Twitch
         private readonly Settings.Data m_Settings;
         private string m_State = "";
         private readonly List<string> m_Scopes = new() {
+            "bits:read",
             "channel:manage:polls",
             "channel:manage:broadcast",
             "channel:moderate",
             "channel:read:polls",
+            "channel:read:redemptions",
+            "channel:read:subscriptions",
             "chat:read",
             "chat:edit",
-            "user:read:email"
+            "user:read:email",
+            "whispers:read"
         };
         private TaskCompletionSource<string> m_Task = new();
 

@@ -1,0 +1,51 @@
+﻿<settings:TabItem x:Class="StreamGlass.StreamChat.SettingsItem"
+        xmlns:local="clr-namespace:StreamGlass"
+        xmlns:settings="clr-namespace:StreamGlass.Settings"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignHeight="250"
+        d:DesignWidth="400">
+    <StackPanel Background="#FFE5E5E5">
+        <StackPanel DockPanel.Dock="Top" Background="#FFE5E5E5">
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <Border BorderBrush="{x:Null}" Height="26">
+                    <TextBlock VerticalAlignment="Center" TextAlignment="Right" Text="Chat Theme:" Width="150" Foreground="Black"/>
+                </Border>
+                <ComboBox Margin="5,0,0,0" Name="ChatColorModeComboBox" Height="26" Width="200" SelectionChanged="ChatColorModeComboBox_SelectionChanged"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <Border BorderBrush="{x:Null}" Height="26">
+                    <TextBlock VerticalAlignment="Center" TextAlignment="Right" Text="Chat Mode:" Width="150" Foreground="Black"/>
+                </Border>
+                <ComboBox Margin="5,0,0,0" Name="ChatModeComboBox" Height="26" Width="200" SelectionChanged="ChatModeComboBox_SelectionChanged"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <Border BorderBrush="{x:Null}" Height="26">
+                    <TextBlock VerticalAlignment="Center" TextAlignment="Right" Text="Name Font Size:" Width="150" Foreground="Black"/>
+                </Border>
+                <local:NumericUpDown Margin="5,0,0,0" x:Name="ChatNameFont" Height="26" Width="200" Value="1" MinValue="1" MaxValue="28" ValueChanged="ChatNameFont_ValueChanged"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <Border BorderBrush="{x:Null}" Height="26">
+                    <TextBlock VerticalAlignment="Center" TextAlignment="Right" Text="Chat Name Width:" Width="150" Foreground="Black"/>
+                </Border>
+                <local:NumericUpDown Margin="5,0,0,0" x:Name="ChatNameWidth" Height="26" Width="200" Value="100" MinValue="100" MaxValue="300" ValueChanged="ChatNameWidth_ValueChanged"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <Border BorderBrush="{x:Null}" Height="26">
+                    <TextBlock VerticalAlignment="Center" TextAlignment="Right" Text="Chat Font Size:" Width="150" Foreground="Black"/>
+                </Border>
+                <local:NumericUpDown Margin="5,0,0,0" x:Name="ChatMessageFont" Height="26" Width="200" Value="1" MinValue="1" MaxValue="28" ValueChanged="ChatMessageFont_ValueChanged"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <Border BorderBrush="{x:Null}" Height="26">
+                    <TextBlock VerticalAlignment="Center" TextAlignment="Right" Text="Chat Panel On Right:" Width="150" Foreground="Black"/>
+                </Border>
+                <CheckBox Margin="4,7,0,0" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" />
+            </StackPanel>
+        </StackPanel>
+    </StackPanel>
+</settings:TabItem>

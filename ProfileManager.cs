@@ -15,6 +15,8 @@ namespace StreamGlass
             m_StreamChat = client;
             CanalManager.Register(StreamGlassCanals.CHAT_MESSAGE, (int _, UserMessage message) => OnChatMessage(message));
             CanalManager.Register(StreamGlassCanals.CHAT_JOINED, (int _, string channel) => OnJoinedChannel(channel));
+            CanalManager.Register(StreamGlassCanals.STREAM_START, (int _) => OnStreamStart());
+
         }
 
         public Profile NewProfile(string name)
@@ -28,7 +30,12 @@ namespace StreamGlass
 
         public void UpdateStreamInfo() => CurrentObject?.UpdateStreamInfo();
 
-        public void OnJoinedChannel(string channel)
+        private void OnStreamStart()
+        {
+            CurrentObject?.Reset();
+        }
+
+        private void OnJoinedChannel(string channel)
         {
             if (m_Channel != channel)
             {
@@ -53,8 +60,11 @@ namespace StreamGlass
 
         private void OnChatMessage(UserMessage message)
         {
-            ++m_NbMessage;
-            CurrentObject?.OnMessage(message);
+            if (message.SenderType != UserMessage.UserType.SELF)
+            {
+                ++m_NbMessage;
+                CurrentObject?.OnMessage(message);
+            }
         }
 
         internal void Update(long deltaTime)

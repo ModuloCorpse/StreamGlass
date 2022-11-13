@@ -13,14 +13,12 @@ namespace StreamGlass.Twitch
         private static readonly HashSet<string> ms_LoadedChannelEmoteSets = new();
         private static readonly HashSet<string> ms_LoadedEmoteSets = new();
         private static readonly APICache ms_Cache = new();
-        private static string ms_ClientID = "";
         private static OAuthToken? ms_AccessToken = null;
 
         private delegate ManagedRequest CreateRequest();
 
-        internal static void Authenticate(string clientID, OAuthToken accessToken)
+        internal static void Authenticate(OAuthToken accessToken)
         {
-            ms_ClientID = clientID;
             ms_AccessToken = accessToken;
         }
 
@@ -34,7 +32,7 @@ namespace StreamGlass.Twitch
         {
             if (token == null)
                 return null;
-            request = request.AddHeaderField("Client-Id", ms_ClientID).AddHeaderField("Authorization", string.Format("Bearer {0}", token.Token));
+            request = request.AddHeaderField("Client-Id", token.ClientID).AddHeaderField("Authorization", string.Format("Bearer {0}", token.Token));
             Response? response = request.Send();
             if (response != null && response.StatusCode == 401)
             {

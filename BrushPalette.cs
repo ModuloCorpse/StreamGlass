@@ -20,6 +20,7 @@ namespace StreamGlass
 
         public Type PaletteType => m_Type;
 
+        public BrushPalette(string name, string id, Type type) : base(name, id, false) => m_Type = type;
         public BrushPalette(string name, Type type): base(name) => m_Type = type;
         internal BrushPalette(JObject json): base(json) {}
 

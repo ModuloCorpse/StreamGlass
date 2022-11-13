@@ -25,6 +25,7 @@ namespace StreamGlass.Twitch
         }
 
         public string Token => m_AccessToken;
+        public string ClientID => m_PublicKey;
 
         private bool CompareScopes(List<string> scopes)
         {

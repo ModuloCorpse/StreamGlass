@@ -74,5 +74,13 @@ namespace StreamGlass
             e.Cancel = true;
             this.Hide();
         }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            MenuItem menuItem = (MenuItem)sender;
+            ContextMenu contextMenu = (ContextMenu)menuItem.Parent;
+            ListViewItem item = (ListViewItem)contextMenu.PlacementTarget;
+            Clipboard.SetText(item.Content.ToString());
+        }
     }
 }

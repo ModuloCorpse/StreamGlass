@@ -22,7 +22,7 @@
     <Compile Update="StreamChat\Chat.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="StreamChat\SettingsDialog.xaml.cs">
+    <Compile Update="StreamChat\SettingsItem.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -42,7 +42,7 @@
     <Page Update="StreamChat\Chat.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="StreamChat\SettingsDialog.xaml">
+    <Page Update="StreamChat\SettingsItem.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="StreamGlassWindow.xaml">

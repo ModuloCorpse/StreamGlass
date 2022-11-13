@@ -13,6 +13,18 @@
         <StackPanel Margin="5" Orientation="Horizontal">
             <ComboBox Name="LogDisplayComboBox" Width="300" Height="25" SelectionChanged="LogDisplayComboBox_SelectionChanged"/>
         </StackPanel>
-        <ListView Name="LogsListView" Margin="5" Height="335" Background="LightGray" />
+        <ListView Name="LogsListView" Margin="5" Height="335" Background="LightGray">
+            <ListView.Resources>
+                <ContextMenu x:Key="ItemContextMenu">
+                    <MenuItem Header="Copy" Command="{Binding Path=DataContext.MoreInfo, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" Background="WhiteSmoke" Click="MenuItem_Click" />
+                </ContextMenu>
+            </ListView.Resources>
+
+            <ListView.ItemContainerStyle>
+                <Style TargetType="{x:Type ListViewItem}" >
+                    <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}" />
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
     </StackPanel>
 </Window>

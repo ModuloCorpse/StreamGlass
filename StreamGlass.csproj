@@ -8,11 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Quicksand" Version="0.0.17" />
+    <None Remove="Assets\chat-bubble.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Quicksand\Quicksand\Quicksand.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\chat-bubble.png" />
     <Resource Include="Assets\stream-glass-logo.ico" />
     <Resource Include="Assets\twitch-logo.png" />
     <Resource Include="Assets\magnifying-glass.png" />

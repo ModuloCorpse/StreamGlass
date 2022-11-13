@@ -5,7 +5,7 @@ using Client = StreamGlass.Twitch.IRC.Client;
 
 namespace StreamGlass.Twitch
 {
-    public class Bot : IStreamChat
+    public class Bot : IStreamChat, IConnection
     {
         private bool m_IsConnected = false;
         private string m_Channel = "";
@@ -14,12 +14,20 @@ namespace StreamGlass.Twitch
         private ChannelInfo? m_OriginalBroadcasterChannelInfo = null;
         private readonly Authenticator m_Authenticator;
         private readonly StreamGlassWindow m_Form;
+        private readonly EventSub m_PubSub = new();
 
         public Bot(Server webServer, Settings.Data settings, StreamGlassWindow form)
         {
             m_Settings = settings;
             m_Form = form;
             m_Authenticator = new(webServer, settings);
+            //This section will create the settings variables ONLY if they where not loaded
+            m_Settings.Create("twitch", "auto_connect", "false");
+            m_Settings.Create("twitch", "browser", "");
+            m_Settings.Create("twitch", "channel", "");
+            m_Settings.Create("twitch", "public_key", "");
+            m_Settings.Create("twitch", "secret_key", "");
+
             if (m_Settings.Get("twitch", "auto_connect") == "true")
                 Connect();
         }
@@ -71,7 +79,8 @@ namespace StreamGlass.Twitch
                 if (apiToken != null)
                 {
                     m_IsConnected = true;
-                    API.Authenticate(m_Settings.Get("twitch", "public_key"), apiToken);
+                    m_PubSub.SetToken(apiToken);
+                    API.Authenticate(apiToken);
                     API.LoadGlobalEmoteSet();
                     API.LoadChannelEmoteSetFromLogin("chaporon_");
                     OAuthToken? ircToken;
@@ -94,10 +103,13 @@ namespace StreamGlass.Twitch
 
         public void Disconnect()
         {
+            m_PubSub.Disconnect();
             m_Client.Disconnect();
             ResetStreamInfo();
             Unregister();
         }
+
+        public Settings.TabItem GetSettings() => new SettingsItem(m_Settings, this);
 
         private void OnConnected(int _)
         {
@@ -114,10 +126,14 @@ namespace StreamGlass.Twitch
                 m_OriginalBroadcasterChannelInfo = API.GetChannelInfoFromLogin(channel[1..]);
                 m_Form.JoinChannel(channel);
                 m_Client.SendMessage(channel, "Hello World! Je suis un bot connecté via StreamGlass!");
+                if (m_OriginalBroadcasterChannelInfo != null)
+                {
+                    m_PubSub.Connect(m_OriginalBroadcasterChannelInfo.Broadcaster.ID);
+                }
             }
         }
 
-        public void Update(long _) { }
+        public void Update(long _) {}
 
         private void OnUserJoinedChannel(int _, string login)
         {

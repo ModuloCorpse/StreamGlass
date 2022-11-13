@@ -9,12 +9,20 @@ namespace StreamGlass
     {
         public BrushPaletteManager() : base("chat_palettes.json") { }
 
+        public BrushPalette NewDefaultPalette(string name, string id, BrushPalette.Type type)
+        {
+            BrushPalette palette = new(name, id, type);
+            AddObject(palette);
+            return palette;
+        }
+
         public BrushPalette NewPalette(string name, BrushPalette.Type type)
         {
             BrushPalette palette = new(name, type);
             AddObject(palette);
             return palette;
         }
+
         public Brush GetColor(string name)
         {
             if (CurrentObject != null)

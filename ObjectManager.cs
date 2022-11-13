@@ -38,8 +38,11 @@ namespace StreamGlass
         {
             JObject json = new();
             JArray objects = new();
-            foreach (var obj in m_Objects)
-                objects.Add(obj.Value.Serialize());
+            foreach (var obj in m_Objects.Values)
+            {
+                if (obj.IsSerializable())
+                    objects.Add(obj.Serialize());
+            }
             if (m_CurrentObject != null)
                 json["current"] = m_CurrentObject.ID;
             json["objects"] = objects;

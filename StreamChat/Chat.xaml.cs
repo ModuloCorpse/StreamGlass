@@ -1,6 +1,8 @@
-﻿using System;
+﻿using StreamGlass.Twitch;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -34,7 +36,18 @@ namespace StreamGlass.StreamChat
         {
             Loaded += StreamChat_Loaded;
             InitializeComponent();
+            BrushPalette darkMode = m_ChatPalette.NewDefaultPalette("Chat Dark Mode", "chat-dark-mode", BrushPalette.Type.DARK);
+            darkMode.AddHexColor("background", "#FF18181B");
+            darkMode.AddHexColor("message", "#FFFFFFFF");
+            darkMode.AddHexColor("highlight_background", "#FFFFFFFF");
+            darkMode.AddHexColor("highlight_message", "#FF000000");
+            BrushPalette lightMode = m_ChatPalette.NewDefaultPalette("Chat Light Mode", "chat-light-mode", BrushPalette.Type.LIGHT);
+            lightMode.AddHexColor("background", "#FFFFFFFF");
+            lightMode.AddHexColor("message", "#FF000000");
+            lightMode.AddHexColor("highlight_background", "#FF18181B");
+            lightMode.AddHexColor("highlight_message", "#FFFFFFFF");
             m_ChatPalette.Load();
+            //TODO Use Settings for default chat palette, display type, sender font size, sender width, content font size
             UpdateColorPalette();
             CanalManager.Register(StreamGlassCanals.CHAT_MESSAGE, (int _, UserMessage message) => OnChatMessage(message));
         }
@@ -257,12 +270,22 @@ namespace StreamGlass.StreamChat
 
         private void ChatSettingsButton_Click(object sender, RoutedEventArgs e)
         {
+
+/*            Settings.Dialog dialog = new()
+            {
+                Owner = Window.GetWindow(this),
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            dialog.AddTabItem(new SettingsItem(m_Settings, this));
+            dialog.Show();
+
+
             SettingsDialog dialog = new(this)
             {
                 Owner = Window.GetWindow(this),
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
-            dialog.Show();
+            dialog.Show();*/
         }
     }
 }

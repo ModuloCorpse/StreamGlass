@@ -1,17 +1,21 @@
-﻿using System;
+﻿using StreamGlass.Settings;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using static StreamGlass.StreamChat.Chat;
+using TabItem = StreamGlass.Settings.TabItem;
 
 namespace StreamGlass.StreamChat
 {
-    public partial class SettingsDialog : Window
+    public partial class SettingsItem : TabItem
     {
+        private readonly StreamGlassWindow m_Window;
         private readonly Chat m_StreamChat;
 
-        public SettingsDialog(Chat streamChat)
+        public SettingsItem(Data settings, Chat streamChat, StreamGlassWindow window) : base("/Assets/chat-bubble.png", "stream-chat", settings)
         {
             m_StreamChat = streamChat;
+            m_Window = window;
             InitializeComponent();
             m_StreamChat.GetBrushPalette().FillComboBox(ref ChatColorModeComboBox);
             ChatModeComboBox.Items.Add("To bottom");
@@ -56,9 +60,15 @@ namespace StreamGlass.StreamChat
             m_StreamChat.SetContentFontSize(e.NewValue);
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            Close();
+            if (sender is CheckBox checkBox)
+            {
+                if (checkBox.IsChecked != null && checkBox.IsChecked.Value)
+                    m_Window.SetChatPanelOnRight();
+                else
+                    m_Window.SetChatPanelOnLeft();
+            }
         }
     }
 }

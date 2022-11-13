@@ -19,25 +19,35 @@ namespace StreamGlass
             public override string? ToString() => m_Name;
         }
 
+        private readonly bool m_IsSerializable = true;
         private readonly Info m_ObjectInfo;
         private CRTP? m_Parent = default;
 
-        protected ManagedObject(string name)
+        protected ManagedObject(string name, bool isSerializable = true)
         {
             m_ObjectInfo = new(Guid.NewGuid().ToString(), name);
+            m_IsSerializable = isSerializable;
+        }
+
+        protected ManagedObject(string name, string id, bool isSerializable = true)
+        {
+            m_ObjectInfo = new(id, name);
+            m_IsSerializable = isSerializable;
         }
 
         protected ManagedObject(JObject json)
         {
             string? id = (string?)json["id"];
             if (id == null)
-                throw new NullReferenceException("Command profile ID is null");
+                id = Guid.NewGuid().ToString();
             string? name = (string?)json["name"];
             if (name == null)
-                throw new NullReferenceException("Command profile name is null");
+                throw new NullReferenceException("ManagedObject name is null");
             m_ObjectInfo = new(id, name);
             Load(json);
         }
+
+        internal bool IsSerializable() => m_IsSerializable;
 
         internal void SetParent(CRTP parent) => m_Parent = parent;
 
