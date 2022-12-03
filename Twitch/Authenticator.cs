@@ -36,21 +36,17 @@ namespace StreamGlass.Twitch
                 if (request.TryGetParameter("state", out string? state))
                 {
                     List<string> scopes = new();
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8604 // Possibly null reference.
                     if (request.TryGetParameter("scope", out string? scope))
-                        scopes.AddRange(scope.Replace("%3A", ":").Split('+'));
+                        scopes.AddRange(scope!.Replace("%3A", ":").Split('+'));
                     if (request.TryGetParameter("code", out string? token))
-                        m_Authenticator.SetAuthToken(state, token, scopes);
+                        m_Authenticator.SetAuthToken(state!, token!, scopes);
                     else if (request.TryGetParameter("error", out string? error))
                     {
                         if (request.TryGetParameter("error_description", out string? errorDescription))
-                            m_Authenticator.SetError(state, error, errorDescription.Replace('+', ' '));
+                            m_Authenticator.SetError(state!, error!, errorDescription!.Replace('+', ' '));
                         else
-                            m_Authenticator.SetError(state, error, "");
+                            m_Authenticator.SetError(state!, error!, "");
                     }
-#pragma warning restore CS8604 // Possibly null reference.
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 }
             }
 
@@ -80,8 +76,9 @@ namespace StreamGlass.Twitch
         private string m_State = "";
         private readonly List<string> m_Scopes = new() {
             "bits:read",
-            "channel:manage:polls",
             "channel:manage:broadcast",
+            "channel:manage:polls",
+            "channel:manage:redemptions",
             "channel:moderate",
             "channel:read:polls",
             "channel:read:redemptions",

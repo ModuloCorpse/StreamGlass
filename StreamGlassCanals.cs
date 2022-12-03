@@ -7,6 +7,10 @@
         CHAT_JOINED,
         USER_JOINED,
         UPDATE_STREAM_INFO,
-        STREAM_START
+        STREAM_START,
+        STREAM_STOP,
+        DONATION,
+        FOLLOW,
+        RAID
     }
 }

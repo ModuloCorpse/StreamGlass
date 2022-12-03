@@ -5,10 +5,15 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\stream-glass-logo.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Assets\chat-bubble.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\stream-glass-logo.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Quicksand\Quicksand\Quicksand.csproj" />
+    <ProjectReference Include="..\StreamChemistry\StreamChemistry.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +36,21 @@
     <Resource Include="Assets\stream-glass-settings.ico" />
     <Resource Include="Assets\stream-glass-settings.png" />
     <Resource Include="Assets\tinker.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Profile\ChatCommandEditor.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Profile\ProfilesDialog.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="GeneralSettingsItem.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UI\NumericUpDown.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
 </Project>

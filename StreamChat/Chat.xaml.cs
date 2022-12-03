@@ -1,14 +1,12 @@
-﻿using StreamGlass.Twitch;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime;
 using System.Windows;
 using System.Windows.Controls;
+using StreamGlass.UI;
 
 namespace StreamGlass.StreamChat
 {
-    public partial class Chat : UserControl
+    public partial class Chat : UI.UserControl
     {
         public enum DisplayType
         {
@@ -18,7 +16,8 @@ namespace StreamGlass.StreamChat
             REVERSED_BOTTOM_TO_TOP
         }
 
-        private readonly BrushPaletteManager m_ChatPalette = new();
+        private BrushPaletteManager m_ChatPalette = new();
+        private TranslationManager m_Translations = new();
         private bool m_AutoScroll = true;
         private bool m_ForceAutoScroll = false;
         private bool m_Reversed = false;
@@ -29,28 +28,18 @@ namespace StreamGlass.StreamChat
         private string m_CurrentChannel = "";
         private readonly Dictionary<string, List<Message>> m_ControlMessages = new();
         private readonly Dictionary<string, HashSet<string>> m_ChatHighlightedUsers = new();
-        private readonly Dictionary<TextBox, Message> m_Converter = new();
+        private readonly Dictionary<System.Windows.Controls.TextBox, Message> m_Converter = new();
         private IStreamChat? m_StreamChat = null;
 
         public Chat()
         {
-            Loaded += StreamChat_Loaded;
             InitializeComponent();
-            BrushPalette darkMode = m_ChatPalette.NewDefaultPalette("Chat Dark Mode", "chat-dark-mode", BrushPalette.Type.DARK);
-            darkMode.AddHexColor("background", "#FF18181B");
-            darkMode.AddHexColor("message", "#FFFFFFFF");
-            darkMode.AddHexColor("highlight_background", "#FFFFFFFF");
-            darkMode.AddHexColor("highlight_message", "#FF000000");
-            BrushPalette lightMode = m_ChatPalette.NewDefaultPalette("Chat Light Mode", "chat-light-mode", BrushPalette.Type.LIGHT);
-            lightMode.AddHexColor("background", "#FFFFFFFF");
-            lightMode.AddHexColor("message", "#FF000000");
-            lightMode.AddHexColor("highlight_background", "#FF18181B");
-            lightMode.AddHexColor("highlight_message", "#FFFFFFFF");
-            m_ChatPalette.Load();
-            //TODO Use Settings for default chat palette, display type, sender font size, sender width, content font size
-            UpdateColorPalette();
             CanalManager.Register(StreamGlassCanals.CHAT_MESSAGE, (int _, UserMessage message) => OnChatMessage(message));
         }
+
+        internal void SetBrushPalette(BrushPaletteManager colorPalette) => m_ChatPalette = colorPalette;
+
+        internal void SetTranslations(TranslationManager translations) => m_Translations = translations;
 
         public void SetStreamChat(IStreamChat streamChat) => m_StreamChat = streamChat;
 
@@ -70,25 +59,6 @@ namespace StreamGlass.StreamChat
         {
             m_ControlMessages[channel] = new();
             m_ChatHighlightedUsers[channel] = new();
-        }
-
-        private void StreamChat_Loaded(object sender, RoutedEventArgs e)
-        {
-            Window window = Window.GetWindow(this);
-            window.Closing += Window_Closing;
-        }
-
-        private void Window_Closing(object? sender, CancelEventArgs e)
-        {
-            m_ChatPalette.Save();
-        }
-
-        internal BrushPaletteManager GetBrushPalette() => m_ChatPalette;
-
-        internal void SetChatPalette(string paletteID)
-        {
-            m_ChatPalette.SetCurrentPalette(paletteID);
-            UpdateColorPalette();
         }
 
         internal void SetDisplayType(DisplayType displayType)
@@ -162,9 +132,9 @@ namespace StreamGlass.StreamChat
             if (m_ControlMessages.TryGetValue(m_CurrentChannel, out var chatMessageList))
             {
                 if (m_IsOnBottom)
-                    DockPanel.SetDock(ChatPanel, Dock.Bottom);
+                    System.Windows.Controls.DockPanel.SetDock(ChatPanel, Dock.Bottom);
                 else
-                    DockPanel.SetDock(ChatPanel, Dock.Top);
+                    System.Windows.Controls.DockPanel.SetDock(ChatPanel, Dock.Top);
                 double chatPanelHeight = 0;
                 ChatPanel.Children.Clear();
                 int i = (m_Reversed) ? chatMessageList.Count - 1 : 0;
@@ -178,18 +148,6 @@ namespace StreamGlass.StreamChat
                     i += increment;
                 }
                 ChatPanelDock.Height = chatPanelHeight;
-            }
-        }
-
-        public void UpdateColorPalette()
-        {
-            ChatPanelBackground.Background = m_ChatPalette.GetColor("background");
-            ChatPanelHeader.Background = m_ChatPalette.GetColor("background");
-            ChatPanel.Background = m_ChatPalette.GetColor("background");
-            foreach (var child in ChatPanel.Children)
-            {
-                if (child is Message chatMessage)
-                    chatMessage.UpdatePalette();
             }
         }
 
@@ -211,6 +169,7 @@ namespace StreamGlass.StreamChat
                 {
                     Message chatMessage = new(this,
                         m_ChatPalette,
+                        m_Translations,
                         message,
                         m_ChatHighlightedUsers[message.Channel].Contains(message.UserName),
                         m_MessageSenderWidth,
@@ -249,7 +208,7 @@ namespace StreamGlass.StreamChat
 
         private void ChatMessage_Loaded(object sender, RoutedEventArgs e)
         {
-            if (m_Converter.TryGetValue((TextBox)sender, out var chatMessage))
+            if (m_Converter.TryGetValue((System.Windows.Controls.TextBox)sender, out var chatMessage))
             {
                 chatMessage.UpdateEmotes();
                 UpdateMessagePosition();
@@ -266,26 +225,6 @@ namespace StreamGlass.StreamChat
                     message.Width = ChatPanel.Width;
             }
             UpdateMessagePosition();
-        }
-
-        private void ChatSettingsButton_Click(object sender, RoutedEventArgs e)
-        {
-
-/*            Settings.Dialog dialog = new()
-            {
-                Owner = Window.GetWindow(this),
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-            dialog.AddTabItem(new SettingsItem(m_Settings, this));
-            dialog.Show();
-
-
-            SettingsDialog dialog = new(this)
-            {
-                Owner = Window.GetWindow(this),
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-            dialog.Show();*/
         }
     }
 }

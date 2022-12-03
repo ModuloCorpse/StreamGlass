@@ -300,7 +300,7 @@ namespace StreamGlass.Twitch.IRC
                 "421" => new("UNSUPPORTED", commandParts[2]),
                 "001" => new("LOGGED"),
                 "353" => new("USERLIST"),
-                "JOIN" or "PART" or "NOTICE" or "CLEARCHAT" or "HOSTTARGET" or "PRIVMSG" or "USERSTATE" or "ROOMSTATE" or _ => new(commandParts[0], commandParts[1]),
+                "JOIN" or "PART" or "NOTICE" or "USERNOTICE" or "CLEARCHAT" or "HOSTTARGET" or "PRIVMSG" or "USERSTATE" or "ROOMSTATE" or _ => new(commandParts[0], commandParts[1]),
             };
             if (command != null)
             {

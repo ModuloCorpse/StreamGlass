@@ -1,61 +1,66 @@
-﻿using System.Collections.Generic;
+﻿using StreamGlass.UI;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace StreamGlass
 {
-    public partial class LogWindow : Window
+    public partial class LogWindow : UI.Dialog
     {
+        private class ListViewLog : System.Windows.Controls.ListViewItem, IUIElement
+        {
+            public void Update(BrushPaletteManager palette, TranslationManager translation)
+            {
+                if (palette.TryGetColor("background_2", out var background))
+                    Background = background;
+                if (palette.TryGetColor("text", out var foreground))
+                    Foreground = foreground;
+                if (ContextMenu is IUIElement menu)
+                    menu.Update(palette, translation);
+            }
+        }
+
         private bool m_IsRefreshingComboBox = false;
         private string m_CurrentLogCategory = "";
-        private readonly Dictionary<string, List<string>> m_Logs = new();
-        private object m_Lock = new();
 
-        public LogWindow()
+        public LogWindow(UI.Window parent): base(parent)
         {
             InitializeComponent();
+            Logger.SetLogWindow(this);
+            UpdateLogListView();
         }
 
         public void SetCurrentLogCategory(string category)
         {
             m_CurrentLogCategory = category;
-            Dispatcher.Invoke(() => UpdateLogListView());
+            UpdateLogs();
         }
 
-        public void Log(string category, string log)
-        {
-            lock (m_Lock)
-            {
-                if (m_Logs.TryGetValue(category, out List<string>? logs))
-                    logs.Add(log);
-                else
-                    m_Logs.Add(category, new() { log });
-            }
-            Dispatcher.Invoke(() => UpdateLogListView());
-        }
+        public void UpdateLogs() => Dispatcher.Invoke(() => UpdateLogListView());
 
         private void UpdateLogListView()
         {
-            lock (m_Lock)
+            m_IsRefreshingComboBox = true;
+            LogDisplayComboBox.Items.Clear();
+            foreach (string category in Logger.GetCategories())
             {
-                m_IsRefreshingComboBox = true;
-                LogDisplayComboBox.Items.Clear();
-                foreach (string category in m_Logs.Keys)
-                {
-                    if (category == m_CurrentLogCategory)
-                        LogDisplayComboBox.SelectedIndex = LogDisplayComboBox.Items.Count;
-                    LogDisplayComboBox.Items.Add(category);
-                }
-                m_IsRefreshingComboBox = false;
-
-                LogsListView.Items.Clear();
-                if (m_Logs.TryGetValue(m_CurrentLogCategory, out List<string>? logs))
-                {
-                    foreach (string log in logs)
-                        LogsListView.Items.Add(log);
-                }
+                if (category == m_CurrentLogCategory)
+                    LogDisplayComboBox.SelectedIndex = LogDisplayComboBox.Items.Count;
+                LogDisplayComboBox.Items.Add(category);
             }
+            m_IsRefreshingComboBox = false;
+
+            LogsListView.Items.Clear();
+            foreach (string log in Logger.GetLogs(m_CurrentLogCategory))
+            {
+                UI.ContextMenu contextMenu = new();
+                UI.MenuItem menuItem = new() { Header = "Copy" };
+                menuItem.Click += MenuItem_Click;
+                contextMenu.Items.Add(menuItem);
+                LogsListView.Items.Add(new ListViewLog() { Content = log, ContextMenu = contextMenu });
+            }
+            LogsListView.Update(GetBrushPalette(), GetTranslations());
         }
 
         private void LogDisplayComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -69,18 +74,19 @@ namespace StreamGlass
             }
         }
 
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            e.Cancel = true;
-            this.Hide();
-        }
+        protected override void OnClosing(CancelEventArgs e) => Logger.SetLogWindow(null);
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            MenuItem menuItem = (MenuItem)sender;
-            ContextMenu contextMenu = (ContextMenu)menuItem.Parent;
+            UI.MenuItem menuItem = (UI.MenuItem)sender;
+            UI.ContextMenu contextMenu = (UI.ContextMenu)menuItem.Parent;
             ListViewItem item = (ListViewItem)contextMenu.PlacementTarget;
             Clipboard.SetText(item.Content.ToString());
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            SystemCommands.CloseWindow(this);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace StreamGlass.StreamChat
+﻿using StreamGlass.UI;
+
+namespace StreamGlass.StreamChat
 {
     public interface IStreamChat
     {

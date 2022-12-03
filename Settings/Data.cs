@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 
 namespace StreamGlass.Settings
@@ -12,21 +11,12 @@ namespace StreamGlass.Settings
         {
             if (File.Exists("settings.json"))
             {
-                JObject response = JObject.Parse(File.ReadAllText("settings.json"));
-                foreach (var item in response)
+                Json response = Json.LoadFromFile("settings.json");
+                foreach (var item in response.ToDictionary<Json>())
                 {
                     string key = item.Key;
-                    var value = item.Value;
-                    if (value is JObject obj)
-                    {
-                        Dictionary<string, string> settings = new();
-                        foreach (var settingToken in obj)
-                        {
-                            if (settingToken.Value != null)
-                                settings.Add(settingToken.Key, settingToken.Value.ToString());
-                        }
-                        m_Settings[key] = settings;
-                    }
+                    Json value = item.Value;
+                    m_Settings[key] = value.ToDictionary<string>();
                 }
             }
         }
@@ -59,15 +49,14 @@ namespace StreamGlass.Settings
 
         public void Save()
         {
-            JObject json = new();
+            Json json = new();
             foreach (var setting in m_Settings)
             {
-                JObject section = new();
-                foreach (var values in setting.Value)
-                    section[values.Key] = values.Value;
-                json.Add(setting.Key, section);
+                Json section = new();
+                section.Set(setting.Value);
+                json.Set(setting.Key, section);
             }
-            File.WriteAllText("settings.json", json.ToString());
+            json.WriteToFile("settings.json");
         }
     }
 }

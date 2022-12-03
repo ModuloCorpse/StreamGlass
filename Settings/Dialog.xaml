@@ -1,31 +1,29 @@
-﻿<Window x:Class="StreamGlass.Settings.Dialog"
+﻿<ui:Dialog x:Class="StreamGlass.Settings.Dialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="clr-namespace:StreamGlass.UI"
         mc:Ignorable="d"
         Title="StreamGlass Settings"
-        d:DesignHeight="300"
-        d:DesignWidth="500"
-        Height="323"
-        Width="516"
-        Icon="/Assets/stream-glass-settings.ico"
-        ResizeMode="NoResize">
-    <StackPanel Orientation="Horizontal">
-        <StackPanel Width="500">
-            <TabControl Name="SettingsTabControl" TabStripPlacement="Left" Height="250" Width="500">
-                <TabItem>
-                    <TabItem.Header>
-                        <Image Name="setting_img" Height="35" Width="35" Source="/Assets/tinker.png" />
-                    </TabItem.Header>
-                    <StackPanel Background="#FFE5E5E5">
-
-                    </StackPanel>
-                </TabItem>
-            </TabControl>
-            <Canvas Height="35" Width="500">
-                <Button Name="SaveButton" Content="Save" Height="25" Width="75" Canvas.Left="415" Canvas.Top="5" Click="SaveButton_Click"/>
-            </Canvas>
-        </StackPanel>
-    </StackPanel>
-</Window>
+        d:DesignHeight="304"
+        d:DesignWidth="504"
+        Height="304"
+        Width="504"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        ShowInAero="False">
+    <ui:Border BrushPaletteKey="dialog_border" BorderThickness="2">
+        <ui:StackPanel Orientation="Horizontal" Width="500">
+            <ui:StackPanel>
+                <TabControl Name="SettingsTabControl" TabStripPlacement="Left" Height="265" Width="500">
+                </TabControl>
+                <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35" Width="500">
+                    <ui:Button TranslationKey="close_button" Margin="5,0,0,0" Content="Close" Height="25" Width="75" Canvas.Left="415" Canvas.Top="5" Click="CloseButton_Click"/>
+                    <ui:Button TranslationKey="save_button" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Canvas.Left="330" Canvas.Top="5" Click="SaveButton_Click"/>
+                </ui:StackPanel>
+            </ui:StackPanel>
+        </ui:StackPanel>
+    </ui:Border>
+</ui:Dialog>

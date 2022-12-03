@@ -1,4 +1,4 @@
-﻿namespace StreamGlass.Settings.Settings
+﻿namespace StreamGlass.Settings
 {
     public abstract class UserControlLink
     {
@@ -17,7 +17,11 @@
         protected void SetSettings(string value) => m_Settings!.Set(m_Category, m_Setting, value);
         protected string GetSettings() => m_Settings!.Get(m_Category, m_Setting);
 
-        internal abstract void Load();
-        internal abstract void Save();
+        internal void OnSave() => Save();
+        internal void OnCancel() => Cancel();
+
+        protected abstract void Load();
+        protected abstract void Save();
+        protected virtual void Cancel() {}
     }
 }

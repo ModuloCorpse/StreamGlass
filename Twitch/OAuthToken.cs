@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using Quicksand.Web.Http;
+﻿using Quicksand.Web.Http;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -40,18 +39,15 @@ namespace StreamGlass.Twitch
                 string responseJsonStr = response.Body;
                 if (string.IsNullOrWhiteSpace(responseJsonStr))
                     return;
-                JObject responseJson = JObject.Parse(responseJsonStr);
-                string? access_token = (string?)responseJson["access_token"];
-                string? refresh_token = (string?)responseJson["refresh_token"];
-                string? token_type = (string?)responseJson["token_type"];
-                List<string>? scope = responseJson["scope"]?.ToObject<List<string>>();
-                if (access_token != null &&
-                    refresh_token != null &&
-                    token_type != null && token_type == "bearer" &&
-                    scope != null && CompareScopes(scope))
+                Json responseJson = new(responseJsonStr);
+                List<string> scope = responseJson.GetList<string>("scope");
+                if (responseJson.TryGet("access_token", out string? access_token) &&
+                    responseJson.TryGet("refresh_token", out string? refresh_token) &&
+                    responseJson.TryGet("token_type", out string? token_type) && token_type! == "bearer" &&
+                    CompareScopes(scope))
                 {
-                    m_RefreshToken = refresh_token;
-                    m_AccessToken = access_token;
+                    m_RefreshToken = refresh_token!;
+                    m_AccessToken = access_token!;
                 }
             }
         }

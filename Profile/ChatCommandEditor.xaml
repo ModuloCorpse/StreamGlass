@@ -1,0 +1,71 @@
+﻿<ui:Dialog x:Class="StreamGlass.Profile.ChatCommandEditor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="clr-namespace:StreamGlass.UI"
+        mc:Ignorable="d"
+        Title="ProfileEditor"
+        d:DesignHeight="504"
+        d:DesignWidth="454"
+        Height="504"
+        Width="454"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        ShowInAero="False">
+    <ui:Border BrushPaletteKey="dialog_border" BorderThickness="2">
+        <ui:StackPanel Width="450">
+            <ui:StackPanel Orientation="Horizontal">
+                <ui:Label x:Name="NameTextBoxLabel" TranslationKey="profile_editor_name" VerticalAlignment="Center" TextAlignment="Right" Text="Name:" Width="150"/>
+                <ui:TextBox Margin="5,0,0,0" x:Name="NameTextBox" Height="26" Width="250"/>
+            </ui:StackPanel>
+            <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <ui:Label x:Name="ContentTextBoxLabel" TranslationKey="profile_editor_content" VerticalAlignment="Center" TextAlignment="Right" Text="Content:" Width="150"/>
+                <ui:TextBox Margin="5,0,0,0" x:Name="ContentTextBox" Height="26" Width="250"/>
+            </ui:StackPanel>
+            <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <ui:Label x:Name="TimeTextBoxLabel" TranslationKey="profile_editor_time" VerticalAlignment="Center" TextAlignment="Right" Text="Time:" Width="150"/>
+                <ui:NumericUpDown Margin="5,0,0,0" x:Name="TimeUpDown" MinValue="0" Height="26" Width="250"/>
+            </ui:StackPanel>
+            <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <ui:Label x:Name="NbMessageTextBoxLabel" TranslationKey="profile_editor_messages" VerticalAlignment="Center" TextAlignment="Right" Text="Messages Number:" Width="150"/>
+                <ui:NumericUpDown Margin="5,0,0,0" x:Name="NbMessageUpDown" MinValue="0" Height="26" Width="250"/>
+            </ui:StackPanel>
+            <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <ui:Label x:Name="NbArgumentsTextBoxLabel" TranslationKey="profile_editor_arguments" VerticalAlignment="Center" TextAlignment="Right" Text="Arguments Number:" Width="150"/>
+                <ui:NumericUpDown Margin="5,0,0,0" x:Name="NbArgumentsUpDown" MinValue="0" Height="26" Width="250"/>
+            </ui:StackPanel>
+            <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <ui:Label x:Name="UserComboBoxLabel" TranslationKey="profile_editor_user" VerticalAlignment="Center" TextAlignment="Right" Text="User:" Width="150"/>
+                <ComboBox Margin="5,0,0,0" x:Name="UserComboBox" Height="26" Width="250"/>
+            </ui:StackPanel>
+            <ui:GroupBox x:Name="SubCommandGroupBox" TranslationKey="section_sub_commands" Header="Sub commands">
+                <ui:EditableList x:Name="SubCommandList" Height="70" />
+            </ui:GroupBox>
+            <ui:GroupBox TranslationKey="section_auto_trigger" Header="Auto-trigger" >
+                <ui:StackPanel>
+                    <ui:StackPanel Orientation="Horizontal">
+                        <ui:Label x:Name="AutoTriggerEnableTextBoxLabel" TranslationKey="profile_editor_enable" VerticalAlignment="Center" TextAlignment="Right" Text="Enable:" Width="150"/>
+                        <CheckBox Margin="5,0,0,0" x:Name="AutoTriggerEnableCheckBox" Checked="AutoTriggerEnableCheckBox_Checked" Unchecked="AutoTriggerEnableCheckBox_Checked"/>
+                    </ui:StackPanel>
+                    <ui:StackPanel x:Name="AutoTriggerTimePanel" Orientation="Horizontal" Margin="0,5,0,0">
+                        <ui:Label x:Name="AutoTriggerTimeTextBoxLabel" TranslationKey="profile_editor_time" VerticalAlignment="Center" TextAlignment="Right" Text="Time:" Width="150"/>
+                        <ui:NumericUpDown Margin="5,0,0,0" x:Name="AutoTriggerTimeUpDown" MinValue="0" Height="26" Width="250"/>
+                    </ui:StackPanel>
+                    <ui:StackPanel x:Name="AutoTriggerDeltaTimePanel" Orientation="Horizontal" Margin="0,5,0,0">
+                        <ui:Label x:Name="AutoTriggerTimeDeltaTextBoxLabel" TranslationKey="profile_editor_time_delta" VerticalAlignment="Center" TextAlignment="Right" Text="Time Delta:" Width="150"/>
+                        <ui:NumericUpDown Margin="5,0,0,0" x:Name="AutoTriggerTimeDeltaUpDown" MinValue="0" Height="26" Width="250"/>
+                    </ui:StackPanel>
+                    <ui:GroupBox x:Name="AutoTriggerDefaultArgumentGroupBox" TranslationKey="section_default_arguments" Header="Default arguments">
+                        <ui:EditableList x:Name="AutoTriggerArguments" Height="70" />
+                    </ui:GroupBox>
+                </ui:StackPanel>
+            </ui:GroupBox>
+            <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35" Width="450">
+                <ui:Button TranslationKey="close_button" Margin="5,0,0,0" Content="Close" Height="25" Width="75" Canvas.Left="415" Canvas.Top="5" Click="CloseButton_Click"/>
+                <ui:Button TranslationKey="save_button" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Canvas.Left="330" Canvas.Top="5" Click="SaveButton_Click"/>
+            </ui:StackPanel>
+        </ui:StackPanel>
+    </ui:Border>
+</ui:Dialog>

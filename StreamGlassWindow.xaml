@@ -1,33 +1,82 @@
-﻿<Window x:Class="StreamGlass.StreamGlassWindow"
+﻿<ui:Window x:Class="StreamGlass.StreamGlassWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:chat="clr-namespace:StreamGlass.StreamChat"
+        xmlns:ui="clr-namespace:StreamGlass.UI"
         mc:Ignorable="d"
         Title="StreamGlass"
+        d:DesignWidth="500"
+        d:DesignHeight="500"
         MinHeight="500"
         MinWidth="800"
+        WindowStyle="None"
+        ResizeMode="CanResizeWithGrip"
+        AllowsTransparency="True"
         Icon="/Assets/stream-glass-logo.ico">
-    <DockPanel LastChildFill="True">
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="_File" />
-            <MenuItem Header="_Settings" Click="SettingsToolStripMenuItem_Click"/>
-            <MenuItem Header="_Help">
-                <MenuItem Header="_Logs"  Click="LogsToolStripMenuItem_Click" />
-                <MenuItem Header="_About" />
-            </MenuItem>
-        </Menu>
-        <Grid Name="MainGrid">
+    <ui:DockPanel LastChildFill="True">
+        <ui:Grid BrushPaletteKey="top_bar_background" DockPanel.Dock="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ui:Menu Grid.Column="0" x:Name="MenuBar">
+                <ui:MenuItem TranslationKey="menu_file" Header="File"/>
+                <ui:MenuItem TranslationKey="menu_settings" Header="Settings" Click="SettingsToolStripMenuItem_Click"/>
+                <ui:MenuItem TranslationKey="menu_help" Header="Help">
+                    <ui:MenuItem TranslationKey="menu_logs" Header="Logs"  Click="LogsToolStripMenuItem_Click" />
+                    <ui:MenuItem TranslationKey="menu_about" Header="About" />
+                </ui:MenuItem>
+            </ui:Menu>
+            <ui:StackPanel HorizontalAlignment="Center" Grid.Column="1" Orientation="Horizontal">
+                <Image Source="Assets/stream-glass-logo.ico" Width="15" Height="15" />
+                <ui:Label BrushPaletteKey="top_bar_text" TranslationKey="app_name" x:Name="AppName" Margin="2,2,0,0" Text="StreamGlass" />
+            </ui:StackPanel>
+            <ui:StackPanel Grid.Column="2" Orientation="Horizontal">
+                <ui:Button BrushPaletteKey="top_bar_button_maximize" Click="MaximizeRestoreButton_Click" Width="15" Height="15" BorderThickness="0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="10"/>
+                        </Style>
+                    </Button.Resources>
+                </ui:Button>
+                <ui:Button Margin="2,0,0,0" BrushPaletteKey="top_bar_button_minimize" Click="MinimizeButton_Click" Width="15" Height="15" BorderThickness="0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="10"/>
+                        </Style>
+                    </Button.Resources>
+                </ui:Button>
+                <ui:Button Margin="2,0,0,0" BrushPaletteKey="top_bar_button_close" Click="CloseButton_Click" Width="15" Height="15" BorderThickness="0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="10"/>
+                        </Style>
+                    </Button.Resources>
+                </ui:Button>
+            </ui:StackPanel>
+        </ui:Grid>
+        <ui:Grid x:Name="MainGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2.2*"></ColumnDefinition>
                 <ColumnDefinition Width="2.8*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <chat:Chat x:Name="StreamChatPanel" Grid.Column="0"/>
-            <StackPanel Name="ProfilePanel" Grid.Column="1">
-                <ComboBox Margin="5,5,0,0" Name="CommandProfilesComboBox" Height="26" Width="120" SelectionChanged="CommandProfilesComboBox_SelectionChanged"/>
-                <Button Content="Start Stream" Click="Button_Click"/>
-            </StackPanel>
-        </Grid>
-    </DockPanel>
-</Window>
+            <ui:DockPanel x:Name="StreamChatDock" LastChildFill="True">
+                <ui:Border BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,2,2,1" DockPanel.Dock="Top" Height="28">
+                    <ui:StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                        <ComboBox Name="CommandProfilesComboBox" Width="200" SelectionChanged="CommandProfilesComboBox_SelectionChanged"/>
+                        <ui:Button Margin="5, 0, 0, 0" Width="20" Height="20" Click="EditProfilesButton_Click" />
+                        <ui:Button Margin="5, 0, 0, 0" Width="20" Height="20" Click="Button_Click" />
+                    </ui:StackPanel>
+                </ui:Border>
+                <ui:Border BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top">
+                    <chat:Chat x:Name="StreamChatPanel" Grid.Column="0"/>
+                </ui:Border>
+            </ui:DockPanel>
+            <ui:StackPanel x:Name="ProfilePanel" Grid.Column="1">
+            </ui:StackPanel>
+        </ui:Grid>
+    </ui:DockPanel>
+</ui:Window>

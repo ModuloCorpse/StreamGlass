@@ -1,7 +1,8 @@
 ﻿using Quicksand.Web;
-using StreamGlass.Command;
+using StreamGlass.Profile;
 using StreamGlass.StreamChat;
-using Client = StreamGlass.Twitch.IRC.Client;
+using StreamGlass.UI;
+using ChatClient = StreamGlass.Twitch.IRC.ChatClient;
 
 namespace StreamGlass.Twitch
 {
@@ -10,11 +11,11 @@ namespace StreamGlass.Twitch
         private bool m_IsConnected = false;
         private string m_Channel = "";
         private readonly Settings.Data m_Settings;
-        private readonly Client m_Client = new("irc.chat.twitch.tv", 6697, true);
+        private readonly ChatClient m_Client;
         private ChannelInfo? m_OriginalBroadcasterChannelInfo = null;
         private readonly Authenticator m_Authenticator;
         private readonly StreamGlassWindow m_Form;
-        private readonly EventSub m_PubSub = new();
+        private readonly EventSub m_PubSub;
 
         public Bot(Server webServer, Settings.Data settings, StreamGlassWindow form)
         {
@@ -27,6 +28,10 @@ namespace StreamGlass.Twitch
             m_Settings.Create("twitch", "channel", "");
             m_Settings.Create("twitch", "public_key", "");
             m_Settings.Create("twitch", "secret_key", "");
+            m_Settings.Create("twitch", "sub_mode", "all");
+
+            m_Client = new(m_Settings);
+            m_PubSub = new(m_Settings);
 
             if (m_Settings.Get("twitch", "auto_connect") == "true")
                 Connect();
@@ -95,7 +100,7 @@ namespace StreamGlass.Twitch
                         m_Client.SetSelfUserInfo(userInfoOfToken);
                         if (userInfoOfToken != null)
                             API.LoadEmoteSetFromFollowedChannelOfID(userInfoOfToken.ID);
-                        m_Client.Connect("StreamGlass", ircToken);
+                        m_Client.Init("StreamGlass", ircToken);
                     }
                 }
             }
@@ -109,7 +114,7 @@ namespace StreamGlass.Twitch
             Unregister();
         }
 
-        public Settings.TabItem GetSettings() => new SettingsItem(m_Settings, this);
+        public Settings.TabItem GetSettings() => new TwitchSettingsItem(m_Settings, this);
 
         private void OnConnected(int _)
         {

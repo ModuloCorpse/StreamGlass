@@ -1,5 +1,4 @@
-﻿using StreamGlass.Settings.Settings;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 
 namespace StreamGlass.Settings
 {
@@ -7,7 +6,7 @@ namespace StreamGlass.Settings
     {
         private readonly CheckBox m_CheckBox;
         public CheckBoxUserControlLink(CheckBox checkBox) => m_CheckBox = checkBox;
-        internal override void Load() => m_CheckBox.IsChecked = GetSettings() == "true";
-        internal override void Save() => SetSettings((m_CheckBox.IsChecked != null && (bool)m_CheckBox.IsChecked) ? "true" : "false");
+        protected override void Load() => m_CheckBox.IsChecked = GetSettings() == "true";
+        protected override void Save() => SetSettings((m_CheckBox.IsChecked != null && (bool)m_CheckBox.IsChecked) ? "true" : "false");
     }
 }

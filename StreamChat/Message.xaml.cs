@@ -4,14 +4,14 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using StreamGlass.UI;
 
 namespace StreamGlass.StreamChat
 {
-    public partial class Message : UserControl
+    public partial class Message : UI.UserControl
     {
         private static readonly int EMOTE_SIZE = 20;
         private readonly Chat m_StreamChat;
-        private readonly BrushPaletteManager m_Palette;
         private readonly UserMessage m_Message;
         private readonly bool m_IsHighlighted;
 
@@ -32,11 +32,10 @@ namespace StreamGlass.StreamChat
             return fontSize;
         }
 
-        public Message(Chat streamChat, BrushPaletteManager palette, UserMessage message, bool isHighligted, double senderWidth, double senderFontSize, double contentFontSize)
+        public Message(Chat streamChat, BrushPaletteManager palette, TranslationManager translation, UserMessage message, bool isHighligted, double senderWidth, double senderFontSize, double contentFontSize)
         {
             InitializeComponent();
             m_StreamChat = streamChat;
-            m_Palette = palette;
             m_Message = message;
             MessageSender.Text = message.UserName;
             MessageSender.Width = senderWidth;
@@ -51,8 +50,20 @@ namespace StreamGlass.StreamChat
                     MessageSender.Foreground = color;
             }
             MessageContent.Text = message.EmotelessMessage;
-            m_IsHighlighted = (isHighligted || (message.SenderType > UserMessage.UserType.MOD && message.SenderType < UserMessage.UserType.MOD));
-            UpdatePaletteColor();
+            m_IsHighlighted = (isHighligted || message.IsHighlighted() || (message.SenderType > UserMessage.UserType.MOD && message.SenderType < UserMessage.UserType.MOD));
+            if (m_IsHighlighted)
+            {
+                MessagePanel.BrushPaletteKey = "chat_highlight_background";
+                MessageContent.BrushPaletteKey = "chat_highlight_background";
+                MessageContent.TextBrushPaletteKey = "chat_highlight_message";
+            }
+            else
+            {
+                MessagePanel.BrushPaletteKey = "chat_background";
+                MessageContent.BrushPaletteKey = "chat_background";
+                MessageContent.TextBrushPaletteKey = "chat_message";
+            }
+            Update(palette, translation);
         }
 
         public double NameWidth { get => MessageSender.Width; }
@@ -64,16 +75,19 @@ namespace StreamGlass.StreamChat
             MessageSender.Width = width;
             MessageContentCanvas.Margin = new Thickness(width, 0, 0, 0);
             MessageContent.Width = (MessagePanel.ActualWidth - MessageSender.ActualWidth) - 20;
+            UpdateEmotes();
         }
 
         public void SetSenderNameFontSize(double fontSize)
         {
             MessageSender.FontSize = GetFontSize(MessageSender, fontSize);
+            UpdateEmotes();
         }
 
         public void SetMessageFontSize(double fontSize)
         {
             MessageContent.FontSize = fontSize;
+            UpdateEmotes();
         }
 
         internal void UpdateEmotes()
@@ -96,26 +110,6 @@ namespace StreamGlass.StreamChat
                     Margin = new(charRect.X, charRect.Y, 0, 0)
                 });
             }
-        }
-
-        private void UpdatePaletteColor()
-        {
-            if (m_IsHighlighted)
-            {
-                MessageContent.Foreground = m_Palette.GetColor("highlight_message");
-                MessagePanel.Background = m_Palette.GetColor("highlight_background");
-            }
-            else
-            {
-                MessageContent.Foreground = m_Palette.GetColor("message");
-                MessagePanel.Background = m_Palette.GetColor("background");
-            }
-        }
-
-        internal void UpdatePalette()
-        {
-            UpdatePaletteColor();
-            UpdateEmotes();
         }
 
         private void ToggleHighlight_Click(object sender, RoutedEventArgs e)

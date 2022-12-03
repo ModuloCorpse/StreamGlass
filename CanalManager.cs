@@ -13,7 +13,7 @@ namespace StreamGlass
             int id = (int)canalID;
             if (m_Canals.ContainsKey(id))
                 return false;
-            ConcurrentList<CanalMessageListener<T>> newCanal = new();
+            ConcurrentList<CanalMessageListener<T>> newCanal = new(canalID);
             m_Canals[id] = newCanal;
             return true;
         }
@@ -23,7 +23,7 @@ namespace StreamGlass
             int id = (int)canalID;
             if (m_Canals.ContainsKey(id))
                 return false;
-            ConcurrentList<CanalTriggerListener> newCanal = new();
+            ConcurrentList<CanalTriggerListener> newCanal = new(canalID);
             m_Canals[id] = newCanal;
             return true;
         }

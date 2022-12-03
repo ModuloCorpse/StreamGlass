@@ -1,5 +1,4 @@
-﻿using StreamGlass.Settings.Settings;
-using System.Windows.Controls;
+﻿using StreamGlass.UI;
 
 namespace StreamGlass.Settings
 {
@@ -7,7 +6,7 @@ namespace StreamGlass.Settings
     {
         private readonly TextBox m_TextBox;
         public TextBoxUserControlLink(TextBox textBox) => m_TextBox = textBox;
-        internal override void Load() => m_TextBox.Text = GetSettings();
-        internal override void Save() => SetSettings(m_TextBox.Text);
+        protected override void Load() => m_TextBox.Text = GetSettings();
+        protected override void Save() => SetSettings(m_TextBox.Text);
     }
 }

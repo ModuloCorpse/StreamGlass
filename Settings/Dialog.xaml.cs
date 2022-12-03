@@ -2,21 +2,31 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using StreamGlass.UI;
 
 namespace StreamGlass.Settings
 {
-    public partial class Dialog : Window
+    public partial class Dialog : UI.Dialog
     {
         private readonly List<TabItem> m_TabItems = new();
 
-        public Dialog()
+        public Dialog(StreamGlassWindow window): base(window)
         {
             InitializeComponent();
         }
 
+        protected override void OnUpdate(BrushPaletteManager palette, TranslationManager translation)
+        {
+            foreach (TabItem item in m_TabItems)
+                item.UpdateTabItemColorPalette(palette, translation);
+        }
+
         public void AddTabItem(TabItem item)
         {
+            item.SetSettingDialog(this);
+            item.UpdateTabItemColorPalette(GetBrushPalette(), GetTranslations());
             System.Windows.Controls.TabItem tabItem = new();
             tabItem.Header = new Image()
             {
@@ -33,6 +43,13 @@ namespace StreamGlass.Settings
         {
             foreach (TabItem item in m_TabItems)
                 item.SaveTabItem();
+            Close();
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (TabItem item in m_TabItems)
+                item.CancelTabItem();
             Close();
         }
     }

@@ -1,8 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
-using Quicksand.Web.Http;
+﻿using Quicksand.Web.Http;
+using StreamGlass.UI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace StreamGlass.Twitch
 {
@@ -43,49 +42,25 @@ namespace StreamGlass.Twitch
             return response;
         }
 
-        private static void LoadEmoteContent(JObject data)
+        private static void LoadEmoteContent(Json data)
         {
-            string? id = (string?)data["id"];
-            string? name = (string?)data["name"];
-            string? emoteType = (string?)data["emote_type"];
-            List<string> format = new();
-            {
-                JArray? formatArr = (JArray?)data["format"];
-                if (formatArr != null)
-                {
-                    foreach (JValue formatItem in formatArr.Cast<JValue>())
-                        format.Add(formatItem.ToString());
-                }
-            }
-            List<string> scale = new();
-            {
-                JArray? scaleArr = (JArray?)data["scale"];
-                if (scaleArr != null)
-                {
-                    foreach (JValue scaleItem in scaleArr.Cast<JValue>())
-                        scale.Add(scaleItem.ToString());
-                }
-            }
-            List<string> themeMode = new();
-            {
-                JArray? themeModeArr = (JArray?)data["theme_mode"];
-                if (themeModeArr != null)
-                {
-                    foreach (JValue themeModeItem in themeModeArr.Cast<JValue>())
-                        themeMode.Add(themeModeItem.ToString());
-                }
-            }
-            if (id != null && name != null && emoteType != null && format.Count != 0 && scale.Count != 0 && themeMode.Count != 0)
-                ms_Cache.AddEmote(new(id, name, emoteType, format, scale, themeMode));
+            List<string> format = data.GetList<string>("format");
+            List<string> scale = data.GetList<string>("scale");
+            List<string> themeMode = data.GetList<string>("theme_mode");
+            if (data.TryGet("id", out string? id) &&
+                data.TryGet("name", out string? name) &&
+                data.TryGet("emote_type", out string? emoteType) &&
+                format.Count != 0 && scale.Count != 0 && themeMode.Count != 0)
+                ms_Cache.AddEmote(new(id!, name!, emoteType!, format, scale, themeMode));
         }
 
-        private static JObject JsonParse(string content)
+        private static Json JsonParse(string content)
         {
             if (string.IsNullOrEmpty(content))
                 return new();
             try
             {
-                return JObject.Parse(content);
+                return new Json(content);
             } catch (Exception e)
             {
                 Logger.Log("API", string.Format("Json Exception: {0}", e));
@@ -93,15 +68,12 @@ namespace StreamGlass.Twitch
             }
         }
 
-        private static JObject LoadEmoteSetContent(string content)
+        private static Json LoadEmoteSetContent(string content)
         {
-            JObject responseJson = JsonParse(content);
-            JArray? datas = (JArray?)responseJson["data"];
-            if (datas != null && datas.Count > 0)
-            {
-                foreach (JObject data in datas.Cast<JObject>())
-                    LoadEmoteContent(data);
-            }
+            Json responseJson = JsonParse(content);
+            List<Json> datas = responseJson.GetList<Json>("data");
+            foreach (Json data in datas)
+                LoadEmoteContent(data);
             return responseJson;
         }
 
@@ -110,10 +82,9 @@ namespace StreamGlass.Twitch
             Response? response = APICall(ms_AccessToken, new GetRequest("https://api.twitch.tv/helix/chat/emotes/global"));
             if (response != null)
             {
-                JObject responseJson = LoadEmoteSetContent(response.Body);
-                JValue? template = (JValue?)responseJson["template"];
-                if (template != null)
-                    ms_EmoteURLTemplate = template.ToString();
+                Json responseJson = LoadEmoteSetContent(response.Body);
+                if (responseJson.TryGet("template", out string? template))
+                    ms_EmoteURLTemplate = template!;
             }
         }
 
@@ -171,9 +142,9 @@ namespace StreamGlass.Twitch
 
         public static void LoadEmoteSetFromFollowedChannelOfID(string id)
         {
-            List<string> followedBy = API.GetChannelFollowedByID(id);
+            List<string> followedBy = GetChannelFollowedByID(id);
             foreach (string followedID in followedBy)
-                API.LoadChannelEmoteSetFromID(followedID);
+                LoadChannelEmoteSetFromID(followedID);
         }
 
         public static string GetEmoteURL(string id, BrushPalette.Type paletteType)
@@ -200,19 +171,18 @@ namespace StreamGlass.Twitch
 
         private static UserInfo? GetUserInfo(string content)
         {
-            JObject responseJson = JsonParse(content);
-            JArray? datas = (JArray?)responseJson["data"];
-            if (datas != null && datas.Count > 0)
+            Json responseJson = JsonParse(content);
+            List<Json> datas = responseJson.GetList<Json>("data");
+            if (datas.Count > 0)
             {
-                JObject data = (JObject)datas[0];
-                string? id = (string?)data["id"];
-                string? login = (string?)data["login"];
-                string? displayName = (string?)data["display_name"];
-                string? type = (string?)data["type"];
-                string? broadcasterType = (string?)data["broadcaster_type"];
-                string? description = (string?)data["description"];
-                if (id != null && login != null && displayName != null && type != null && broadcasterType != null && description != null)
-                    return new UserInfo(id, login, displayName, type, broadcasterType, description);
+                Json data = datas[0];
+                if (data.TryGet("id", out string? id) &&
+                    data.TryGet("login", out string? login) &&
+                    data.TryGet("display_name", out string? displayName) &&
+                    data.TryGet("type", out string? type) &&
+                    data.TryGet("broadcaster_type", out string? broadcasterType) &&
+                    data.TryGet("description", out string? description))
+                    return new UserInfo(id!, login!, displayName!, type!, broadcasterType!, description!);
             }
             return null;
         }
@@ -274,27 +244,24 @@ namespace StreamGlass.Twitch
 
         private static StreamInfo? GetStreamInfo(string content)
         {
-            JObject responseJson = JsonParse(content);
-            JArray? datas = (JArray?)responseJson["data"];
-            if (datas != null && datas.Count > 0)
+            Json responseJson = JsonParse(content);
+            List<Json> datas = responseJson.GetList<Json>("data");
+            if (datas.Count > 0)
             {
-                JObject data = (JObject)datas[0];
-                string? id = (string?)data["id"];
-                string? userID = (string?)data["user_id"];
+                Json data = datas[0];
                 UserInfo? broadcasterInfo = null;
-                if (userID != null)
-                    broadcasterInfo = GetUserInfoFromID(userID);
-                string? gameID = (string?)data["game_id"];
-                string? gameName = (string?)data["game_name"];
-                string? type = (string?)data["type"];
-                string? title = (string?)data["title"];
-                object? ret = (int?)data["viewer_count"];
-                int viewers = (ret != null) ? (int)ret : -1;
-                string? language = (string?)data["language"];
-                ret = (bool?)data["is_mature"];
-                bool isMature = (ret != null) && (bool)ret;
-                if (id != null && broadcasterInfo != null && gameID != null && gameName != null && type != null && title != null && viewers != -1 && language != null)
-                    return new StreamInfo(broadcasterInfo, id, gameID, gameName, type, title, language, viewers, isMature);
+                if (data.TryGet("user_id", out string? userID))
+                    broadcasterInfo = GetUserInfoFromID(userID!);
+                int viewers = data.GetOrDefault("viewer_count", -1);
+                if (data.TryGet("id", out string? id) &&
+                    broadcasterInfo != null &&
+                    data.TryGet("game_id", out string? gameID) &&
+                    data.TryGet("game_name", out string? gameName) &&
+                    data.TryGet("type", out string? type) &&
+                    data.TryGet("title", out string? title) &&
+                    viewers != -1 &&
+                    data.TryGet("language", out string? language))
+                    return new StreamInfo(broadcasterInfo, id!, gameID!, gameName!, type!, title!, language!, viewers, data.GetOrDefault("is_mature", false));
             }
             return null;
         }
@@ -312,17 +279,16 @@ namespace StreamGlass.Twitch
 
         private static ChannelInfo? GetChannelInfo(string content, UserInfo broadcasterInfo)
         {
-            JObject responseJson = JsonParse(content);
-            JArray? datas = (JArray?)responseJson["data"];
-            if (datas != null && datas.Count > 0)
+            Json responseJson = JsonParse(content);
+            List<Json> datas = responseJson.GetList<Json>("data");
+            if (datas.Count > 0)
             {
-                JObject data = (JObject)datas[0];
-                string? gameID = (string?)data["game_id"];
-                string? gameName = (string?)data["game_name"];
-                string? title = (string?)data["title"];
-                string? language = (string?)data["broadcaster_language"];
-                if (gameID != null && gameName != null && title != null && language != null)
-                    return new ChannelInfo(broadcasterInfo, gameID, gameName, title, language);
+                Json data = datas[0];
+                if (data.TryGet("game_id", out string? gameID) &&
+                    data.TryGet("game_name", out string? gameName) &&
+                    data.TryGet("title", out string? title) &&
+                    data.TryGet("broadcaster_language", out string? language))
+                    return new ChannelInfo(broadcasterInfo, gameID!, gameName!, title!, language!);
             }
             return null;
         }
@@ -354,29 +320,24 @@ namespace StreamGlass.Twitch
         {
             if (string.IsNullOrEmpty(title) && string.IsNullOrEmpty(gameID) && string.IsNullOrEmpty(language))
                 return false;
-            JObject body = new();
+            Json body = new();
             if (!string.IsNullOrEmpty(title))
-                body["title"] = title;
+                body.Set("title", title);
             if (!string.IsNullOrEmpty(gameID))
-                body["game_id"] = gameID;
+                body.Set("game_id", gameID);
             if (!string.IsNullOrEmpty(language))
-                body["broadcaster_language"] = language;
+                body.Set("broadcaster_language", language);
             Response? response = APICall(ms_AccessToken, new PatchRequest(string.Format("https://api.twitch.tv/helix/channels?broadcaster_id={0}", id), body.ToString()).AddHeaderField("Content-Type", "application/json"));
             return (response != null && response.StatusCode == 204);
         }
 
         private static void LoadChannelFollowedByResponse(Response response, ref List<string> ret)
         {
-            JObject responseJson = JsonParse(response.Body);
-            JArray? datas = (JArray?)responseJson["data"];
-            if (datas != null && datas.Count > 0)
+            Json responseJson = JsonParse(response.Body);
+            foreach (Json data in responseJson.GetList<Json>("data"))
             {
-                foreach (JObject data in datas.Cast<JObject>())
-                {
-                    string? toID = (string?)data["to_id"];
-                    if (toID != null)
-                        ret.Add(toID);
-                }
+                if (data.TryGet("to_id", out string? toID))
+                    ret.Add(toID!);
             }
         }
 
