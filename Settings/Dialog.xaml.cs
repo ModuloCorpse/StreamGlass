@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using StreamGlass.UI;
+using StreamFeedstock;
+using StreamFeedstock.Controls;
 
 namespace StreamGlass.Settings
 {
-    public partial class Dialog : UI.Dialog
+    public partial class Dialog : StreamFeedstock.Controls.Dialog
     {
         private readonly List<TabItem> m_TabItems = new();
 

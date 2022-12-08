@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:ui="clr-namespace:StreamGlass.UI"
+        xmlns:ui="clr-namespace:StreamFeedstock.Controls;assembly=StreamFeedstock"
         mc:Ignorable="d"
         Title="StreamGlass Settings"
         d:DesignHeight="304"
@@ -15,15 +15,42 @@
         ShowInTaskbar="False"
         ShowInAero="False">
     <ui:Border BrushPaletteKey="dialog_border" BorderThickness="2">
-        <ui:StackPanel Orientation="Horizontal" Width="500">
-            <ui:StackPanel>
-                <TabControl Name="SettingsTabControl" TabStripPlacement="Left" Height="265" Width="500">
-                </TabControl>
-                <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35" Width="500">
-                    <ui:Button TranslationKey="close_button" Margin="5,0,0,0" Content="Close" Height="25" Width="75" Canvas.Left="415" Canvas.Top="5" Click="CloseButton_Click"/>
-                    <ui:Button TranslationKey="save_button" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Canvas.Left="330" Canvas.Top="5" Click="SaveButton_Click"/>
+        <ui:DockPanel>
+            <ui:Grid BrushPaletteKey="top_bar_background" DockPanel.Dock="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ui:StackPanel HorizontalAlignment="Center" Grid.Column="1" Orientation="Horizontal">
+                    <Image Source="../Assets/stream-glass-logo.ico" Width="15" Height="15" />
+                    <ui:Label BrushPaletteKey="top_bar_text" TranslationKey="menu_settings" Margin="2,2,0,0" Text="Settings" />
+                </ui:StackPanel>
+                <ui:StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <ui:Button Margin="2,0,0,0" BrushPaletteKey="top_bar_button_close" Click="CloseButton_Click" Width="15" Height="15" BorderThickness="0">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="10"/>
+                            </Style>
+                        </Button.Resources>
+                    </ui:Button>
+                </ui:StackPanel>
+            </ui:Grid>
+            <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <ui:StackPanel>
+                    <TabControl Name="SettingsTabControl" TabStripPlacement="Left" Height="245" Width="500">
+                    </TabControl>
+                    <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35" Width="500">
+                        <ui:Button TranslationKey="save_button" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="10"/>
+                                </Style>
+                            </Button.Resources>
+                        </ui:Button>
+                    </ui:StackPanel>
                 </ui:StackPanel>
             </ui:StackPanel>
-        </ui:StackPanel>
+        </ui:DockPanel>
     </ui:Border>
 </ui:Dialog>

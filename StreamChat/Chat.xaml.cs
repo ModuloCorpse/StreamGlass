@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using StreamGlass.UI;
+using StreamFeedstock;
+using StreamFeedstock.Controls;
 
 namespace StreamGlass.StreamChat
 {
-    public partial class Chat : UI.UserControl
+    public partial class Chat : StreamFeedstock.Controls.UserControl
     {
         public enum DisplayType
         {

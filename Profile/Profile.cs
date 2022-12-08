@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using StreamFeedstock;
+using StreamFeedstock.ManagedObject;
 using StreamGlass.StreamChat;
 
 namespace StreamGlass.Profile
 {
-    public class Profile: ManagedObject.Object<Profile>
+    public class Profile: Object<Profile>
     {
         private string m_Channel = "";
         private readonly StreamInfo m_StreamInfo = new();

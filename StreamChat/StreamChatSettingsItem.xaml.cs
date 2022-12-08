@@ -1,9 +1,10 @@
 ﻿using StreamGlass.Settings;
-using StreamGlass.UI;
+using StreamFeedstock.Controls;
 using System.Windows;
 using System.Windows.Controls;
 using static StreamGlass.StreamChat.Chat;
 using TabItem = StreamGlass.Settings.TabItem;
+using StreamFeedstock;
 
 namespace StreamGlass.StreamChat
 {

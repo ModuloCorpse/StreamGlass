@@ -1,4 +1,5 @@
 ﻿using Quicksand.Web.Http;
+using StreamFeedstock;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -33,7 +34,7 @@ namespace StreamGlass.Twitch
 
         private void GetAccessToken(string request)
         {
-            Response? response = new PostRequest("https://id.twitch.tv/oauth2/token", request).AddHeaderField("Content-Type", "application/x-www-form-urlencoded").Send();
+            Response? response = new PostRequest("https://id.twitch.tv/oauth2/token", request).AddHeaderField("Content-Type", "application/x-www-form-urlencoded").Send(5);
             if (response != null)
             {
                 string responseJsonStr = response.Body;

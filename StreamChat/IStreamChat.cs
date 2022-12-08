@@ -1,4 +1,4 @@
-﻿using StreamGlass.UI;
+﻿using StreamFeedstock.Controls;
 
 namespace StreamGlass.StreamChat
 {

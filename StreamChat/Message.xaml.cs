@@ -4,11 +4,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using StreamGlass.UI;
+using StreamFeedstock;
+using StreamFeedstock.Controls;
 
 namespace StreamGlass.StreamChat
 {
-    public partial class Message : UI.UserControl
+    public partial class Message : StreamFeedstock.Controls.UserControl
     {
         private static readonly int EMOTE_SIZE = 20;
         private readonly Chat m_StreamChat;
@@ -40,8 +41,9 @@ namespace StreamGlass.StreamChat
             MessageSender.Text = message.UserName;
             MessageSender.Width = senderWidth;
             MessageContentCanvas.Margin = new Thickness(senderWidth, 0, 0, 0);
-            SetSenderNameFontSize(senderFontSize);
-            SetMessageFontSize(contentFontSize);
+            MessageContent.Text = message.EmotelessMessage;
+            SetSenderNameFontSize(senderFontSize, false);
+            SetMessageFontSize(contentFontSize, false);
             BrushConverter converter = new();
             if (!string.IsNullOrWhiteSpace(message.Color))
             {
@@ -49,7 +51,6 @@ namespace StreamGlass.StreamChat
                 if (color != null)
                     MessageSender.Foreground = color;
             }
-            MessageContent.Text = message.EmotelessMessage;
             m_IsHighlighted = (isHighligted || message.IsHighlighted() || (message.SenderType > UserMessage.UserType.MOD && message.SenderType < UserMessage.UserType.MOD));
             if (m_IsHighlighted)
             {
@@ -70,24 +71,27 @@ namespace StreamGlass.StreamChat
         public double NameFontSize { get => MessageSender.FontSize; }
         public double MessageFontSize { get => MessageContent.FontSize; }
 
-        public void SetSenderNameWidth(double width)
+        public void SetSenderNameWidth(double width, bool updateEmotes = true)
         {
             MessageSender.Width = width;
             MessageContentCanvas.Margin = new Thickness(width, 0, 0, 0);
             MessageContent.Width = (MessagePanel.ActualWidth - MessageSender.ActualWidth) - 20;
-            UpdateEmotes();
+            if (updateEmotes)
+                UpdateEmotes();
         }
 
-        public void SetSenderNameFontSize(double fontSize)
+        public void SetSenderNameFontSize(double fontSize, bool updateEmotes = true)
         {
             MessageSender.FontSize = GetFontSize(MessageSender, fontSize);
-            UpdateEmotes();
+            if (updateEmotes)
+                UpdateEmotes();
         }
 
-        public void SetMessageFontSize(double fontSize)
+        public void SetMessageFontSize(double fontSize, bool updateEmotes = true)
         {
             MessageContent.FontSize = fontSize;
-            UpdateEmotes();
+            if (updateEmotes)
+                UpdateEmotes();
         }
 
         internal void UpdateEmotes()

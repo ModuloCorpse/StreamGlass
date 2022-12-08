@@ -1,4 +1,6 @@
-﻿namespace StreamGlass.Profile
+﻿using StreamFeedstock;
+
+namespace StreamGlass.Profile
 {
     public class StreamInfo
     {

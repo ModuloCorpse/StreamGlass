@@ -1,7 +1,8 @@
 ﻿using StreamGlass.Settings;
-using StreamGlass.UI;
+using StreamFeedstock.Controls;
 using System;
 using TabItem = StreamGlass.Settings.TabItem;
+using StreamFeedstock;
 
 namespace StreamGlass.StreamChat
 {

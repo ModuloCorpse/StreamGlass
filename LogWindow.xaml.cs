@@ -1,12 +1,12 @@
-﻿using StreamGlass.UI;
+﻿using StreamFeedstock;
+using StreamFeedstock.Controls;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace StreamGlass
 {
-    public partial class LogWindow : UI.Dialog
+    public partial class LogWindow : Dialog, ILogWindow
     {
         private class ListViewLog : System.Windows.Controls.ListViewItem, IUIElement
         {
@@ -24,20 +24,15 @@ namespace StreamGlass
         private bool m_IsRefreshingComboBox = false;
         private string m_CurrentLogCategory = "";
 
-        public LogWindow(UI.Window parent): base(parent)
+        public LogWindow(StreamFeedstock.Controls.Window parent, string category): base(parent)
         {
+            m_CurrentLogCategory = category;
             InitializeComponent();
             Logger.SetLogWindow(this);
             UpdateLogListView();
         }
 
-        public void SetCurrentLogCategory(string category)
-        {
-            m_CurrentLogCategory = category;
-            UpdateLogs();
-        }
-
-        public void UpdateLogs() => Dispatcher.Invoke(() => UpdateLogListView());
+        public void LogWindow_Update() => Dispatcher.Invoke(() => UpdateLogListView());
 
         private void UpdateLogListView()
         {
@@ -54,8 +49,8 @@ namespace StreamGlass
             LogsListView.Items.Clear();
             foreach (string log in Logger.GetLogs(m_CurrentLogCategory))
             {
-                UI.ContextMenu contextMenu = new();
-                UI.MenuItem menuItem = new() { Header = "Copy" };
+                StreamFeedstock.Controls.ContextMenu contextMenu = new();
+                StreamFeedstock.Controls.MenuItem menuItem = new() { Header = "Copy" };
                 menuItem.Click += MenuItem_Click;
                 contextMenu.Items.Add(menuItem);
                 LogsListView.Items.Add(new ListViewLog() { Content = log, ContextMenu = contextMenu });
@@ -78,8 +73,8 @@ namespace StreamGlass
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            UI.MenuItem menuItem = (UI.MenuItem)sender;
-            UI.ContextMenu contextMenu = (UI.ContextMenu)menuItem.Parent;
+            StreamFeedstock.Controls.MenuItem menuItem = (StreamFeedstock.Controls.MenuItem)sender;
+            StreamFeedstock.Controls.ContextMenu contextMenu = (StreamFeedstock.Controls.ContextMenu)menuItem.Parent;
             ListViewItem item = (ListViewItem)contextMenu.PlacementTarget;
             Clipboard.SetText(item.Content.ToString());
         }
@@ -88,5 +83,7 @@ namespace StreamGlass
         {
             SystemCommands.CloseWindow(this);
         }
+
+        public void LogWindow_Close() => Close();
     }
 }

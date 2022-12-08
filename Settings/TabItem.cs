@@ -1,4 +1,5 @@
-﻿using StreamGlass.UI;
+﻿using StreamFeedstock;
+using StreamFeedstock.Controls;
 using System.Collections.Generic;
 
 namespace StreamGlass.Settings

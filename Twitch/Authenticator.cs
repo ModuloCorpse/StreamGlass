@@ -120,7 +120,7 @@ namespace StreamGlass.Twitch
             }
             myProcess.Start();
             m_Task = new TaskCompletionSource<string>();
-            if (m_Task.Task.Wait(TimeSpan.FromSeconds(300)))
+            if (m_Task.Task.Wait(TimeSpan.FromSeconds(5)))
                 return new(m_Scopes, m_Settings.Get("twitch", "public_key"), m_Settings.Get("twitch", "secret_key"), m_Task.Task.Result);
             return null;
         }

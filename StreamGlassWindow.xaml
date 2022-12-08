@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:chat="clr-namespace:StreamGlass.StreamChat"
-        xmlns:ui="clr-namespace:StreamGlass.UI"
+        xmlns:ui="clr-namespace:StreamFeedstock.Controls;assembly=StreamFeedstock"
         mc:Ignorable="d"
         Title="StreamGlass"
         d:DesignWidth="500"
@@ -32,7 +32,7 @@
             </ui:Menu>
             <ui:StackPanel HorizontalAlignment="Center" Grid.Column="1" Orientation="Horizontal">
                 <Image Source="Assets/stream-glass-logo.ico" Width="15" Height="15" />
-                <ui:Label BrushPaletteKey="top_bar_text" TranslationKey="app_name" x:Name="AppName" Margin="2,2,0,0" Text="StreamGlass" />
+                <ui:Label BrushPaletteKey="top_bar_text" TranslationKey="app_name" Margin="2,2,0,0" Text="StreamGlass" />
             </ui:StackPanel>
             <ui:StackPanel Grid.Column="2" Orientation="Horizontal">
                 <ui:Button BrushPaletteKey="top_bar_button_maximize" Click="MaximizeRestoreButton_Click" Width="15" Height="15" BorderThickness="0">
@@ -68,7 +68,6 @@
                     <ui:StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                         <ComboBox Name="CommandProfilesComboBox" Width="200" SelectionChanged="CommandProfilesComboBox_SelectionChanged"/>
                         <ui:Button Margin="5, 0, 0, 0" Width="20" Height="20" Click="EditProfilesButton_Click" />
-                        <ui:Button Margin="5, 0, 0, 0" Width="20" Height="20" Click="Button_Click" />
                     </ui:StackPanel>
                 </ui:Border>
                 <ui:Border BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top">

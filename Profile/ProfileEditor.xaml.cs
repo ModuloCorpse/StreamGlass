@@ -1,19 +1,19 @@
 ﻿using StreamGlass.StreamChat;
-using StreamGlass.UI;
+using StreamFeedstock.Controls;
 using System;
 using System.Collections.Generic;
 using System.Windows;
 
 namespace StreamGlass.Profile
 {
-    public partial class ProfileEditor : UI.Dialog
+    public partial class ProfileEditor : Dialog
     {
         private readonly string m_ID = Guid.NewGuid().ToString();
         private Profile? m_CreatedProfile = null;
         private readonly Dictionary<string, ChatCommand> m_ChatCommands = new();
         private readonly IStreamChat m_StreamChat;
 
-        public ProfileEditor(UI.Window parent, ProfileManager profileManager, IStreamChat streamChat): base(parent)
+        public ProfileEditor(StreamFeedstock.Controls.Window parent, ProfileManager profileManager, IStreamChat streamChat): base(parent)
         {
             m_StreamChat = streamChat;
             InitializeComponent();
@@ -25,7 +25,7 @@ namespace StreamGlass.Profile
             ParentComboBox.SelectedIndex = 0;
         }
 
-        public ProfileEditor(UI.Window parent, ProfileManager profileManager, IStreamChat streamChat, Profile profile): this(parent, profileManager, streamChat)
+        public ProfileEditor(StreamFeedstock.Controls.Window parent, ProfileManager profileManager, IStreamChat streamChat, Profile profile): this(parent, profileManager, streamChat)
         {
             ParentComboBox.Items.Remove(profile.ObjectInfo);
             m_ID = profile.ID;

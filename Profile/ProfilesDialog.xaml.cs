@@ -1,5 +1,5 @@
 ﻿using StreamGlass.StreamChat;
-using StreamGlass.UI;
+using StreamFeedstock.Controls;
 using System;
 using System.Windows;
 
@@ -10,7 +10,7 @@ namespace StreamGlass.Profile
         private readonly ProfileManager m_ProfileManager;
         private readonly IStreamChat m_StreamChat;
 
-        public ProfilesDialog(UI.Window parent, ProfileManager manager, IStreamChat streamChat): base(parent)
+        public ProfilesDialog(StreamFeedstock.Controls.Window parent, ProfileManager manager, IStreamChat streamChat): base(parent)
         {
             m_ProfileManager = manager;
             m_StreamChat = streamChat;

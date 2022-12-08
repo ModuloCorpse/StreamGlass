@@ -1,4 +1,5 @@
-﻿using StreamGlass.Settings;
+﻿using StreamFeedstock;
+using StreamGlass.Settings;
 using System.Windows.Controls;
 
 namespace StreamGlass.Twitch

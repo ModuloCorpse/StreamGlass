@@ -3,54 +3,80 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:ui="clr-namespace:StreamGlass.UI"
+        xmlns:ui="clr-namespace:StreamFeedstock.Controls;assembly=StreamFeedstock"
         mc:Ignorable="d"
-        Title="ProfileEditor"
-        d:DesignHeight="504"
+        d:DesignHeight="501"
         d:DesignWidth="454"
-        Height="504"
+        Height="501"
         Width="454"
         WindowStyle="None"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
         ShowInAero="False">
     <ui:Border BrushPaletteKey="dialog_border" BorderThickness="2">
-        <ui:StackPanel Width="450">
-            <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                <ui:Label x:Name="NameTextBoxLabel" TranslationKey="profile_editor_name" VerticalAlignment="Center" TextAlignment="Right" Text="Name:" Width="150"/>
-                <ui:TextBox Margin="5,0,0,0" x:Name="NameTextBox" Height="26" Width="250"/>
-            </ui:StackPanel>
-            <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                <ui:Label x:Name="ParentComboBoxLabel" TranslationKey="profile_editor_parent" VerticalAlignment="Center" TextAlignment="Right" Text="Parent:" Width="150"/>
-                <ComboBox Margin="5,0,0,0" Name="ParentComboBox" Width="250"/>
-            </ui:StackPanel>
-            <ui:GroupBox TranslationKey="section_stream_info" Header="Stream Info">
-                <ui:StackPanel>
-                    <ui:StackPanel Orientation="Horizontal" Margin="0,0,0,0">
-                        <ui:Label x:Name="StreamInfoTitleTextBoxLabel" TranslationKey="profile_editor_title" VerticalAlignment="Center" TextAlignment="Right" Text="Title:" Width="150"/>
-                        <ui:TextBox Margin="5,0,0,0" x:Name="StreamInfoTitleTextBox" Height="26" Width="250"/>
-                    </ui:StackPanel>
-                    <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                        <ui:Label x:Name="StreamInfoCategoryTextBoxLabel" TranslationKey="profile_editor_category" VerticalAlignment="Center" TextAlignment="Right" Text="Category:" Width="150"/>
-                        <ui:TextBox Margin="5,0,0,0" x:Name="StreamInfoCategoryTextBox" Height="26" Width="250"/>
-                    </ui:StackPanel>
-                    <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                        <ui:Label x:Name="StreamInfoDescriptionTextBoxLabel" TranslationKey="profile_editor_description" VerticalAlignment="Center" TextAlignment="Right" Text="Description:" Width="150"/>
-                        <ui:TextBox Margin="5,0,0,0" x:Name="StreamInfoDescriptionTextBox" Height="26" Width="250"/>
-                    </ui:StackPanel>
-                    <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                        <ui:Label x:Name="StreamInfoLanguageTextBoxLabel" TranslationKey="profile_editor_language" VerticalAlignment="Center" TextAlignment="Right" Text="Language:" Width="150"/>
-                        <ui:TextBox Margin="5,0,0,0" x:Name="StreamInfoLanguageTextBox" Height="26" Width="250"/>
-                    </ui:StackPanel>
+        <ui:DockPanel>
+            <ui:Grid BrushPaletteKey="top_bar_background" DockPanel.Dock="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ui:StackPanel HorizontalAlignment="Center" Grid.Column="1" Orientation="Horizontal">
+                    <Image Source="../Assets/stream-glass-logo.ico" Width="15" Height="15" />
+                    <ui:Label BrushPaletteKey="top_bar_text" Margin="2,2,0,0" Text="StreamGlass" />
                 </ui:StackPanel>
-            </ui:GroupBox>
-            <ui:GroupBox x:Name="CommandGroupBox" TranslationKey="section_commands" Header="Commands">
-                <ui:EditableList x:Name="ChatCommandsList" Height="243"/>
-            </ui:GroupBox>
-            <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35" Width="450">
-                <ui:Button TranslationKey="close_button" Margin="5,0,0,0" Content="Close" Height="25" Width="75" Canvas.Left="415" Canvas.Top="5" Click="CloseButton_Click"/>
-                <ui:Button TranslationKey="save_button" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Canvas.Left="330" Canvas.Top="5" Click="SaveButton_Click"/>
+                <ui:StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <ui:Button Margin="2,0,0,0" BrushPaletteKey="top_bar_button_close" Click="CloseButton_Click" Width="15" Height="15" BorderThickness="0">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="10"/>
+                            </Style>
+                        </Button.Resources>
+                    </ui:Button>
+                </ui:StackPanel>
+            </ui:Grid>
+            <ui:StackPanel Margin="0,5,0,0">
+                <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                    <ui:Label x:Name="NameTextBoxLabel" TranslationKey="profile_editor_name" VerticalAlignment="Center" TextAlignment="Right" Text="Name:" Width="150"/>
+                    <ui:TextBox Margin="5,0,0,0" x:Name="NameTextBox" Height="26" Width="250"/>
+                </ui:StackPanel>
+                <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                    <ui:Label x:Name="ParentComboBoxLabel" TranslationKey="profile_editor_parent" VerticalAlignment="Center" TextAlignment="Right" Text="Parent:" Width="150"/>
+                    <ComboBox Margin="5,0,0,0" Name="ParentComboBox" Width="250"/>
+                </ui:StackPanel>
+                <ui:GroupBox TranslationKey="section_stream_info" Header="Stream Info">
+                    <ui:StackPanel>
+                        <ui:StackPanel Orientation="Horizontal" Margin="0,0,0,0">
+                            <ui:Label x:Name="StreamInfoTitleTextBoxLabel" TranslationKey="profile_editor_title" VerticalAlignment="Center" TextAlignment="Right" Text="Title:" Width="150"/>
+                            <ui:TextBox Margin="5,0,0,0" x:Name="StreamInfoTitleTextBox" Height="26" Width="250"/>
+                        </ui:StackPanel>
+                        <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <ui:Label x:Name="StreamInfoCategoryTextBoxLabel" TranslationKey="profile_editor_category" VerticalAlignment="Center" TextAlignment="Right" Text="Category:" Width="150"/>
+                            <ui:TextBox Margin="5,0,0,0" x:Name="StreamInfoCategoryTextBox" Height="26" Width="250"/>
+                        </ui:StackPanel>
+                        <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <ui:Label x:Name="StreamInfoDescriptionTextBoxLabel" TranslationKey="profile_editor_description" VerticalAlignment="Center" TextAlignment="Right" Text="Description:" Width="150"/>
+                            <ui:TextBox Margin="5,0,0,0" x:Name="StreamInfoDescriptionTextBox" Height="26" Width="250"/>
+                        </ui:StackPanel>
+                        <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <ui:Label x:Name="StreamInfoLanguageTextBoxLabel" TranslationKey="profile_editor_language" VerticalAlignment="Center" TextAlignment="Right" Text="Language:" Width="150"/>
+                            <ui:TextBox Margin="5,0,0,0" x:Name="StreamInfoLanguageTextBox" Height="26" Width="250"/>
+                        </ui:StackPanel>
+                    </ui:StackPanel>
+                </ui:GroupBox>
+                <ui:GroupBox x:Name="CommandGroupBox" TranslationKey="section_commands" Header="Commands">
+                    <ui:EditableList x:Name="ChatCommandsList" Height="217"/>
+                </ui:GroupBox>
+                <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35">
+                    <ui:Button TranslationKey="save_button" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="10"/>
+                            </Style>
+                        </Button.Resources>
+                    </ui:Button>
+                </ui:StackPanel>
             </ui:StackPanel>
-        </ui:StackPanel>
+        </ui:DockPanel>
     </ui:Border>
 </ui:Dialog>

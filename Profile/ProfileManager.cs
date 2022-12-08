@@ -1,8 +1,10 @@
-﻿using StreamGlass.StreamChat;
+﻿using StreamFeedstock;
+using StreamFeedstock.ManagedObject;
+using StreamGlass.StreamChat;
 
 namespace StreamGlass.Profile
 {
-    public class ProfileManager: ManagedObject.Manager<Profile>
+    public class ProfileManager: Manager<Profile>
     {
         private string m_Channel = "";
         private int m_NbMessage = 0;

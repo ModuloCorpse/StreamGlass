@@ -1,5 +1,6 @@
 ﻿using Quicksand.Web;
 using Quicksand.Web.WebSocket;
+using StreamFeedstock;
 using StreamGlass.StreamChat;
 using System;
 using System.Collections.Generic;

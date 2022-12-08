@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using StreamGlass.UI;
+using StreamFeedstock;
+using StreamFeedstock.Controls;
 using static StreamGlass.StreamChat.UserMessage;
 
 namespace StreamGlass.Profile
@@ -10,7 +12,7 @@ namespace StreamGlass.Profile
     {
         private ChatCommand? m_CreatedCommand = null;
 
-        public ChatCommandEditor(UI.Window parent): base(parent)
+        public ChatCommandEditor(StreamFeedstock.Controls.Window parent): base(parent)
         {
             InitializeComponent();
             UserComboBox.Items.Add("Viewer");
@@ -21,9 +23,13 @@ namespace StreamGlass.Profile
             UserComboBox.Items.Add("Streamer");
             UserComboBox.Items.Add("Bot");
             UserComboBox.SelectedIndex = 0;
+            SubCommandList.ItemAdded += EditableList_AddString;
+            SubCommandList.ItemEdited += EditableList_EditString;
+            AutoTriggerArguments.ItemAdded += EditableList_AddString;
+            AutoTriggerArguments.ItemEdited += EditableList_EditString;
         }
 
-        public ChatCommandEditor(UI.Window parent, ChatCommand command): this(parent)
+        public ChatCommandEditor(StreamFeedstock.Controls.Window parent, ChatCommand command): this(parent)
         {
             NameTextBox.Text = command.Name;
             TimeUpDown.QuietSetValue(command.AwaitTime);
@@ -111,5 +117,30 @@ namespace StreamGlass.Profile
         }
 
         private void AutoTriggerEnableCheckBox_Checked(object sender, RoutedEventArgs e) => UpdateAutoTriggerVisibility();
+
+        private void EditableList_AddString(object? sender, EventArgs _)
+        {
+            StringEditor dialog = new(this);
+            dialog.ShowDialog();
+            string? newStr = dialog.Str;
+            if (newStr != null)
+            {
+                EditableList list = (EditableList)sender!;
+                list.AddObject(newStr);
+            }
+        }
+
+        private void EditableList_EditString(object? sender, object args)
+        {
+            string oldStr = (string)args;
+            StringEditor dialog = new(this, oldStr);
+            dialog.ShowDialog();
+            string? newStr = dialog.Str;
+            if (newStr != null)
+            {
+                EditableList list = (EditableList)sender!;
+                list.UpdateObject(args, newStr);
+            }
+        }
     }
 }

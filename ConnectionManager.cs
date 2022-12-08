@@ -1,5 +1,5 @@
 ﻿using StreamGlass.StreamChat;
-using StreamGlass.UI;
+using StreamFeedstock.Controls;
 using System.Collections.Generic;
 
 namespace StreamGlass

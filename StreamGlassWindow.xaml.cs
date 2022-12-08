@@ -1,17 +1,17 @@
 ﻿using Quicksand.Web;
 using StreamGlass.Profile;
 using StreamGlass.StreamChat;
-using StreamGlass.UI;
+using StreamFeedstock.Controls;
 using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Threading;
+using StreamFeedstock;
 
 namespace StreamGlass
 {
-    public partial class StreamGlassWindow : UI.Window
+    public partial class StreamGlassWindow : StreamFeedstock.Controls.Window
     {
         private bool m_IsFillingComboBox = false;
         private readonly Stopwatch m_Watch = new();
@@ -146,7 +146,6 @@ namespace StreamGlass
             InitializeCanals();
             InitializeComponent();
             Logger.Init();
-            Logger.SetCurrentLogCategory("Twitch IRC");
             ChatCommand.Init();
             m_Settings.Load();
 
@@ -227,7 +226,7 @@ namespace StreamGlass
 
         private void LogsToolStripMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            LogWindow logWindow = new(this);
+            LogWindow logWindow = new(this, "Twitch IRC");
             logWindow.ShowDialog();
         }
 
@@ -247,7 +246,7 @@ namespace StreamGlass
 
         private void MaximizeRestoreButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is UI.Button)
+            if (sender is Button)
             {
                 if (WindowState == WindowState.Maximized)
                     SystemCommands.RestoreWindow(this);
@@ -272,12 +271,6 @@ namespace StreamGlass
             m_IsFillingComboBox = true;
             m_Manager.FillComboBox(ref CommandProfilesComboBox);
             m_IsFillingComboBox = false;
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            Test test = new();
-            test.TestCase();
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Quicksand.Web;
 using StreamGlass.Profile;
 using StreamGlass.StreamChat;
-using StreamGlass.UI;
+using StreamFeedstock.Controls;
 using ChatClient = StreamGlass.Twitch.IRC.ChatClient;
 
 namespace StreamGlass.Twitch
