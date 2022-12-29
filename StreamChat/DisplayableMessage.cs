@@ -26,5 +26,14 @@ namespace StreamGlass.StreamChat
         }
 
         public void AddEmote(int emotePos, string emoteID) => m_Emotes.Add(new(emotePos, emoteID));
+
+        public static DisplayableMessage AppendPrefix(in DisplayableMessage message, string prefix)
+        {
+            DisplayableMessage displayableMessage = new(prefix + message.Message, prefix + message.EmotelessMessage);
+            int prefixLength = prefix.Length;
+            foreach (Tuple<int, string> emote in message.Emotes)
+                displayableMessage.AddEmote(emote.Item1 + prefixLength, emote.Item2);
+            return displayableMessage;
+        }
     }
 }

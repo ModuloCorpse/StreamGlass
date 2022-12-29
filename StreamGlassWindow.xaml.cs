@@ -1,19 +1,19 @@
 ﻿using Quicksand.Web;
 using StreamGlass.Profile;
+using StreamGlass.StreamAlert;
 using StreamGlass.StreamChat;
+using StreamFeedstock;
 using StreamFeedstock.Controls;
 using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Threading;
-using StreamFeedstock;
 
 namespace StreamGlass
 {
     public partial class StreamGlassWindow : StreamFeedstock.Controls.Window
     {
-        private bool m_IsFillingComboBox = false;
         private readonly Stopwatch m_Watch = new();
         private readonly Settings.Data m_Settings = new();
         private readonly Server m_WebServer = new();
@@ -33,6 +33,10 @@ namespace StreamGlass
             CanalManager.NewCanal<DonationEventArgs>(StreamGlassCanals.DONATION);
             CanalManager.NewCanal<FollowEventArgs>(StreamGlassCanals.FOLLOW);
             CanalManager.NewCanal<RaidEventArgs>(StreamGlassCanals.RAID);
+            CanalManager.NewCanal<RewardEventArgs>(StreamGlassCanals.REWARD);
+            CanalManager.NewCanal<CommandEventArgs>(StreamGlassCanals.COMMANDS);
+            CanalManager.NewCanal<Alert>(StreamGlassCanals.ALERT);
+            CanalManager.NewCanal<string>(StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM);
         }
 
         private static void AddDefaultPalette(ref BrushPalette palette,
@@ -75,8 +79,10 @@ namespace StreamGlass
             AddDefaultPalette(ref lightMode, "#FFFFFF", "#E5E5E5", "#000000", "#000000", "#000000");
             lightMode.AddHexColor("chat_highlight_background", "#18181B");
             lightMode.AddHexColor("chat_highlight_message", "#FFFFFF");
+            palette.SetCurrentPalette("dark-mode");
             palette.Load();
             StreamChatPanel.SetBrushPalette(palette);
+            StreamAlertPanel.SetBrushPalette(palette);
         }
 
         private void InitializeTranslation()
@@ -85,6 +91,8 @@ namespace StreamGlass
             Translation translation = translationManager.NewDefaultTranslation(new CultureInfo("en"));
             translation.AddTranslation("menu_file", "File");
             translation.AddTranslation("menu_settings", "Settings");
+            translation.AddTranslation("menu_profile", "Profiles");
+            translation.AddTranslation("menu_edit_profile", "Edit profiles...");
             translation.AddTranslation("menu_help", "Help");
             translation.AddTranslation("menu_logs", "Logs");
             translation.AddTranslation("menu_about", "About");
@@ -139,13 +147,13 @@ namespace StreamGlass
             translation.AddTranslation("sub_mode_all", "All");
             translationManager.Load();
             StreamChatPanel.SetTranslations(translationManager);
+            StreamAlertPanel.SetTranslations(translationManager);
         }
 
         public StreamGlassWindow(): base(new(), new())
         {
             InitializeCanals();
             InitializeComponent();
-            Logger.Init();
             ChatCommand.Init();
             m_Settings.Load();
 
@@ -158,9 +166,7 @@ namespace StreamGlass
             m_ConnectionManager.RegisterConnection(new Twitch.Bot(m_WebServer, m_Settings, this));
             m_Manager = new(m_ConnectionManager);
             m_Manager.Load();
-            m_IsFillingComboBox = true;
-            m_Manager.FillComboBox(ref CommandProfilesComboBox);
-            m_IsFillingComboBox = false;
+            UpdateProfilesMenuList();
 
             m_DispatcherTimer.Tick += StreamGlassForm_Tick;
             m_DispatcherTimer.Interval = TimeSpan.FromMilliseconds(50);
@@ -168,18 +174,23 @@ namespace StreamGlass
             m_DispatcherTimer.Start();
 
             StreamChatPanel.SetStreamChat(m_ConnectionManager);
+            StreamAlertPanel.SetStreamChat(m_ConnectionManager);
         }
 
-        private void CommandProfilesComboBox_SelectionChanged(object sender, EventArgs e)
+        private void UpdateProfilesMenuList()
         {
-            if (m_IsFillingComboBox)
-                return;
-            Profile.Profile.Info? selector = (Profile.Profile.Info?)CommandProfilesComboBox.SelectedItem;
-            if (selector != null)
+            ProfilesMenu.Items.Clear();
+            ProfilesMenu.Items.Add(ProfileMenuEdit);
+            ProfilesMenu.Items.Add(ProfilesMenuSeparator);
+
+            CanalManager.Clear(StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM);
+            var profilesInfo = m_Manager.ObjectsInfo;
+            foreach (var profileInfo in profilesInfo)
             {
-                m_Manager.SetCurrentProfile(selector.ID);
-                m_Manager.UpdateStreamInfo();
+                ProfileMenuItem item = new(m_Manager, profileInfo.ID) { Header = profileInfo.Name };
+                ProfilesMenu.Items.Add(item);
             }
+            ProfilesMenu.Update(GetBrushPalette(), GetTranslations());
         }
 
         public void SetChatPanelOnLeft() => SetColumns(0, 1);
@@ -211,8 +222,6 @@ namespace StreamGlass
         internal void JoinChannel(string channel)
         {
             m_Manager.UpdateStreamInfo();
-            StreamChatPanel.AddChannel(channel);
-            StreamChatPanel.SetChannel(channel);
         }
 
         private void SettingsToolStripMenuItem_Click(object sender, RoutedEventArgs e)
@@ -268,9 +277,19 @@ namespace StreamGlass
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             dialog.ShowDialog();
-            m_IsFillingComboBox = true;
-            m_Manager.FillComboBox(ref CommandProfilesComboBox);
-            m_IsFillingComboBox = false;
+            UpdateProfilesMenuList();
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 0, false, 69, 42, -1));
+            CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 1, false, 69, 42, -1));
+            CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 2, false, 69, 42, -1));
+            CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 3, false, 69, 42, -1));
+            CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 4, false, 69, 42, -1));
+            CanalManager.Emit(StreamGlassCanals.DONATION, new DonationEventArgs("Jean-Michel Jarre", 666, "bits", new("J'aime le Pop-Corn")));
+            CanalManager.Emit(StreamGlassCanals.RAID, new RaidEventArgs("", "Jean-Michel Jarre", "", "Capterge", 40));
+            CanalManager.Emit(StreamGlassCanals.REWARD, new RewardEventArgs("", "Jean-Michel Jarre", "Chante", "J'aime le Pop-Corn"));
         }
     }
 }

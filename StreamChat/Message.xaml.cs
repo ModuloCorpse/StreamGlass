@@ -1,9 +1,7 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using StreamFeedstock;
 using StreamFeedstock.Controls;
 
@@ -11,8 +9,7 @@ namespace StreamGlass.StreamChat
 {
     public partial class Message : StreamFeedstock.Controls.UserControl
     {
-        private static readonly int EMOTE_SIZE = 20;
-        private readonly Chat m_StreamChat;
+        private readonly UserMessageScrollPanel m_StreamChat;
         private readonly UserMessage m_Message;
         private readonly bool m_IsHighlighted;
 
@@ -33,17 +30,16 @@ namespace StreamGlass.StreamChat
             return fontSize;
         }
 
-        public Message(Chat streamChat, BrushPaletteManager palette, TranslationManager translation, UserMessage message, bool isHighligted, double senderWidth, double senderFontSize, double contentFontSize)
+        public Message(UserMessageScrollPanel streamChatPanel, IStreamChat streamChat, BrushPaletteManager palette, TranslationManager translation, UserMessage message, bool isHighligted, double senderWidth, double senderFontSize, double contentFontSize)
         {
             InitializeComponent();
-            m_StreamChat = streamChat;
+            m_StreamChat = streamChatPanel;
             m_Message = message;
             MessageSender.Text = message.UserName;
             MessageSender.Width = senderWidth;
-            MessageContentCanvas.Margin = new Thickness(senderWidth, 0, 0, 0);
-            MessageContent.Text = message.EmotelessMessage;
             SetSenderNameFontSize(senderFontSize, false);
-            SetMessageFontSize(contentFontSize, false);
+            MessageContent.SetDisplayableMessage(streamChat, palette, message.DisplayableMessage);
+            MessageContent.SetMessageFontSize(contentFontSize, false);
             BrushConverter converter = new();
             if (!string.IsNullOrWhiteSpace(message.Color))
             {
@@ -55,14 +51,12 @@ namespace StreamGlass.StreamChat
             if (m_IsHighlighted)
             {
                 MessagePanel.BrushPaletteKey = "chat_highlight_background";
-                MessageContent.BrushPaletteKey = "chat_highlight_background";
-                MessageContent.TextBrushPaletteKey = "chat_highlight_message";
+                MessageContent.SetPalette("chat_highlight_background", "chat_highlight_message");
             }
             else
             {
                 MessagePanel.BrushPaletteKey = "chat_background";
-                MessageContent.BrushPaletteKey = "chat_background";
-                MessageContent.TextBrushPaletteKey = "chat_message";
+                MessageContent.SetPalette("chat_background", "chat_message");
             }
             Update(palette, translation);
         }
@@ -74,7 +68,6 @@ namespace StreamGlass.StreamChat
         public void SetSenderNameWidth(double width, bool updateEmotes = true)
         {
             MessageSender.Width = width;
-            MessageContentCanvas.Margin = new Thickness(width, 0, 0, 0);
             MessageContent.Width = (MessagePanel.ActualWidth - MessageSender.ActualWidth) - 20;
             if (updateEmotes)
                 UpdateEmotes();
@@ -89,31 +82,12 @@ namespace StreamGlass.StreamChat
 
         public void SetMessageFontSize(double fontSize, bool updateEmotes = true)
         {
-            MessageContent.FontSize = fontSize;
-            if (updateEmotes)
-                UpdateEmotes();
+            MessageContent.SetMessageFontSize(fontSize, updateEmotes);
         }
 
         internal void UpdateEmotes()
         {
-            EmoteLayer.Height = MessageContent.ActualHeight;
-            EmoteLayer.Children.Clear();
-            foreach (var emoteData in m_Message.Emotes)
-            {
-                Rect charRect = MessageContent.GetRectFromCharacterIndex(emoteData.Item1);
-                string emoteURL = m_StreamChat.GetEmoteURL(emoteData.Item2);
-                BitmapImage bitmap = new();
-                bitmap.BeginInit();
-                bitmap.UriSource = new Uri(emoteURL, UriKind.Absolute);
-                bitmap.EndInit();
-                EmoteLayer.Children.Add(new Image()
-                {
-                    Width = EMOTE_SIZE,
-                    Height = EMOTE_SIZE,
-                    Source = bitmap,
-                    Margin = new(charRect.X, charRect.Y, 0, 0)
-                });
-            }
+            MessageContent.UpdateEmotes();
         }
 
         private void ToggleHighlight_Click(object sender, RoutedEventArgs e)
@@ -123,8 +97,8 @@ namespace StreamGlass.StreamChat
 
         private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            MessageContent.Width = (MessagePanel.ActualWidth - MessageSender.ActualWidth) - 20;
-            Height = MessageContent.ActualHeight + Margin.Top + Margin.Bottom + MessageContent.Margin.Top + MessageContent.Margin.Bottom;
+            MessageContent.MessageContent.Width = (MessagePanel.ActualWidth - MessageSender.ActualWidth) - 20;
+            Height = MessageContent.MessageContent.ActualHeight + Margin.Top + Margin.Bottom + MessageContent.Margin.Top + MessageContent.Margin.Bottom;
             UpdateEmotes();
         }
     }

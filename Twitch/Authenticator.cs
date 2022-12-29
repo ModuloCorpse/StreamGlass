@@ -1,6 +1,7 @@
 ﻿using Quicksand.Web;
 using Quicksand.Web.Html;
 using Quicksand.Web.Http;
+using StreamGlass.Http;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,7 +32,7 @@ namespace StreamGlass.Twitch
                 m_Model.GetBody().AddChild(m_WaitDiv);
             }
             protected override void OnUpdate(long deltaTime) {}
-            protected override void AfterGet(int clientID, Request request)
+            protected override void AfterGet(int clientID, Quicksand.Web.Http.Request request)
             {
                 if (request.TryGetParameter("state", out string? state))
                 {
@@ -121,7 +122,7 @@ namespace StreamGlass.Twitch
             myProcess.Start();
             m_Task = new TaskCompletionSource<string>();
             if (m_Task.Task.Wait(TimeSpan.FromSeconds(5)))
-                return new(m_Scopes, m_Settings.Get("twitch", "public_key"), m_Settings.Get("twitch", "secret_key"), m_Task.Task.Result);
+                return new("https://id.twitch.tv/oauth2/token", m_Scopes, m_Settings.Get("twitch", "public_key"), m_Settings.Get("twitch", "secret_key"), m_Task.Task.Result);
             return null;
         }
 

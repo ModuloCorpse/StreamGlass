@@ -53,6 +53,7 @@ namespace StreamGlass.StreamChat
         public string ID => m_ID;
         public string UserName => m_UserName;
         public string Color => m_Color;
+        public DisplayableMessage DisplayableMessage => m_DisplayableMessage;
         public string Message => m_DisplayableMessage.Message;
         public string EmotelessMessage => m_DisplayableMessage.EmotelessMessage;
         public string Channel => m_Channel;

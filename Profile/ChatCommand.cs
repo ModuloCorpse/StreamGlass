@@ -229,6 +229,7 @@ namespace StreamGlass.Profile
                     }
                 }
                 streamChat.SendMessage(channel, contentToSend);
+                CanalManager.Emit(StreamGlassCanals.COMMANDS, new CommandEventArgs(m_Name, arguments));
                 Reset();
             }
         }

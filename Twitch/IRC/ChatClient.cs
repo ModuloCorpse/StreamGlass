@@ -1,13 +1,14 @@
 ﻿using Quicksand.Web;
 using Quicksand.Web.WebSocket;
 using StreamFeedstock;
+using StreamGlass.Http;
 using StreamGlass.StreamChat;
 using System;
 using System.Collections.Generic;
-using System.Runtime;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using static StreamGlass.StreamChat.UserMessage;
-using Client = Quicksand.Web.WebSocket.Client;
 
 namespace StreamGlass.Twitch.IRC
 {
@@ -32,8 +33,9 @@ namespace StreamGlass.Twitch.IRC
             "#00ff7f"
         };
 
+        private bool m_CanReconnect = true;
         private readonly Settings.Data m_Settings;
-        private readonly Client m_Client;
+        private readonly Quicksand.Web.WebSocket.Client m_Client;
         private UserInfo? m_SelfUserInfo = null;
         private string m_ChatColor = "";
         private string m_Channel = "";
@@ -56,7 +58,7 @@ namespace StreamGlass.Twitch.IRC
             m_Client.Connect();
         }
 
-        internal void SendAuth()
+        private void SendAuth()
         {
             if (m_AccessToken == null)
                 return;
@@ -65,7 +67,7 @@ namespace StreamGlass.Twitch.IRC
             SendMessage(new("NICK", channel: (m_SelfUserInfo != null) ? m_SelfUserInfo.DisplayName : m_UserName));
         }
 
-        private string GetUserMessageColor(string username, string color)
+        private static string GetUserMessageColor(string username, string color)
         {
             if (string.IsNullOrEmpty(color))
             {
@@ -139,7 +141,7 @@ namespace StreamGlass.Twitch.IRC
                         string username = message.GetTag("display-name");
                         if (string.IsNullOrEmpty(username))
                             username = message.Nick;
-                        int followTier = 0;
+                        int followTier;
                         switch (message.GetTag("msg-param-sub-plan"))
                         {
                             case "1000": followTier = 1; break;
@@ -155,6 +157,17 @@ namespace StreamGlass.Twitch.IRC
                         CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs(username, displayableMessage, followTier, false, cumulativeMonth, (shareStreakMonth) ? streakMonth : -1, -1));
                     }
                 }
+            }
+        }
+
+        private static void LoadEmoteSets(Message message)
+        {
+            if (message.HaveTag("emote-sets"))
+            {
+                string emoteSetsStr = message.GetTag("emote-sets");
+                string[] emoteSetIDs = emoteSetsStr.Split(',');
+                foreach (string emoteSetID in emoteSetIDs)
+                    API.LoadEmoteSet(emoteSetID);
             }
         }
 
@@ -175,37 +188,56 @@ namespace StreamGlass.Twitch.IRC
                         switch (message.GetCommand().Name)
                         {
                             case "PING":
-                                SendMessage(new("PONG", parameters: message.Parameters)); break;
-                            case "USERSTATE":
-                                m_Channel = message.GetCommand().Channel;
-                                CanalManager.Emit(StreamGlassCanals.CHAT_JOINED, m_Channel);
-                                break;
-                            case "JOIN":
-                                if (m_SelfUserInfo?.Login != message.Nick)
-                                    CanalManager.Emit(StreamGlassCanals.USER_JOINED, message.Nick);
-                                break;
-                            case "USERLIST":
-                                string[] users = message.Parameters.Split(' ');
-                                foreach (string user in users)
                                 {
-                                    if (m_SelfUserInfo?.Login != user)
-                                        CanalManager.Emit(StreamGlassCanals.USER_JOINED, user);
+                                    SendMessage(new("PONG", parameters: message.Parameters));
+                                    break;
                                 }
-                                break;
+                            case "USERSTATE":
+                                {
+                                    LoadEmoteSets(message);
+                                    m_Channel = message.GetCommand().Channel;
+                                    CanalManager.Emit(StreamGlassCanals.CHAT_JOINED, m_Channel);
+                                    break;
+                                }
+                            case "JOIN":
+                                {
+                                    if (m_SelfUserInfo?.Login != message.Nick)
+                                        CanalManager.Emit(StreamGlassCanals.USER_JOINED, message.Nick);
+                                    break;
+                                }
+                            case "USERLIST":
+                                {
+                                    string[] users = message.Parameters.Split(' ');
+                                    foreach (string user in users)
+                                    {
+                                        if (m_SelfUserInfo?.Login != user)
+                                            CanalManager.Emit(StreamGlassCanals.USER_JOINED, user);
+                                    }
+                                    break;
+                                }
                             case "PRIVMSG":
-                                CreateUserMessage(message, false, false);
-                                break;
+                                {
+                                    CreateUserMessage(message, false, false);
+                                    break;
+                                }
                             case "USERNOTICE":
-                                TreatUserNotice(message);
-                                break;
+                                {
+                                    TreatUserNotice(message);
+                                    break;
+                                }
                             case "LOGGED":
-                                CanalManager.Emit(StreamGlassCanals.CHAT_CONNECTED);
-                                if (!string.IsNullOrEmpty(m_Channel))
-                                    SendMessage(new("JOIN", parameters: m_Channel));
-                                break;
+                                {
+                                    CanalManager.Emit(StreamGlassCanals.CHAT_CONNECTED);
+                                    if (!string.IsNullOrEmpty(m_Channel))
+                                        SendMessage(new("JOIN", parameters: m_Channel));
+                                    break;
+                                }
                             case "GLOBALUSERSTATE":
-                                m_ChatColor = message.GetTag("color");
-                                break;
+                                {
+                                    LoadEmoteSets(message);
+                                    m_ChatColor = message.GetTag("color");
+                                    break;
+                                }
                         }
                     }
                 }
@@ -235,44 +267,67 @@ namespace StreamGlass.Twitch.IRC
             }
         }
 
-        protected override void OnClientDisconnect(int clientID)
+        private async Task TryReconnect()
         {
-            Logger.Log("Twitch IRC", "Disconnecting");
+            Logger.Log("Twitch IRC", "Trying to reconnect");
+            var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(15));
+            while (await periodicTimer.WaitForNextTickAsync())
+            {
+                if (m_Client.Connect())
+                {
+                    Logger.Log("Twitch IRC", "Reconnected");
+                    return;
+                }
+            }
         }
 
-        protected override void OnWebSocketMessage(int clientID, string message)
+        public override void OnClientDisconnect(int clientID)
+        {
+            Logger.Log("Twitch IRC", "Disconnecting");
+            if (m_CanReconnect && m_Settings.Get("twitch", "auto_connect") == "true")
+                _ = TryReconnect();
+        }
+
+        public override void OnWebSocketMessage(int clientID, string message)
         {
             TreatReceivedBuffer(message);
         }
 
-        protected override void OnWebSocketOpen(int clientID, Quicksand.Web.Http.Response response)
+        public override void OnWebSocketOpen(int clientID, Quicksand.Web.Http.Response response)
         {
             SendAuth();
         }
 
-        protected override void OnWebSocketClose(int clientID, short code, string closeMessage)
+        public override void OnWebSocketClose(int clientID, short code, string closeMessage)
         {
             Logger.Log("Twitch IRC", string.Format("<=[Error] WebSocket closed ({0}): {1}", code, closeMessage));
         }
 
-        protected override void OnWebSocketError(int clientID, string error)
+        public override void OnWebSocketError(int clientID, string error)
         {
             Logger.Log("Twitch IRC", string.Format("<=[Error] WebSocket error: {0}", error));
         }
 
-        protected override void OnWebSocketFrame(int clientID, Frame frame)
+        public override void OnWebSocketFrame(int clientID, Frame frame)
         {
             Logger.Log("Twitch IRC", string.Format("<=[WS] {0}", frame.ToString().Trim()));
         }
 
-        protected override void OnWebSocketFrameSent(int clientID, Frame frame)
+        public override void OnWebSocketFrameSent(int clientID, Frame frame)
         {
             Logger.Log("Twitch IRC", string.Format("[WS]=> {0}", frame.ToString().Trim()));
         }
 
         internal void Disconnect()
         {
+            m_CanReconnect = false;
             m_Client.Disconnect();
+        }
+
+        internal void Reconnect()
+        {
+            if (!m_Client.IsConnected())
+                _ = TryReconnect();
         }
     }
 }

@@ -19,14 +19,14 @@
     <Compile Update="Settings\Dialog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="StreamChat\Chat.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="StreamChat\StreamChatSettingsItem.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="StreamAlert\AlertControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Profile\StringEditor.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -45,13 +45,13 @@
     <Page Update="GeneralSettingsItem.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="StreamChat\DisplayedMessage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="StreamChat\Message.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Settings\Dialog.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="StreamChat\Chat.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="StreamChat\StreamChatSettingsItem.xaml">

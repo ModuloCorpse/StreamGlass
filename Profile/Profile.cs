@@ -8,20 +8,16 @@ namespace StreamGlass.Profile
 {
     public class Profile: Object<Profile>
     {
-        private string m_Channel = "";
         private readonly StreamInfo m_StreamInfo = new();
         private readonly Dictionary<string, int> m_CommandLocation = new();
         private readonly List<ChatCommand> m_Commands = new();
-        private readonly IStreamChat m_StreamChat;
         private readonly object m_Lock = new();
 
-        public Profile(IStreamChat client, string name): base(name) => m_StreamChat = client;
-        public Profile(IStreamChat client, string id, string name) : base(id, name) => m_StreamChat = client;
-        internal Profile(IStreamChat client, Json json): base(json) => m_StreamChat = client;
+        public Profile(string name) : base(name) {}
+        public Profile(string id, string name) : base(id, name) {}
+        internal Profile(Json json) : base(json) {}
 
         public ReadOnlyCollection<ChatCommand> Commands => m_Commands.AsReadOnly();
-
-        internal void SetChannel(string channel) => m_Channel = channel;
 
         public void AddCommand(ChatCommand command)
         {
@@ -30,55 +26,55 @@ namespace StreamGlass.Profile
             m_Commands.Add(command);
         }
 
-        private void TriggerCommand(string command, UserMessage.UserType userType, bool isForced)
+        private void TriggerCommand(IStreamChat streamChat, string channel, string command, UserMessage.UserType userType, bool isForced)
         {
             string[] arguments = command.Split(' ');
             if (m_CommandLocation.TryGetValue(arguments[0], out var contentIdx))
             {
                 ChatCommand content = m_Commands[contentIdx];
                 if (isForced || content.CanTrigger(arguments.Length - 1, userType))
-                    content.Trigger(arguments, m_StreamChat, m_Channel);
+                    content.Trigger(arguments, streamChat, channel);
                 foreach (string child in content.Commands)
-                    TriggerCommand(child, userType, isForced);
+                    TriggerCommand(streamChat, channel, child, userType, isForced);
             }
             else
-                Parent?.TriggerCommand(command, userType, isForced);
+                Parent?.TriggerCommand(streamChat, channel, command, userType, isForced);
         }
 
-        private void ForceOnMessage(UserMessage message)
+        private void ForceOnMessage(UserMessage message, IStreamChat streamChat, string channel)
         {
             if (message.Message[0] == '!')
-                TriggerCommand(message.Message[1..], message.SenderType, false);
+                TriggerCommand(streamChat, channel, message.Message[1..], message.SenderType, false);
         }
 
-        internal void OnMessage(UserMessage message)
+        internal void OnMessage(UserMessage message, IStreamChat streamChat, string channel)
         {
             lock (m_Lock)
             {
-                ForceOnMessage(message);
+                ForceOnMessage(message, streamChat, channel);
             }
         }
 
-        private void ForceUpdate(long deltaTime, int nbMessage)
+        private void ForceUpdate(long deltaTime, int nbMessage, IStreamChat streamChat, string channel)
         {
             foreach (ChatCommand command in m_Commands)
             {
                 command.Update(deltaTime, nbMessage);
                 if (command.CanAutoTrigger())
                 {
-                    command.Trigger(command.AutoTriggerArguments, m_StreamChat, m_Channel);
+                    command.Trigger(command.AutoTriggerArguments, streamChat, channel);
                     foreach (string child in command.Commands)
-                        TriggerCommand(child, UserMessage.UserType.SELF, true);
+                        TriggerCommand(streamChat, channel, child, UserMessage.UserType.SELF, true);
                 }
             }
-            Parent?.ForceUpdate(deltaTime, nbMessage);
+            Parent?.ForceUpdate(deltaTime, nbMessage, streamChat, channel);
         }
 
-        internal void Update(long deltaTime, int nbMessage)
+        internal void Update(long deltaTime, int nbMessage, IStreamChat streamChat, string channel)
         {
             lock (m_Lock)
             {
-                ForceUpdate(deltaTime, nbMessage);
+                ForceUpdate(deltaTime, nbMessage, streamChat, channel);
             }
         }
 

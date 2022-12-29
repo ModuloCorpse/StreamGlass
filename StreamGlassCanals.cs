@@ -11,6 +11,10 @@
         STREAM_STOP,
         DONATION,
         FOLLOW,
-        RAID
+        RAID,
+        REWARD,
+        COMMANDS,
+        ALERT,
+        PROFILE_CHANGED_MENU_ITEM
     }
 }

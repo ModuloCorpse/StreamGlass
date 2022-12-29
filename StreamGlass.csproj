@@ -10,6 +10,14 @@
 
   <ItemGroup>
     <None Remove="Assets\chat-bubble.png" />
+    <None Remove="Assets\chess-queen.png" />
+    <None Remove="Assets\chest.png" />
+    <None Remove="Assets\hearts.png" />
+    <None Remove="Assets\parachute.png" />
+    <None Remove="Assets\stars-stack-1.png" />
+    <None Remove="Assets\stars-stack-2.png" />
+    <None Remove="Assets\stars-stack-3.png" />
+    <None Remove="Assets\take-my-money.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,8 +32,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\chat-bubble.png" />
+    <Resource Include="Assets\chat-bubble.png">
+      <CopyToOutputDirectory></CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\chess-queen.png" />
+    <Resource Include="Assets\chest.png" />
+    <Resource Include="Assets\hearts.png" />
+    <Resource Include="Assets\parachute.png" />
+    <Resource Include="Assets\stars-stack-1.png" />
+    <Resource Include="Assets\stars-stack-2.png" />
+    <Resource Include="Assets\stars-stack-3.png" />
     <Resource Include="Assets\stream-glass-logo.ico" />
+    <Resource Include="Assets\take-my-money.png" />
     <Resource Include="Assets\twitch-logo.png" />
     <Resource Include="Assets\magnifying-glass.png" />
     <Resource Include="Assets\sight-disabled.png" />
@@ -37,6 +55,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="StreamAlert\AlertControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Profile\ChatCommandEditor.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -44,6 +65,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="GeneralSettingsItem.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="StreamChat\DisplayedMessage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

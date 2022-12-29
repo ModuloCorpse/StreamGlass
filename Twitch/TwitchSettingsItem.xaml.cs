@@ -19,7 +19,6 @@ namespace StreamGlass.Twitch
 
             AddControlLink("browser", new TextBoxUserControlLink(TwitchBrowserTextBox));
             AddControlLink("auto_connect", new CheckBoxUserControlLink(TwitchAutoConnectCheckBox));
-            AddControlLink("channel", new TextBoxUserControlLink(TwitchChannelTextBox));
             AddControlLink("public_key", new TextBoxUserControlLink(TwitchBotPublicTextBox));
             AddControlLink("secret_key", new PasswordUserControlLink(TwitchBotSecretPasswordBox, TwitchBotSecretVisibility, TwitchBotSecretVisibilityImage));
             AddControlLink("sub_mode", m_SubModeComboBoxUserControlLink);

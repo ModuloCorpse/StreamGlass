@@ -1,9 +1,11 @@
-﻿using Quicksand.Web.Http;
+﻿using Quicksand.Web;
+using Quicksand.Web.Http;
 using StreamFeedstock;
+using StreamGlass.Twitch;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace StreamGlass.Twitch
+namespace StreamGlass.Http
 {
     public class OAuthToken
     {
@@ -14,10 +16,13 @@ namespace StreamGlass.Twitch
         private readonly string m_Secret;
         private string m_RefreshToken = "";
         private string m_AccessToken = "";
+        private string m_OAuthURL = "";
+
         public event RefreshEventHandler? Refreshed;
 
-        internal OAuthToken(List<string> scopes, string publicKey, string secret, string token)
+        public OAuthToken(string url, List<string> scopes, string publicKey, string secret, string token)
         {
+            m_OAuthURL = url;
             m_Scopes = scopes;
             m_PublicKey = publicKey;
             m_Secret = secret;
@@ -34,22 +39,20 @@ namespace StreamGlass.Twitch
 
         private void GetAccessToken(string request)
         {
-            Response? response = new PostRequest("https://id.twitch.tv/oauth2/token", request).AddHeaderField("Content-Type", "application/x-www-form-urlencoded").Send(5);
-            if (response != null)
+            Request oauthRequest = new(m_OAuthURL, request, "application/x-www-form-urlencoded", Request.RequestType.POST);
+            oauthRequest.Send();
+            string responseJsonStr = oauthRequest.GetResponse();
+            if (string.IsNullOrWhiteSpace(responseJsonStr))
+                return;
+            Json responseJson = new(responseJsonStr);
+            List<string> scope = responseJson.GetList<string>("scope");
+            if (responseJson.TryGet("access_token", out string? access_token) &&
+                responseJson.TryGet("refresh_token", out string? refresh_token) &&
+                responseJson.TryGet("token_type", out string? token_type) && token_type! == "bearer" &&
+                CompareScopes(scope))
             {
-                string responseJsonStr = response.Body;
-                if (string.IsNullOrWhiteSpace(responseJsonStr))
-                    return;
-                Json responseJson = new(responseJsonStr);
-                List<string> scope = responseJson.GetList<string>("scope");
-                if (responseJson.TryGet("access_token", out string? access_token) &&
-                    responseJson.TryGet("refresh_token", out string? refresh_token) &&
-                    responseJson.TryGet("token_type", out string? token_type) && token_type! == "bearer" &&
-                    CompareScopes(scope))
-                {
-                    m_RefreshToken = refresh_token!;
-                    m_AccessToken = access_token!;
-                }
+                m_RefreshToken = refresh_token!;
+                m_AccessToken = access_token!;
             }
         }
 

@@ -35,10 +35,6 @@
             </ui:Button>
         </ui:StackPanel>
         <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
-            <ui:Label x:Name="TwitchChannelTextBoxLabel" TranslationKey="settings_twitch_channel" Margin="0,0,5,0" Text="Twitch channel:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="150"/>
-            <ui:TextBox x:Name="TwitchChannelTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="250" Height="25"/>
-        </ui:StackPanel>
-        <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
             <ui:Label x:Name="TwitchBotPublicTextBoxLabel" TranslationKey="settings_twitch_bot_public" Margin="0,0,5,0" Text="Bot public key:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="150"/>
             <ui:TextBox x:Name="TwitchBotPublicTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="250" Height="25"/>
         </ui:StackPanel>

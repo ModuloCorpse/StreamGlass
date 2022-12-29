@@ -100,7 +100,7 @@ namespace StreamGlass.Profile
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            Profile newProfile = new(m_StreamChat, m_ID, NameTextBox.Text);
+            Profile newProfile = new(m_ID, NameTextBox.Text);
             newProfile.SaveStreamInfo(StreamInfoTitleTextBox.Text, StreamInfoDescriptionTextBox.Text, StreamInfoCategoryTextBox.Text, StreamInfoLanguageTextBox.Text);
             foreach (ChatCommand command in m_ChatCommands.Values)
                 newProfile.AddCommand(command);

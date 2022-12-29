@@ -2,7 +2,6 @@
 using StreamFeedstock.Controls;
 using System.Windows;
 using System.Windows.Controls;
-using static StreamGlass.StreamChat.Chat;
 using TabItem = StreamGlass.Settings.TabItem;
 using StreamFeedstock;
 
@@ -11,9 +10,9 @@ namespace StreamGlass.StreamChat
     public partial class StreamChatSettingsItem : TabItem
     {
         private readonly StreamGlassWindow m_Window;
-        private readonly Chat m_StreamChat;
+        private readonly UserMessageScrollPanel m_StreamChat;
 
-        public StreamChatSettingsItem(Data settings, Chat streamChat, StreamGlassWindow window) : base("/Assets/chat-bubble.png", "stream-chat", settings)
+        public StreamChatSettingsItem(Data settings, UserMessageScrollPanel streamChat, StreamGlassWindow window) : base("/Assets/chat-bubble.png", "stream-chat", settings)
         {
             m_StreamChat = streamChat;
             m_Window = window;
@@ -58,10 +57,10 @@ namespace StreamGlass.StreamChat
             string displayType = (string)ChatModeComboBox.SelectedItem;
             switch (displayType)
             {
-                case "To bottom": m_StreamChat.SetDisplayType(DisplayType.TOP_TO_BOTTOM); break;
-                case "Reversed to bottom": m_StreamChat.SetDisplayType(DisplayType.REVERSED_TOP_TO_BOTTOM); break;
-                case "To top": m_StreamChat.SetDisplayType(DisplayType.BOTTOM_TO_TOP); break;
-                case "Reversed to top": m_StreamChat.SetDisplayType(DisplayType.REVERSED_BOTTOM_TO_TOP); break;
+                case "To bottom": m_StreamChat.SetDisplayType(ScrollPanelDisplayType.TOP_TO_BOTTOM); break;
+                case "Reversed to bottom": m_StreamChat.SetDisplayType(ScrollPanelDisplayType.REVERSED_TOP_TO_BOTTOM); break;
+                case "To top": m_StreamChat.SetDisplayType(ScrollPanelDisplayType.BOTTOM_TO_TOP); break;
+                case "Reversed to top": m_StreamChat.SetDisplayType(ScrollPanelDisplayType.REVERSED_BOTTOM_TO_TOP); break;
             }
         }
 
