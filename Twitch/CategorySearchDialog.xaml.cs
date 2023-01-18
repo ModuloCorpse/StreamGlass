@@ -7,9 +7,9 @@ namespace StreamGlass.Twitch
     public partial class CategorySearchDialog : Dialog
     {
         private Profile.CategoryInfo? m_SearchedCategoryInfo = null;
+        private readonly List<CategoryControl> m_Categories = new();
         private string m_CategoryID = "";
         private string m_CategoryName = "";
-        private readonly List<CategoryControl> m_Categories = new();
 
         public CategorySearchDialog(StreamFeedstock.Controls.Window parent, Profile.CategoryInfo? info): base(parent)
         {

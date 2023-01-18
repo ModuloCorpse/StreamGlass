@@ -33,14 +33,14 @@ namespace StreamGlass.Twitch.IRC
             "#00ff7f"
         };
 
-        private bool m_CanReconnect = true;
         private readonly Settings.Data m_Settings;
         private readonly Quicksand.Web.WebSocket.Client m_Client;
         private UserInfo? m_SelfUserInfo = null;
+        private OAuthToken? m_AccessToken = null;
         private string m_ChatColor = "";
         private string m_Channel = "";
-        private OAuthToken? m_AccessToken = null;
         private string m_UserName = "";
+        private bool m_CanReconnect = true;
 
         public ChatClient(Settings.Data settings)
         {

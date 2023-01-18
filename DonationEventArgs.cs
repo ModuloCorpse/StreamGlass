@@ -4,10 +4,10 @@ namespace StreamGlass
 {
     public class DonationEventArgs
     {
-        private readonly string m_Name;
-        private readonly float m_Amount;
-        private readonly string m_Currency;
         private readonly DisplayableMessage m_Message;
+        private readonly string m_Name;
+        private readonly string m_Currency;
+        private readonly float m_Amount;
 
         public string Name => m_Name;
         public float Amount => m_Amount;

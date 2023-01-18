@@ -1,5 +1,4 @@
-﻿using Quicksand.Web.Http;
-using StreamFeedstock;
+﻿using StreamFeedstock;
 using StreamFeedstock.Controls;
 using StreamGlass.Http;
 using System;
@@ -11,12 +10,12 @@ namespace StreamGlass.Twitch
 {
     public static class API
     {
-        private static string ms_EmoteURLTemplate = "";
         private static readonly HashSet<string> ms_LoadedChannelIDEmoteSets = new();
         private static readonly HashSet<string> ms_LoadedChannelEmoteSets = new();
         private static readonly HashSet<string> ms_LoadedEmoteSets = new();
         private static readonly APICache ms_Cache = new();
         private static OAuthToken? ms_AccessToken = null;
+        private static string ms_EmoteURLTemplate = "";
 
         internal static void Authenticate(OAuthToken accessToken)
         {

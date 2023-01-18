@@ -5,9 +5,9 @@ namespace StreamGlass.StreamChat
 {
     public class DisplayableMessage
     {
+        private readonly List<Tuple<int, string>> m_Emotes = new();
         private readonly string m_RawMessage;
         private readonly string m_EmotelessMessage;
-        private readonly List<Tuple<int, string>> m_Emotes = new();
 
         public string Message => m_RawMessage;
         public string EmotelessMessage => m_EmotelessMessage;

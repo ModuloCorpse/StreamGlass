@@ -264,7 +264,7 @@ namespace StreamGlass
             Application.Current.Shutdown();
         }
 
-        internal void JoinChannel(string channel)
+        internal void JoinChannel(string _)
         {
             m_Manager.UpdateStreamInfo();
         }

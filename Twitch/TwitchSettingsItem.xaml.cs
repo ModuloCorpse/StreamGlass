@@ -6,7 +6,7 @@ using StreamFeedstock;
 
 namespace StreamGlass.Twitch
 {
-    public partial class TwitchSettingsItem : Settings.TabItemContent
+    public partial class TwitchSettingsItem : TabItemContent
     {
         private readonly Connection m_Connection;
         private readonly SubModeComboBoxUserControlLink m_SubModeComboBoxUserControlLink;

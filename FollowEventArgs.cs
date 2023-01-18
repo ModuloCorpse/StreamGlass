@@ -4,21 +4,21 @@ namespace StreamGlass
 {
     public class FollowEventArgs
     {
-        private readonly string m_Name;
         private readonly DisplayableMessage m_Message;
+        private readonly string m_Name;
         private readonly int m_Tier;
-        private readonly bool m_IsGift;
         private readonly int m_MonthTotal;
         private readonly int m_MonthStreak;
         private readonly int m_NbGift;
+        private readonly bool m_IsGift;
 
-        public string Name => m_Name;
         public DisplayableMessage Message => m_Message;
+        public string Name => m_Name;
         public int Tier => m_Tier;
-        public bool IsGift => m_IsGift;
         public int MonthTotal => m_MonthTotal;
         public int MonthStreak => m_MonthStreak;
         public int NbGift => m_NbGift;
+        public bool IsGift => m_IsGift;
 
         public FollowEventArgs(string name, DisplayableMessage message, int tier, bool isGift, int monthTotal, int monthStreak, int nbGift)
         {

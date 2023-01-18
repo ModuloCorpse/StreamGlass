@@ -4,9 +4,9 @@ namespace StreamGlass.Profile
 {
     public class StreamInfo
     {
+        private readonly CategoryInfo m_StreamCategory = new("");
         private string m_StreamTitle = "";
         private string m_StreamDescription = "";
-        private CategoryInfo m_StreamCategory = new("");
         private string m_StreamLanguage = "";
 
         public bool HaveStreamTitle() => !string.IsNullOrWhiteSpace(m_StreamTitle);

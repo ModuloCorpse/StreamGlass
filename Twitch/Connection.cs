@@ -13,16 +13,16 @@ namespace StreamGlass.Twitch
 {
     public class Connection : IStreamConnection
     {
-        private bool m_IsConnected = false;
-        private string m_Channel = "";
-        private readonly Settings.Data m_Settings;
+        private readonly Data m_Settings;
         private readonly ChatClient m_Client;
         private ChannelInfo? m_OriginalBroadcasterChannelInfo = null;
         private readonly Authenticator m_Authenticator;
         private readonly StreamGlassWindow m_Form;
         private readonly EventSub m_EventSub;
+        private string m_Channel = "";
+        private bool m_IsConnected = false;
 
-        public Connection(Server webServer, Settings.Data settings, StreamGlassWindow form)
+        public Connection(Server webServer, Data settings, StreamGlassWindow form)
         {
             m_Settings = settings;
             m_Form = form;

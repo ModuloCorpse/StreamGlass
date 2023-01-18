@@ -6,7 +6,7 @@ namespace StreamGlass.Settings
 {
     public class Data
     {
-        private Dictionary<string, Dictionary<string, string>> m_Settings = new();
+        private readonly Dictionary<string, Dictionary<string, string>> m_Settings = new();
 
         public void Load()
         {

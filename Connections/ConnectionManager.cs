@@ -1,7 +1,6 @@
 ﻿using StreamFeedstock.Controls;
 using StreamGlass.Profile;
 using System.Collections.Generic;
-using static StreamGlass.Twitch.IRC.Message;
 
 namespace StreamGlass.Connections
 {

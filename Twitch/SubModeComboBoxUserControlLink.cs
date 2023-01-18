@@ -21,7 +21,6 @@ namespace StreamGlass.Twitch
                 m_ComboBox.SelectedIndex = 1;
         }
 
-        //TODO: To plug
         internal void TranslateComboBox(TranslationManager translation)
         {
             int selectedIndex = m_ComboBox.SelectedIndex;

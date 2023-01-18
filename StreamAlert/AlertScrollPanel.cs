@@ -1,11 +1,7 @@
 ﻿using StreamFeedstock;
 using StreamFeedstock.Controls;
 using StreamGlass.Connections;
-using StreamGlass.StreamChat;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Controls;
 
 namespace StreamGlass.StreamAlert
 {
@@ -13,8 +9,8 @@ namespace StreamGlass.StreamAlert
     {
         private BrushPaletteManager m_ChatPalette = new();
         private TranslationManager m_Translations = new();
-        private double m_MessageContentFontSize = 20;
         private ConnectionManager? m_ConnectionManager = null;
+        private double m_MessageContentFontSize = 20;
 
         public AlertScrollPanel() : base()
         {

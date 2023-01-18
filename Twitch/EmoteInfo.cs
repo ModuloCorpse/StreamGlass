@@ -10,12 +10,12 @@ namespace StreamGlass.Twitch
             ANIMATED
         }
 
+        private readonly List<string> m_Scale;
+        private readonly List<string> m_ThemeMode;
         private readonly string m_ID;
         private readonly string m_Name;
         private readonly string m_EmoteType;
         private readonly FormatType m_Format;
-        private readonly List<string> m_Scale;
-        private readonly List<string> m_ThemeMode;
 
         public EmoteInfo(string id, string name, string emoteType, List<string> format, List<string> scale, List<string> themeMode)
         {

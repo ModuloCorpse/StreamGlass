@@ -16,13 +16,13 @@ namespace StreamGlass.StreamChat
             SELF
         }
 
-        private readonly bool m_IsHighlighted;
+        private readonly DisplayableMessage m_DisplayableMessage;
         private readonly string m_ID;
         private readonly string m_UserName;
         private readonly string m_Color;
         private readonly string m_Channel;
         private readonly UserType m_UserType;
-        private readonly DisplayableMessage m_DisplayableMessage;
+        private readonly bool m_IsHighlighted;
 
         public UserMessage(bool ishighlighted, string userName, string channel, string message)
         {

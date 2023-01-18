@@ -2,9 +2,9 @@
 {
     public abstract class UserControlLink
     {
+        private Data? m_Settings = null;
         private string m_Category = "";
         private string m_Setting = "";
-        private Data? m_Settings = null;
 
         internal void Init(string category, string setting, Data settings)
         {

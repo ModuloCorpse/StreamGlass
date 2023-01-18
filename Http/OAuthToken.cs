@@ -1,10 +1,7 @@
-﻿using Quicksand.Web;
-using Quicksand.Web.Http;
-using StreamFeedstock;
+﻿using StreamFeedstock;
 using StreamGlass.Twitch;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Channels;
 
 namespace StreamGlass.Http
 {
@@ -15,9 +12,9 @@ namespace StreamGlass.Http
         private readonly List<string> m_Scopes;
         private readonly string m_PublicKey;
         private readonly string m_Secret;
+        private readonly string m_OAuthURL;
         private string m_RefreshToken = "";
         private string m_AccessToken = "";
-        private string m_OAuthURL = "";
 
         public event RefreshEventHandler? Refreshed;
 

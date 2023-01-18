@@ -10,11 +10,11 @@ namespace StreamGlass.StreamChat
     {
         private BrushPaletteManager m_ChatPalette = new();
         private TranslationManager m_Translations = new();
+        private readonly HashSet<string> m_ChatHighlightedUsers = new();
+        private ConnectionManager? m_ConnectionManager = null;
         private double m_MessageSenderFontSize = 14;
         private double m_MessageSenderWidth = 100;
         private double m_MessageContentFontSize = 14;
-        private readonly HashSet<string> m_ChatHighlightedUsers = new();
-        private ConnectionManager? m_ConnectionManager = null;
 
         public UserMessageScrollPanel() : base()
         {

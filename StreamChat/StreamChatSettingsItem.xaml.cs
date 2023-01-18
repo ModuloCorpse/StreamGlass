@@ -10,11 +10,11 @@ namespace StreamGlass.StreamChat
     {
         private readonly StreamGlassWindow m_Window;
         private readonly UserMessageScrollPanel m_StreamChat;
-        private readonly bool m_OriginalIsPanelOnRight;
         private readonly double m_OriginalSenderWidth;
         private readonly double m_OriginalSenderFontSize;
         private readonly double m_OriginalContentFontSize;
         private readonly ScrollPanelDisplayType m_OriginalDisplayType;
+        private readonly bool m_OriginalIsPanelOnRight;
 
         public StreamChatSettingsItem(Data settings, UserMessageScrollPanel streamChat, StreamGlassWindow window) : base("/Assets/chat-bubble.png", "chat", settings)
         {

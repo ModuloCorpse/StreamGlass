@@ -10,9 +10,9 @@ namespace StreamGlass.Twitch.IRC
         {
             private readonly string m_Name;
             private readonly string m_Channel;
-            private readonly bool m_IsCapRequestEnabled;
             private string m_BotCommand = "";
             private string m_BotCommandParams = "";
+            private readonly bool m_IsCapRequestEnabled;
 
             public Command(string name, string channel = "", bool isCapRequestEnabled = false)
             {
@@ -61,8 +61,8 @@ namespace StreamGlass.Twitch.IRC
 
         public class Emote
         {
-            private readonly string m_ID;
             private readonly List<Tuple<int, int>> m_Locations = new();
+            private readonly string m_ID;
 
             public Emote(string iD) => m_ID = iD;
 

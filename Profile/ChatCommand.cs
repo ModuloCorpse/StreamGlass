@@ -12,6 +12,7 @@ namespace StreamGlass.Profile
     public class ChatCommand
     {
         public delegate string CommandFunction(string[] args);
+
         private static readonly Dictionary<string, CommandFunction> ms_Functions = new();
 
         public static void Init()

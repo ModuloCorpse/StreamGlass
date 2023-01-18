@@ -12,8 +12,8 @@ namespace StreamGlass.StreamChat
     {
         private readonly UserMessageScrollPanel m_StreamChat;
         private readonly UserMessage m_Message;
-        private readonly bool m_IsHighlighted;
         private double m_MaxFontSize;
+        private readonly bool m_IsHighlighted;
 
         private static double GetFontSize(TextBlock textBlock, double textBlockFontSize)
         {

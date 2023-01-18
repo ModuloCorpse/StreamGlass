@@ -2,11 +2,11 @@
 {
     public class TimedCommand
     {
-        private readonly long m_Time;
-        private readonly int m_NbMessage;
-        private long m_TimeSinceLastTrigger = 0;
-        private int m_MessageSinceLastTrigger = 0;
         private readonly string m_Command;
+        private readonly long m_Time;
+        private long m_TimeSinceLastTrigger = 0;
+        private readonly int m_NbMessage;
+        private int m_MessageSinceLastTrigger = 0;
 
         public TimedCommand(long time, int nbMessage, string command)
         {

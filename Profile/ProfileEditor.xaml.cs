@@ -8,11 +8,11 @@ namespace StreamGlass.Profile
 {
     public partial class ProfileEditor : Dialog
     {
-        private readonly string m_ID = Guid.NewGuid().ToString();
         private Profile? m_CreatedProfile = null;
         private readonly Dictionary<string, ChatCommand> m_ChatCommands = new();
         private readonly ConnectionManager m_ConnectionManager;
         private readonly CategoryInfo m_CategoryInfo = new("");
+        private readonly string m_ID = Guid.NewGuid().ToString();
 
         public ProfileEditor(StreamFeedstock.Controls.Window parent, ProfileManager profileManager, ConnectionManager connectionManager): base(parent)
         {

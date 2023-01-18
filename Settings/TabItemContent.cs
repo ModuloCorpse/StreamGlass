@@ -7,10 +7,10 @@ namespace StreamGlass.Settings
     public abstract class TabItemContent : UserControl
     {
         protected Dialog? m_SettingsDialog = null;
-        private readonly string m_HeaderSource;
-        private readonly string m_SettingCategory;
         private readonly Data m_Settings;
         private readonly List<UserControlLink> m_Links = new();
+        private readonly string m_HeaderSource;
+        private readonly string m_SettingCategory;
 
         protected TabItemContent(string headerSource, string settingCategory, Data settings)
         {

@@ -7,9 +7,9 @@ namespace StreamGlass.Settings
 {
     public class PasswordUserControlLink: UserControlLink
     {
-        private bool m_ShowSecret = false;
         private readonly PasswordBox m_PasswordBox;
         private readonly System.Windows.Controls.Image m_VisibilityImage;
+        private bool m_ShowSecret = false;
 
         public PasswordUserControlLink(PasswordBox passwordBox, Button visibilityButton, System.Windows.Controls.Image visibilityImage)
         {

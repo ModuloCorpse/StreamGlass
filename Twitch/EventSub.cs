@@ -65,22 +65,22 @@ namespace StreamGlass.Twitch
 
         public class Subscription
         {
+            private readonly Dictionary<string, string> m_Conditions = new();
+            private readonly Transport m_Transport;
             private readonly string m_ID;
             private readonly string m_Type;
             private readonly string m_Version;
             private readonly string m_Status;
-            private readonly int m_Cost;
             private readonly string m_CreatedAt;
-            private readonly Transport m_Transport;
-            private readonly Dictionary<string, string> m_Conditions = new();
+            private readonly int m_Cost;
 
+            public Transport Transport => m_Transport;
             public string ID => m_ID;
             public string Type => m_Type;
             public string Version => m_Version;
             public string Status => m_Status;
-            public int Cost => m_Cost;
             public string CreatedAt => m_CreatedAt;
-            public Transport Transport => m_Transport;
+            public int Cost => m_Cost;
 
             public Subscription(Json obj)
             {
@@ -138,8 +138,8 @@ namespace StreamGlass.Twitch
         private readonly Settings.Data m_Settings;
         private readonly Quicksand.Web.WebSocket.Client m_Websocket;
         private OAuthToken? m_Token;
-        private string m_ChannelID = "";
         private readonly HashSet<string> m_TreatedMessage = new();
+        private string m_ChannelID = "";
 
         public EventSub(Settings.Data settings)
         {
@@ -247,7 +247,7 @@ namespace StreamGlass.Twitch
         {
             if (m_Settings.Get("twitch", "sub_mode") == "claimed")
                 return;
-            int followTier = 0;
+            int followTier;
             EventData.User? follower = data.GetUser();
             if (follower != null && data.TryGet("tier", out string? tier))
             {
@@ -337,7 +337,7 @@ namespace StreamGlass.Twitch
                 }
                 catch (Exception e)
                 {
-                    Logger.Log("EventSub", string.Format("<= Exception when treating received message", e.Message));
+                    Logger.Log("EventSub", string.Format("<= Exception when treating received message: {0}", e.Message));
                 }
             }
         }

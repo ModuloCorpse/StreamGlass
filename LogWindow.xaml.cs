@@ -8,7 +8,7 @@ namespace StreamGlass
 {
     public partial class LogWindow : Dialog, ILogWindow
     {
-        private class ListViewLog : System.Windows.Controls.ListViewItem, IUIElement
+        private class ListViewLog : ListViewItem, IUIElement
         {
             public void Update(BrushPaletteManager palette, TranslationManager translation)
             {
@@ -21,8 +21,8 @@ namespace StreamGlass
             }
         }
 
-        private bool m_IsRefreshingComboBox = false;
         private string m_CurrentLogCategory = "";
+        private bool m_IsRefreshingComboBox = false;
 
         public LogWindow(StreamFeedstock.Controls.Window parent, string category): base(parent)
         {

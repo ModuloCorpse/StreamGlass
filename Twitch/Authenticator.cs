@@ -1,6 +1,5 @@
 ﻿using Quicksand.Web;
 using Quicksand.Web.Html;
-using Quicksand.Web.Http;
 using StreamGlass.Http;
 using System;
 using System.Collections.Generic;
@@ -74,7 +73,6 @@ namespace StreamGlass.Twitch
         internal readonly static string REDIRECT_URI = "http://localhost:80/twitch_authenticate/";
         private readonly static string TWITCH_AUTH_URI = "https://id.twitch.tv/oauth2/authorize?response_type=code";
         private readonly Settings.Data m_Settings;
-        private string m_State = "";
         private readonly List<string> m_Scopes = new() {
             "bits:read",
             "channel:manage:broadcast",
@@ -90,6 +88,7 @@ namespace StreamGlass.Twitch
             "whispers:read"
         };
         private TaskCompletionSource<string> m_Task = new();
+        private string m_State = "";
 
         public Authenticator(Server webServer, Settings.Data settings)
         {
