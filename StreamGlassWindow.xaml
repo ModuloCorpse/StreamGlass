@@ -30,7 +30,7 @@
                     <ui:MenuItem x:Name="ProfileMenuEdit" TranslationKey="menu_edit_profile" Header="Edit profiles..." Click="EditProfilesButton_Click" />
                     <Separator Name="ProfilesMenuSeparator"/>
                 </ui:MenuItem>
-                <!--<ui:MenuItem Header="Test" Click="MenuItem_Click"/>-->
+                <ui:MenuItem Header="Test" Click="MenuItem_Click"/>
                 <ui:MenuItem TranslationKey="menu_help" Header="Help">
                     <ui:MenuItem TranslationKey="menu_logs" Header="Logs"  Click="LogsToolStripMenuItem_Click" />
                     <ui:MenuItem TranslationKey="menu_about" Header="About" />
@@ -64,22 +64,30 @@
                 </ui:Button>
             </ui:StackPanel>
         </ui:Grid>
-        <ui:Grid x:Name="MainGrid">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="105*"></ColumnDefinition>
-                <ColumnDefinition Width="247*"/>
-                <ColumnDefinition Width="448*"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-            <ui:DockPanel x:Name="StreamChatDock" LastChildFill="True" Grid.Column="0" Grid.ColumnSpan="2">
-                <ui:Border BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top">
-                    <chat:UserMessageScrollPanel x:Name="StreamChatPanel"/>
-                </ui:Border>
-            </ui:DockPanel>
-            <ui:DockPanel x:Name="ProfilePanel" LastChildFill="True" Grid.Column="2">
-                <ui:Border BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top">
-                    <alert:AlertScrollPanel x:Name="StreamAlertPanel" />
-                </ui:Border>
-            </ui:DockPanel>
-        </ui:Grid>
+        <ui:DockPanel LastChildFill="True">
+            <ui:TabControl BorderBrush="Transparent" BrushPaletteKey="background" TextBrushPaletteKey="text">
+                <ui:TabItem TranslationKey="tab_stream_events">
+                    <ui:Grid x:Name="MainGrid">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="3*"/>
+                        </Grid.ColumnDefinitions>
+                        <ui:DockPanel x:Name="StreamChatDock" LastChildFill="True" Grid.Column="0">
+                            <ui:Border x:Name="StreamChatBorder" BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top">
+                                <chat:UserMessageScrollPanel x:Name="StreamChatPanel"/>
+                            </ui:Border>
+                        </ui:DockPanel>
+                        <ui:DockPanel x:Name="ProfilePanel" LastChildFill="True" Grid.Column="1">
+                            <ui:Border BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top">
+                                <alert:AlertScrollPanel x:Name="StreamAlertPanel" />
+                            </ui:Border>
+                        </ui:DockPanel>
+                    </ui:Grid>
+                </ui:TabItem>
+                <ui:TabItem TranslationKey="tab_stream_overlay">
+                    <ui:StackPanel></ui:StackPanel>
+                </ui:TabItem>
+            </ui:TabControl>
+        </ui:DockPanel>
     </ui:DockPanel>
 </ui:Window>

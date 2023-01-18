@@ -3,52 +3,53 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using StreamFeedstock;
-using StreamFeedstock.Controls;
+using TabItem = StreamFeedstock.Controls.TabItem;
 
 namespace StreamGlass.Settings
 {
     public partial class Dialog : StreamFeedstock.Controls.Dialog
     {
-        private readonly List<TabItem> m_TabItems = new();
+        private readonly List<TabItemContent> m_TabItems = new();
 
         public Dialog(StreamGlassWindow window): base(window)
         {
             InitializeComponent();
         }
 
-        protected override void OnUpdate(BrushPaletteManager palette, TranslationManager translation)
-        {
-            foreach (TabItem item in m_TabItems)
-                item.UpdateTabItemColorPalette(palette, translation);
-        }
-
-        public void AddTabItem(TabItem item)
+        public void AddTabItem(TabItemContent item)
         {
             item.SetSettingDialog(this);
             item.UpdateTabItemColorPalette(GetBrushPalette(), GetTranslations());
-            System.Windows.Controls.TabItem tabItem = new();
-            tabItem.Header = new Image()
+            TabItem tabItem = new()
             {
-                Source = new BitmapImage(new Uri(item.GetHeaderSource(), UriKind.Relative)),
-                Width = 35,
-                Height = 35
+                Header = new Image()
+                {
+                    Source = new BitmapImage(new Uri(item.GetHeaderSource(), UriKind.Relative)),
+                    Width = 35,
+                    Height = 35
+                },
+                Content = item
             };
-            tabItem.Content = item;
             m_TabItems.Add(item);
             SettingsTabControl.Items.Add(tabItem);
         }
 
+        public void AddTabItem(TabItemContent[] items)
+        {
+            foreach (TabItemContent item in items)
+                AddTabItem(item);
+        }
+
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            foreach (TabItem item in m_TabItems)
+            foreach (TabItemContent item in m_TabItems)
                 item.SaveTabItem();
             Close();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            foreach (TabItem item in m_TabItems)
+            foreach (TabItemContent item in m_TabItems)
                 item.CancelTabItem();
             Close();
         }

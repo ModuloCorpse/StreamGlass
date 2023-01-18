@@ -1,12 +1,11 @@
 ﻿using StreamGlass.Settings;
 using StreamFeedstock.Controls;
 using System;
-using TabItem = StreamGlass.Settings.TabItem;
 using StreamFeedstock;
 
 namespace StreamGlass.StreamChat
 {
-    public partial class GeneralSettingsItem : TabItem
+    public partial class GeneralSettingsItem : TabItemContent
     {
         private readonly BrushPaletteManager m_BrushPalette;
         private readonly TranslationManager m_Translation;

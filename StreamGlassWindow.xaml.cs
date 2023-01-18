@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Threading;
+using StreamGlass.Connections;
 
 namespace StreamGlass
 {
@@ -20,6 +21,7 @@ namespace StreamGlass
         private readonly ProfileManager m_Manager;
         private readonly ConnectionManager m_ConnectionManager = new();
         private readonly DispatcherTimer m_DispatcherTimer = new();
+        private bool m_ChatPanelOnRight = false;
 
         private static void InitializeCanals()
         {
@@ -97,6 +99,8 @@ namespace StreamGlass
             translation.AddTranslation("menu_logs", "Logs");
             translation.AddTranslation("menu_about", "About");
             translation.AddTranslation("app_name", "Stream Glass");
+            translation.AddTranslation("tab_stream_events", "Events");
+            translation.AddTranslation("tab_stream_overlay", "Overlay");
             translation.AddTranslation("settings_general_color", "Color Theme:");
             translation.AddTranslation("settings_general_language", "Language:");
             translation.AddTranslation("save_button", "Save");
@@ -109,6 +113,7 @@ namespace StreamGlass
             translation.AddTranslation("section_default_arguments", "Default Arguments");
             translation.AddTranslation("profile_editor_name", "Name:");
             translation.AddTranslation("profile_editor_parent", "Parent:");
+            translation.AddTranslation("profile_editor_is_selectable", "Is Selectable:");
             translation.AddTranslation("profile_editor_title", "Title:");
             translation.AddTranslation("profile_editor_category", "Category:");
             translation.AddTranslation("profile_editor_description", "Description:");
@@ -132,6 +137,7 @@ namespace StreamGlass
             translation.AddTranslation("settings_twitch_bot_public", "Bot Public Key:");
             translation.AddTranslation("settings_twitch_bot_private", "Bot Secret Key:");
             translation.AddTranslation("settings_twitch_sub_mode", "Sub Mode:");
+            translation.AddTranslation("settings_twitch_search", "Search:");
             translation.AddTranslation("user_type_none", "Viewer");
             translation.AddTranslation("user_type_mod", "Moderator");
             translation.AddTranslation("user_type_global_mod", "Platform Moderator");
@@ -150,12 +156,37 @@ namespace StreamGlass
             StreamAlertPanel.SetTranslations(translationManager);
         }
 
+        private void InitializeSettings()
+        {
+            //Chat
+            m_Settings.Create("chat", "display_type", "0");
+            m_Settings.Create("chat", "sender_font_size", "14");
+            m_Settings.Create("chat", "sender_size", "100");
+            m_Settings.Create("chat", "message_font_size", "14");
+            m_Settings.Create("chat", "panel_on_right", "false");
+
+            //Alert
+            m_Settings.Create("alert", "display_type", "0");
+            m_Settings.Create("alert", "message_font_size", "20");
+        }
+
         public StreamGlassWindow(): base(new(), new())
         {
             InitializeCanals();
             InitializeComponent();
             ChatCommand.Init();
             m_Settings.Load();
+            InitializeSettings();
+
+            StreamChatPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(m_Settings.Get("chat", "display_type")));
+            StreamChatPanel.SetSenderWidth(double.Parse(m_Settings.Get("chat", "sender_size")));
+            StreamChatPanel.SetSenderFontSize(double.Parse(m_Settings.Get("chat", "sender_font_size")));
+            StreamChatPanel.SetContentFontSize(double.Parse(m_Settings.Get("chat", "message_font_size")));
+            if (m_Settings.Get("chat", "panel_on_right") == "true")
+                SetChatPanelOnRight();
+
+            StreamAlertPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(m_Settings.Get("alert", "display_type")));
+            StreamAlertPanel.SetContentFontSize(double.Parse(m_Settings.Get("alert", "message_font_size")));
 
             InitializeBrushPalette();
             InitializeTranslation();
@@ -163,7 +194,7 @@ namespace StreamGlass
             m_WebServer.GetResourceManager().AddFramework();
             m_WebServer.Start();
 
-            m_ConnectionManager.RegisterConnection(new Twitch.Bot(m_WebServer, m_Settings, this));
+            m_ConnectionManager.RegisterConnection(new Twitch.Connection(m_WebServer, m_Settings, this));
             m_Manager = new(m_ConnectionManager);
             m_Manager.Load();
             UpdateProfilesMenuList();
@@ -173,8 +204,8 @@ namespace StreamGlass
             m_Watch.Start();
             m_DispatcherTimer.Start();
 
-            StreamChatPanel.SetStreamChat(m_ConnectionManager);
-            StreamAlertPanel.SetStreamChat(m_ConnectionManager);
+            StreamChatPanel.SetConnectionManager(m_ConnectionManager);
+            StreamAlertPanel.SetConnectionManager(m_ConnectionManager);
         }
 
         private void UpdateProfilesMenuList()
@@ -184,24 +215,38 @@ namespace StreamGlass
             ProfilesMenu.Items.Add(ProfilesMenuSeparator);
 
             CanalManager.Clear(StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM);
-            var profilesInfo = m_Manager.ObjectsInfo;
-            foreach (var profileInfo in profilesInfo)
+            var profiles = m_Manager.Objects;
+            foreach (var profile in profiles)
             {
-                ProfileMenuItem item = new(m_Manager, profileInfo.ID) { Header = profileInfo.Name };
-                ProfilesMenu.Items.Add(item);
+                if (profile.IsSelectable)
+                {
+                    ProfileMenuItem item = new(m_Manager, profile.ID) { Header = profile.Name };
+                    ProfilesMenu.Items.Add(item);
+                }
             }
             ProfilesMenu.Update(GetBrushPalette(), GetTranslations());
         }
 
-        public void SetChatPanelOnLeft() => SetColumns(0, 1);
-        public void SetChatPanelOnRight() => SetColumns(1, 0);
+        public bool IsChatPanelOnRight => m_ChatPanelOnRight;
+
+        public void SetChatPanelOnLeft()
+        {
+            SetColumns(0, 1);
+            m_ChatPanelOnRight = false;
+        }
+
+        public void SetChatPanelOnRight()
+        {
+            SetColumns(1, 0);
+            m_ChatPanelOnRight = true;
+        }
 
         private void SetColumns(int chatColumn, int profileColumn)
         {
             System.Windows.Controls.Grid.SetColumn(StreamChatDock, chatColumn);
-            MainGrid.ColumnDefinitions[chatColumn].Width = new GridLength(2.2, GridUnitType.Star);
+            MainGrid.ColumnDefinitions[chatColumn].Width = new GridLength(2, GridUnitType.Star);
             System.Windows.Controls.Grid.SetColumn(ProfilePanel, profileColumn);
-            MainGrid.ColumnDefinitions[profileColumn].Width = new GridLength(2.8, GridUnitType.Star);
+            MainGrid.ColumnDefinitions[profileColumn].Width = new GridLength(3, GridUnitType.Star);
         }
 
         protected override void OnClosed(EventArgs e)
@@ -229,6 +274,7 @@ namespace StreamGlass
             Settings.Dialog dialog = new(this);
             dialog.AddTabItem(new GeneralSettingsItem(m_Settings, GetBrushPalette(), GetTranslations()));
             dialog.AddTabItem(new StreamChatSettingsItem(m_Settings, StreamChatPanel, this));
+            dialog.AddTabItem(new StreamAlertSettingsItem(m_Settings, StreamAlertPanel));
             m_ConnectionManager.FillSettings(dialog);
             dialog.ShowDialog();
         }
@@ -282,6 +328,7 @@ namespace StreamGlass
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
+            m_ConnectionManager.Test();
             CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 0, false, 69, 42, -1));
             CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 1, false, 69, 42, -1));
             CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 2, false, 69, 42, -1));

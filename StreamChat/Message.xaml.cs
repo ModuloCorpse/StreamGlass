@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using StreamFeedstock;
 using StreamFeedstock.Controls;
+using StreamGlass.Connections;
 
 namespace StreamGlass.StreamChat
 {
@@ -12,6 +13,7 @@ namespace StreamGlass.StreamChat
         private readonly UserMessageScrollPanel m_StreamChat;
         private readonly UserMessage m_Message;
         private readonly bool m_IsHighlighted;
+        private double m_MaxFontSize;
 
         private static double GetFontSize(TextBlock textBlock, double textBlockFontSize)
         {
@@ -30,7 +32,7 @@ namespace StreamGlass.StreamChat
             return fontSize;
         }
 
-        public Message(UserMessageScrollPanel streamChatPanel, IStreamChat streamChat, BrushPaletteManager palette, TranslationManager translation, UserMessage message, bool isHighligted, double senderWidth, double senderFontSize, double contentFontSize)
+        public Message(UserMessageScrollPanel streamChatPanel, ConnectionManager connectionManager, BrushPaletteManager palette, TranslationManager translation, UserMessage message, bool isHighligted, double senderWidth, double senderFontSize, double contentFontSize)
         {
             InitializeComponent();
             m_StreamChat = streamChatPanel;
@@ -38,7 +40,7 @@ namespace StreamGlass.StreamChat
             MessageSender.Text = message.UserName;
             MessageSender.Width = senderWidth;
             SetSenderNameFontSize(senderFontSize, false);
-            MessageContent.SetDisplayableMessage(streamChat, palette, message.DisplayableMessage);
+            MessageContent.SetDisplayableMessage(connectionManager, palette, message.DisplayableMessage);
             MessageContent.SetMessageFontSize(contentFontSize, false);
             BrushConverter converter = new();
             if (!string.IsNullOrWhiteSpace(message.Color))
@@ -69,12 +71,14 @@ namespace StreamGlass.StreamChat
         {
             MessageSender.Width = width;
             MessageContent.Width = (MessagePanel.ActualWidth - MessageSender.ActualWidth) - 20;
+            MessageSender.FontSize = GetFontSize(MessageSender, m_MaxFontSize);
             if (updateEmotes)
                 UpdateEmotes();
         }
 
         public void SetSenderNameFontSize(double fontSize, bool updateEmotes = true)
         {
+            m_MaxFontSize = fontSize;
             MessageSender.FontSize = GetFontSize(MessageSender, fontSize);
             if (updateEmotes)
                 UpdateEmotes();

@@ -1,4 +1,5 @@
 ﻿using StreamFeedstock.Controls;
+using StreamGlass.Connections;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,7 +10,7 @@ namespace StreamGlass.StreamChat
     public partial class DisplayedMessage : StreamFeedstock.Controls.UserControl
     {
         private static readonly int EMOTE_SIZE = 20;
-        private IStreamChat? m_StreamChat = null;
+        private ConnectionManager? m_ConnectionManager = null;
         private BrushPaletteManager? m_BrushPalette = null;
         private DisplayableMessage? m_Message = null;
 
@@ -18,9 +19,9 @@ namespace StreamGlass.StreamChat
             InitializeComponent();
         }
 
-        internal void SetDisplayableMessage(IStreamChat streamChat, BrushPaletteManager? brushPalette, DisplayableMessage message)
+        internal void SetDisplayableMessage(ConnectionManager connectionManager, BrushPaletteManager? brushPalette, DisplayableMessage message)
         {
-            m_StreamChat = streamChat;
+            m_ConnectionManager = connectionManager;
             m_BrushPalette = brushPalette;
             m_Message = message;
             MessageContent.Text = message.EmotelessMessage;
@@ -43,14 +44,14 @@ namespace StreamGlass.StreamChat
 
         internal void UpdateEmotes()
         {
-            if (m_StreamChat == null || m_BrushPalette == null || m_Message == null)
+            if (m_ConnectionManager == null || m_BrushPalette == null || m_Message == null)
                 return;
             EmoteLayer.Height = MessageContent.ActualHeight;
             EmoteLayer.Children.Clear();
             foreach (var emoteData in m_Message.Emotes)
             {
                 Rect charRect = MessageContent.GetRectFromCharacterIndex(emoteData.Item1);
-                string emoteURL = m_StreamChat.GetEmoteURL(emoteData.Item2, m_BrushPalette);
+                string emoteURL = m_ConnectionManager.GetEmoteURL(emoteData.Item2, m_BrushPalette);
                 BitmapImage bitmap = new();
                 bitmap.BeginInit();
                 bitmap.UriSource = new Uri(emoteURL, UriKind.Absolute);

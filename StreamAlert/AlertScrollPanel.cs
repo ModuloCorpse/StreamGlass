@@ -1,5 +1,6 @@
 ﻿using StreamFeedstock;
 using StreamFeedstock.Controls;
+using StreamGlass.Connections;
 using StreamGlass.StreamChat;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace StreamGlass.StreamAlert
         private BrushPaletteManager m_ChatPalette = new();
         private TranslationManager m_Translations = new();
         private double m_MessageContentFontSize = 20;
-        private IStreamChat? m_StreamChat = null;
+        private ConnectionManager? m_ConnectionManager = null;
 
         public AlertScrollPanel() : base()
         {
@@ -24,9 +25,7 @@ namespace StreamGlass.StreamAlert
 
         internal void SetTranslations(TranslationManager translations) => m_Translations = translations;
 
-        public void SetStreamChat(IStreamChat streamChat) => m_StreamChat = streamChat;
-
-        public string GetEmoteURL(string id) => m_StreamChat!.GetEmoteURL(id, m_ChatPalette);
+        public void SetConnectionManager(ConnectionManager connectionManager) => m_ConnectionManager = connectionManager;
 
         internal double MessageContentFontSize => m_MessageContentFontSize;
 
@@ -45,7 +44,7 @@ namespace StreamGlass.StreamAlert
 
             Dispatcher.Invoke((Delegate)(() =>
             {
-                AlertControl alertMessage = new(m_StreamChat!, m_ChatPalette, m_Translations, alert, m_MessageContentFontSize);
+                AlertControl alertMessage = new(m_ConnectionManager!, m_ChatPalette, m_Translations, alert, m_MessageContentFontSize);
                 alertMessage.AlertMessage.Loaded += (sender, e) =>
                 {
                     alertMessage.UpdateEmotes();

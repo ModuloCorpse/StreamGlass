@@ -1,4 +1,4 @@
-﻿<settings:TabItem x:Class="StreamGlass.StreamChat.GeneralSettingsItem"
+﻿<settings:TabItemContent x:Class="StreamGlass.StreamChat.GeneralSettingsItem"
         xmlns:settings="clr-namespace:StreamGlass.Settings"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -18,4 +18,4 @@
             <ComboBox Margin="5,0,0,0" x:Name="LanguageComboBox" Height="26" Width="200" SelectionChanged="LanguageComboBox_SelectionChanged"/>
         </ui:StackPanel>
     </ui:StackPanel>
-</settings:TabItem>
+</settings:TabItemContent>

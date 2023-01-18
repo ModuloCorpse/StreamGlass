@@ -42,10 +42,9 @@ namespace StreamGlass.Settings
         public void Create(string section, string name, string value)
         {
             if (!m_Settings.ContainsKey(section))
-            {
                 m_Settings.Add(section, new());
+            if (!m_Settings[section].ContainsKey(name))
                 m_Settings[section][name] = value;
-            }
         }
 
         public void Save()

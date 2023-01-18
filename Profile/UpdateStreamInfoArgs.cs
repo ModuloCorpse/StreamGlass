@@ -4,14 +4,14 @@
     {
         public readonly string Title;
         public readonly string Description;
-        public readonly string Game;
+        public readonly CategoryInfo Category;
         public readonly string Language;
 
-        public UpdateStreamInfoArgs(string title, string description, string game, string language)
+        public UpdateStreamInfoArgs(string title, string description, CategoryInfo category, string language)
         {
             Title = title;
             Description = description;
-            Game = game;
+            Category = category;
             Language = language;
         }
     }

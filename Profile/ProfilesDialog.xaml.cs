@@ -1,19 +1,19 @@
-﻿using StreamGlass.StreamChat;
-using StreamFeedstock.Controls;
+﻿using StreamFeedstock.Controls;
 using System;
 using System.Windows;
+using StreamGlass.Connections;
 
 namespace StreamGlass.Profile
 {
     public partial class ProfilesDialog : Dialog
     {
         private readonly ProfileManager m_ProfileManager;
-        private readonly IStreamChat m_StreamChat;
+        private readonly ConnectionManager m_ConnectionManager;
 
-        public ProfilesDialog(StreamFeedstock.Controls.Window parent, ProfileManager manager, IStreamChat streamChat): base(parent)
+        public ProfilesDialog(StreamFeedstock.Controls.Window parent, ProfileManager manager, ConnectionManager connectionManager): base(parent)
         {
             m_ProfileManager = manager;
-            m_StreamChat = streamChat;
+            m_ConnectionManager = connectionManager;
             InitializeComponent();
             ProfileList.ItemAdded += ProfileList_AddProfile;
             ProfileList.ItemRemoved += ProfileList_RemoveProfile;
@@ -29,13 +29,24 @@ namespace StreamGlass.Profile
 
         private string ConvertProfile(object profile) => ((Profile)profile).Name;
 
+        private void UpdateParent(Profile profile, string parentID)
+        {
+            if (!string.IsNullOrWhiteSpace(parentID))
+            {
+                Profile? parent = m_ProfileManager.GetObject(parentID);
+                if (parent != null)
+                    profile.SetParent(parent);
+            }
+        }
+
         private void ProfileList_AddProfile(object? sender, EventArgs _)
         {
-            ProfileEditor dialog = new(this, m_ProfileManager, m_StreamChat);
+            ProfileEditor dialog = new(this, m_ProfileManager, m_ConnectionManager);
             dialog.ShowDialog();
             Profile? newProfile = dialog.Profile;
             if (newProfile != null)
             {
+                UpdateParent(newProfile, dialog.ParentID);
                 m_ProfileManager.AddProfile(newProfile);
                 ProfileList.AddObject(newProfile);
             }
@@ -45,7 +56,7 @@ namespace StreamGlass.Profile
         
         private void ProfileList_EditProfile(object? sender, object args)
         {
-            ProfileEditor dialog = new(this, m_ProfileManager, m_StreamChat, (Profile)args)
+            ProfileEditor dialog = new(this, m_ProfileManager, m_ConnectionManager, (Profile)args)
             {
                 Owner = this,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
@@ -54,6 +65,7 @@ namespace StreamGlass.Profile
             Profile? editedProfile = dialog.Profile;
             if (editedProfile != null)
             {
+                UpdateParent(editedProfile, dialog.ParentID);
                 ProfileList.UpdateObject(args, editedProfile);
                 m_ProfileManager.UpdateProfile(editedProfile);
             }

@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using StreamFeedstock;
 using StreamFeedstock.ManagedObject;
+using StreamGlass.Connections;
 using StreamGlass.StreamChat;
 
 namespace StreamGlass.Profile
@@ -12,12 +14,14 @@ namespace StreamGlass.Profile
         private readonly Dictionary<string, int> m_CommandLocation = new();
         private readonly List<ChatCommand> m_Commands = new();
         private readonly object m_Lock = new();
+        private bool m_IsSelectable = true;
 
         public Profile(string name) : base(name) {}
         public Profile(string id, string name) : base(id, name) {}
         internal Profile(Json json) : base(json) {}
 
         public ReadOnlyCollection<ChatCommand> Commands => m_Commands.AsReadOnly();
+        public bool IsSelectable => m_IsSelectable;
 
         public void AddCommand(ChatCommand command)
         {
@@ -26,55 +30,55 @@ namespace StreamGlass.Profile
             m_Commands.Add(command);
         }
 
-        private void TriggerCommand(IStreamChat streamChat, string channel, string command, UserMessage.UserType userType, bool isForced)
+        private void TriggerCommand(ConnectionManager connectionManager, string channel, string command, UserMessage.UserType userType, bool isForced)
         {
             string[] arguments = command.Split(' ');
             if (m_CommandLocation.TryGetValue(arguments[0], out var contentIdx))
             {
                 ChatCommand content = m_Commands[contentIdx];
                 if (isForced || content.CanTrigger(arguments.Length - 1, userType))
-                    content.Trigger(arguments, streamChat, channel);
+                    content.Trigger(arguments, connectionManager, channel);
                 foreach (string child in content.Commands)
-                    TriggerCommand(streamChat, channel, child, userType, isForced);
+                    TriggerCommand(connectionManager, channel, child, userType, isForced);
             }
             else
-                Parent?.TriggerCommand(streamChat, channel, command, userType, isForced);
+                Parent?.TriggerCommand(connectionManager, channel, command, userType, isForced);
         }
 
-        private void ForceOnMessage(UserMessage message, IStreamChat streamChat, string channel)
+        private void ForceOnMessage(UserMessage message, ConnectionManager connectionManager, string channel)
         {
-            if (message.Message[0] == '!')
-                TriggerCommand(streamChat, channel, message.Message[1..], message.SenderType, false);
+            if (message.Message.Length > 0 && message.Message[0] == '!')
+                TriggerCommand(connectionManager, channel, message.Message[1..], message.SenderType, false);
         }
 
-        internal void OnMessage(UserMessage message, IStreamChat streamChat, string channel)
+        internal void OnMessage(UserMessage message, ConnectionManager connectionManager, string channel)
         {
             lock (m_Lock)
             {
-                ForceOnMessage(message, streamChat, channel);
+                ForceOnMessage(message, connectionManager, channel);
             }
         }
 
-        private void ForceUpdate(long deltaTime, int nbMessage, IStreamChat streamChat, string channel)
+        private void ForceUpdate(long deltaTime, int nbMessage, ConnectionManager connectionManager, string channel)
         {
             foreach (ChatCommand command in m_Commands)
             {
                 command.Update(deltaTime, nbMessage);
                 if (command.CanAutoTrigger())
                 {
-                    command.Trigger(command.AutoTriggerArguments, streamChat, channel);
+                    command.Trigger(command.AutoTriggerArguments, connectionManager, channel);
                     foreach (string child in command.Commands)
-                        TriggerCommand(streamChat, channel, child, UserMessage.UserType.SELF, true);
+                        TriggerCommand(connectionManager, channel, child, UserMessage.UserType.SELF, true);
                 }
             }
-            Parent?.ForceUpdate(deltaTime, nbMessage, streamChat, channel);
+            Parent?.ForceUpdate(deltaTime, nbMessage, connectionManager, channel);
         }
 
-        internal void Update(long deltaTime, int nbMessage, IStreamChat streamChat, string channel)
+        internal void Update(long deltaTime, int nbMessage, ConnectionManager connectionManager, string channel)
         {
             lock (m_Lock)
             {
-                ForceUpdate(deltaTime, nbMessage, streamChat, channel);
+                ForceUpdate(deltaTime, nbMessage, connectionManager, channel);
             }
         }
 
@@ -105,13 +109,13 @@ namespace StreamGlass.Profile
             return "";
         }
 
-        private string GetStreamCategoryOrParent()
+        private CategoryInfo GetStreamCategoryOrParent()
         {
             if (m_StreamInfo.HaveStreamCategory())
                 return m_StreamInfo.GetStreamCategory();
             else if (Parent != null)
                 return Parent.GetStreamCategoryOrParent();
-            return "";
+            return new("");
         }
 
         private string GetStreamLanguageOrParent()
@@ -125,9 +129,9 @@ namespace StreamGlass.Profile
 
         public string GetStreamTitle() => m_StreamInfo.GetStreamTitle();
         public string GetStreamDescription() => m_StreamInfo.GetStreamDescription();
-        public string GetStreamCategory() => m_StreamInfo.GetStreamCategory();
+        public CategoryInfo GetStreamCategory() => m_StreamInfo.GetStreamCategory();
         public string GetStreamLanguage() => m_StreamInfo.GetStreamLanguage();
-        public void SaveStreamInfo(string title, string description, string category, string language) => m_StreamInfo.SaveStreamInfo(title, description, category, language);
+        public void SaveStreamInfo(string title, string description, CategoryInfo category, string language) => m_StreamInfo.SaveStreamInfo(title, description, category, language);
 
         internal void UpdateStreamInfo() => CanalManager.Emit(StreamGlassCanals.UPDATE_STREAM_INFO, new UpdateStreamInfoArgs(GetStreamTitleOrParent(), GetStreamDescriptionOrParent(), GetStreamCategoryOrParent(), GetStreamLanguageOrParent()));
 
@@ -137,14 +141,18 @@ namespace StreamGlass.Profile
             foreach (var command in m_Commands)
                 chatCommandArray.Add(command.Serialize());
             json.Set("chat_commands", chatCommandArray);
+            json.Set("is_selectable", m_IsSelectable);
             m_StreamInfo.Save(ref json);
         }
 
         protected override void Load(Json json)
         {
+            m_IsSelectable = json.GetOrDefault("is_selectable", true);
             foreach (Json obj in json.GetList<Json>("chat_commands"))
                 AddCommand(new(obj));
             m_StreamInfo.Load(json);
         }
+
+        internal void SetIsSelectable(bool isSelectable) => m_IsSelectable = isSelectable;
     }
 }

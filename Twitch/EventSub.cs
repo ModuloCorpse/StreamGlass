@@ -1,16 +1,9 @@
 ﻿using Quicksand.Web;
-using Quicksand.Web.Http;
 using Quicksand.Web.WebSocket;
 using StreamFeedstock;
 using StreamGlass.Http;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Reflection.PortableExecutable;
-using System.Text;
 
 namespace StreamGlass.Twitch
 {
@@ -304,8 +297,8 @@ namespace StreamGlass.Twitch
 
         private static void HandleRaid(EventData data)
         {
-            EventData.User? from = data.GetUser("from_");
-            EventData.User? to = data.GetUser("to_");
+            EventData.User? from = data.GetUser("from_broadcaster_");
+            EventData.User? to = data.GetUser("to_broadcaster_");
             if (from != null && to != null && data.TryGet("viewers", out int? viewers))
                 CanalManager.Emit(StreamGlassCanals.RAID, new RaidEventArgs(from.ID, from.Name, to.ID, to.Name, (int)viewers!));
         }

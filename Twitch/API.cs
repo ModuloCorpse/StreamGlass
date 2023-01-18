@@ -1,11 +1,11 @@
-﻿using Quicksand.Web.Html;
-using Quicksand.Web.Http;
+﻿using Quicksand.Web.Http;
 using StreamFeedstock;
 using StreamFeedstock.Controls;
 using StreamGlass.Http;
 using System;
 using System.Collections.Generic;
-using System.Windows;
+using System.Web;
+using Request = StreamGlass.Http.Request;
 
 namespace StreamGlass.Twitch
 {
@@ -18,25 +18,9 @@ namespace StreamGlass.Twitch
         private static readonly APICache ms_Cache = new();
         private static OAuthToken? ms_AccessToken = null;
 
-        private delegate ManagedRequest CreateRequest();
-
         internal static void Authenticate(OAuthToken accessToken)
         {
             ms_AccessToken = accessToken;
-        }
-
-        internal static void RefreshAuth()
-        {
-            if (ms_AccessToken != null)
-                ms_AccessToken.Refresh();
-        }
-
-        private static bool APICall(OAuthToken? token, ref Http.Request request)
-        {
-            if (token == null)
-                return false;
-            request.Send();
-            return true;
         }
 
         private static void LoadEmoteContent(Json data)
@@ -76,7 +60,7 @@ namespace StreamGlass.Twitch
 
         public static void LoadGlobalEmoteSet()
         {
-            Http.Request request = new("https://api.twitch.tv/helix/chat/emotes/global", Http.Request.RequestType.GET, ms_AccessToken);
+            Request request = new("https://api.twitch.tv/helix/chat/emotes/global", Request.RequestType.GET, ms_AccessToken);
             request.Send();
             Json responseJson = LoadEmoteSetContent(request.GetResponse());
             if (responseJson.TryGet("template", out string? template))
@@ -85,7 +69,7 @@ namespace StreamGlass.Twitch
 
         public static void ReloadChannelEmoteSetFromID(string id)
         {
-            Http.Request request = new(string.Format("https://api.twitch.tv/helix/chat/emotes?broadcaster_id={0}", id), Http.Request.RequestType.GET, ms_AccessToken);
+            Request request = new(string.Format("https://api.twitch.tv/helix/chat/emotes?broadcaster_id={0}", id), Request.RequestType.GET, ms_AccessToken);
             request.Send();
             LoadEmoteSetContent(request.GetResponse());
         }
@@ -115,7 +99,7 @@ namespace StreamGlass.Twitch
 
         public static void ReloadEmoteSet(string emoteSetID)
         {
-            Http.Request request = new(string.Format("https://api.twitch.tv/helix/chat/emotes/set?emote_set_id={0}", emoteSetID), Http.Request.RequestType.GET, ms_AccessToken);
+            Request request = new(string.Format("https://api.twitch.tv/helix/chat/emotes/set?emote_set_id={0}", emoteSetID), Request.RequestType.GET, ms_AccessToken);
             request.Send();
             LoadEmoteSetContent(request.GetResponse());
         }
@@ -130,9 +114,9 @@ namespace StreamGlass.Twitch
 
         public static void LoadEmoteSetFromFollowedChannelOfLogin(string login)
         {
-            List<string> followedBy = API.GetChannelFollowedByLogin(login);
+            List<string> followedBy = GetChannelFollowedByLogin(login);
             foreach (string followedID in followedBy)
-                API.LoadChannelEmoteSetFromID(followedID);
+                LoadChannelEmoteSetFromID(followedID);
         }
 
         public static void LoadEmoteSetFromFollowedChannelOfID(string id)
@@ -184,21 +168,21 @@ namespace StreamGlass.Twitch
 
         public static UserInfo? GetUserInfoOfToken(OAuthToken token)
         {
-            Http.Request request = new("https://api.twitch.tv/helix/users", Http.Request.RequestType.GET, token);
+            Request request = new("https://api.twitch.tv/helix/users", Request.RequestType.GET, token);
             request.Send();
             return GetUserInfo(request.GetResponse());
         }
 
         public static UserInfo? GetSelfUserInfo()
         {
-            Http.Request request = new("https://api.twitch.tv/helix/users", Http.Request.RequestType.GET, ms_AccessToken);
+            Request request = new("https://api.twitch.tv/helix/users", Request.RequestType.GET, ms_AccessToken);
             request.Send();
             return GetUserInfo(request.GetResponse());
         }
 
         public static string GetSelfUserID()
         {
-            Http.Request request = new("https://api.twitch.tv/helix/users", Http.Request.RequestType.GET, ms_AccessToken);
+            Request request = new("https://api.twitch.tv/helix/users", Request.RequestType.GET, ms_AccessToken);
             request.Send();
             UserInfo? ret = GetUserInfo(request.GetResponse());
             if (ret != null)
@@ -212,7 +196,7 @@ namespace StreamGlass.Twitch
             userInfo ??= ms_Cache.GetUserInfoByID(id);
             if (userInfo != null)
                 return userInfo;
-            Http.Request request = new(string.Format("https://api.twitch.tv/helix/users?id={0}", id), Http.Request.RequestType.GET, ms_AccessToken);
+            Request request = new(string.Format("https://api.twitch.tv/helix/users?id={0}", id), Request.RequestType.GET, ms_AccessToken);
             request.Send();
             UserInfo? ret = GetUserInfo(request.GetResponse());
             if (ret != null)
@@ -226,7 +210,7 @@ namespace StreamGlass.Twitch
             userInfo ??= ms_Cache.GetUserInfoByLogin(login);
             if (userInfo != null)
                 return userInfo;
-            Http.Request request = new(string.Format("https://api.twitch.tv/helix/users?login={0}", login), Http.Request.RequestType.GET, ms_AccessToken);
+            Request request = new(string.Format("https://api.twitch.tv/helix/users?login={0}", login), Request.RequestType.GET, ms_AccessToken);
             request.Send();
             UserInfo? ret = GetUserInfo(request.GetResponse());
             if (ret != null)
@@ -263,7 +247,7 @@ namespace StreamGlass.Twitch
             StreamInfo? streamInfo = null;
             if (streamInfo != null)
                 return streamInfo;
-            Http.Request request = new(string.Format("https://api.twitch.tv/helix/streams?user_login={0}", login), Http.Request.RequestType.GET, ms_AccessToken);
+            Request request = new(string.Format("https://api.twitch.tv/helix/streams?user_login={0}", login), Request.RequestType.GET, ms_AccessToken);
             request.Send();
             return GetStreamInfo(request.GetResponse());
         }
@@ -292,7 +276,7 @@ namespace StreamGlass.Twitch
             UserInfo? broadcasterInfo = GetUserInfoFromLogin(login);
             if (broadcasterInfo != null)
             {
-                Http.Request request = new(string.Format("https://api.twitch.tv/helix/channels?broadcaster_id={0}", broadcasterInfo.ID), Http.Request.RequestType.GET, ms_AccessToken);
+                Request request = new(string.Format("https://api.twitch.tv/helix/channels?broadcaster_id={0}", broadcasterInfo.ID), Request.RequestType.GET, ms_AccessToken);
                 request.Send();
                 return GetChannelInfo(request.GetResponse(), broadcasterInfo);
             }
@@ -318,27 +302,22 @@ namespace StreamGlass.Twitch
                 body.Set("game_id", gameID);
             if (!string.IsNullOrEmpty(language))
                 body.Set("broadcaster_language", language);
-            Http.Request request = new(string.Format("https://api.twitch.tv/helix/channels?broadcaster_id={0}", id), body.ToString(), "application/json", Http.Request.RequestType.PATCH, ms_AccessToken);
+            Request request = new(string.Format("https://api.twitch.tv/helix/channels?broadcaster_id={0}", id), body.ToString(), "application/json", Request.RequestType.PATCH, ms_AccessToken);
             request.Send();
             return (request.GetStatusCode() == 204);
-        }
-
-        private static void LoadChannelFollowedByResponse(string response, ref List<string> ret)
-        {
-            Json responseJson = JsonParse(response);
-            foreach (Json data in responseJson.GetList<Json>("data"))
-            {
-                if (data.TryGet("to_id", out string? toID))
-                    ret.Add(toID!);
-            }
         }
 
         public static List<string> GetChannelFollowedByID(string id)
         {
             List<string> ret = new();
-            Http.Request request = new(string.Format("https://api.twitch.tv/helix/users/follows?from_id={0}", id), Http.Request.RequestType.GET, ms_AccessToken);
+            Request request = new(string.Format("https://api.twitch.tv/helix/users/follows?from_id={0}", id), Request.RequestType.GET, ms_AccessToken);
             request.Send();
-            LoadChannelFollowedByResponse(request.GetResponse(), ref ret);
+            Json responseJson = JsonParse(request.GetResponse());
+            foreach (Json data in responseJson.GetList<Json>("data"))
+            {
+                if (data.TryGet("to_id", out string? toID))
+                    ret.Add(toID!);
+            }
             return ret;
         }
 
@@ -348,6 +327,22 @@ namespace StreamGlass.Twitch
             if (broadcasterInfo != null)
                 return GetChannelFollowedByID(broadcasterInfo.ID);
             return new();
+        }
+
+        public static List<CategoryInfo> SearchCategoryInfo(string query)
+        {
+            List<CategoryInfo> ret = new();
+            Request request = new(string.Format("https://api.twitch.tv/helix/search/categories?query={0}", HttpUtility.UrlEncode(query)), Request.RequestType.GET, ms_AccessToken);
+            request.Send();
+            Json responseJson = JsonParse(request.GetResponse());
+            foreach (Json data in responseJson.GetList<Json>("data"))
+            {
+                if (data.TryGet("id", out string? id) &&
+                    data.TryGet("name", out string? name) &&
+                    data.TryGet("box_art_url", out string? imageURL))
+                    ret.Add(new(id!, name!, imageURL!));
+            }
+            return ret;
         }
     }
 }

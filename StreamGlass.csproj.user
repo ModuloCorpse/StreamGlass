@@ -45,6 +45,9 @@
     <Page Update="GeneralSettingsItem.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="StreamAlert\StreamAlertSettingsItem.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="StreamChat\DisplayedMessage.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -58,6 +61,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="StreamGlassWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Twitch\CategorySearchDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

@@ -6,15 +6,15 @@ using StreamFeedstock;
 
 namespace StreamGlass.Twitch
 {
-    public partial class TwitchSettingsItem : TabItem
+    public partial class TwitchSettingsItem : Settings.TabItemContent
     {
-        private readonly Bot m_Bot;
+        private readonly Connection m_Connection;
         private readonly SubModeComboBoxUserControlLink m_SubModeComboBoxUserControlLink;
 
-        public TwitchSettingsItem(Data settings, Bot bot): base("/Assets/twitch-logo.png", "twitch", settings)
+        public TwitchSettingsItem(Data settings, Connection connection): base("/Assets/twitch-logo.png", "twitch", settings)
         {
             InitializeComponent();
-            m_Bot = bot;
+            m_Connection = connection;
             m_SubModeComboBoxUserControlLink = new SubModeComboBoxUserControlLink(TwitchSubModeComboBox);
 
             AddControlLink("browser", new TextBoxUserControlLink(TwitchBrowserTextBox));
@@ -40,7 +40,7 @@ namespace StreamGlass.Twitch
 
         private void TwitchConnectButton_Click(object sender, RoutedEventArgs e)
         {
-            m_Bot.Connect();
+            m_Connection.Connect();
         }
 
         protected override void OnUpdate(BrushPaletteManager palette, TranslationManager translation)

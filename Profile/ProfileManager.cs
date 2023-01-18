@@ -1,5 +1,6 @@
 ﻿using StreamFeedstock;
 using StreamFeedstock.ManagedObject;
+using StreamGlass.Connections;
 using StreamGlass.StreamChat;
 
 namespace StreamGlass.Profile
@@ -8,11 +9,11 @@ namespace StreamGlass.Profile
     {
         private string m_Channel = "";
         private int m_NbMessage = 0;
-        private readonly IStreamChat m_StreamChat;
+        private readonly ConnectionManager m_ConnectionManager;
 
-        public ProfileManager(IStreamChat client) : base("./profiles")
+        public ProfileManager(ConnectionManager client) : base("./profiles")
         {
-            m_StreamChat = client;
+            m_ConnectionManager = client;
             CanalManager.Register<UserMessage>(StreamGlassCanals.CHAT_MESSAGE, (int _, object? message) => OnChatMessage((UserMessage?)message));
             CanalManager.Register<string>(StreamGlassCanals.CHAT_JOINED, (int _, object? channel) => OnJoinedChannel((string?)channel));
             CanalManager.Register(StreamGlassCanals.STREAM_START, (int _) => OnStreamStart());
@@ -68,13 +69,13 @@ namespace StreamGlass.Profile
             if (message.SenderType != UserMessage.UserType.SELF)
             {
                 ++m_NbMessage;
-                CurrentObject?.OnMessage(message, m_StreamChat, m_Channel);
+                CurrentObject?.OnMessage(message, m_ConnectionManager, m_Channel);
             }
         }
 
         internal void Update(long deltaTime)
         {
-            CurrentObject?.Update(deltaTime, m_NbMessage, m_StreamChat, m_Channel);
+            CurrentObject?.Update(deltaTime, m_NbMessage, m_ConnectionManager, m_Channel);
             m_NbMessage = 0;
         }
 

@@ -2,29 +2,37 @@
 using StreamFeedstock.Controls;
 using System.Windows;
 using System.Windows.Controls;
-using TabItem = StreamGlass.Settings.TabItem;
 using StreamFeedstock;
 
 namespace StreamGlass.StreamChat
 {
-    public partial class StreamChatSettingsItem : TabItem
+    public partial class StreamChatSettingsItem : TabItemContent
     {
         private readonly StreamGlassWindow m_Window;
         private readonly UserMessageScrollPanel m_StreamChat;
+        private readonly bool m_OriginalIsPanelOnRight;
+        private readonly double m_OriginalSenderWidth;
+        private readonly double m_OriginalSenderFontSize;
+        private readonly double m_OriginalContentFontSize;
+        private readonly ScrollPanelDisplayType m_OriginalDisplayType;
 
-        public StreamChatSettingsItem(Data settings, UserMessageScrollPanel streamChat, StreamGlassWindow window) : base("/Assets/chat-bubble.png", "stream-chat", settings)
+        public StreamChatSettingsItem(Data settings, UserMessageScrollPanel streamChat, StreamGlassWindow window) : base("/Assets/chat-bubble.png", "chat", settings)
         {
             m_StreamChat = streamChat;
             m_Window = window;
             InitializeComponent();
-            ChatModeComboBox.Items.Add("To bottom");
-            ChatModeComboBox.Items.Add("Reversed to bottom");
-            ChatModeComboBox.Items.Add("To top");
-            ChatModeComboBox.Items.Add("Reversed to top");
-            ChatModeComboBox.SelectedIndex = 0;
-            ChatNameWidth.QuietSetValue(m_StreamChat.MessageSenderWidth);
-            ChatNameFont.QuietSetValue(m_StreamChat.MessageSenderFontSize);
-            ChatMessageFont.QuietSetValue(m_StreamChat.MessageContentFontSize);
+            m_OriginalDisplayType = m_StreamChat.GetDisplayType();
+            m_OriginalSenderWidth = m_StreamChat.MessageSenderWidth;
+            m_OriginalSenderFontSize = m_StreamChat.MessageSenderFontSize;
+            m_OriginalContentFontSize = m_StreamChat.MessageContentFontSize;
+            m_OriginalIsPanelOnRight = m_Window.IsChatPanelOnRight;
+
+            ChatModeComboBox.SetSelectedEnumValue(m_OriginalDisplayType);
+
+            AddControlLink("sender_font_size", new NumericUpDownUserControlLink(ChatNameFont));
+            AddControlLink("sender_size", new NumericUpDownUserControlLink(ChatNameWidth));
+            AddControlLink("message_font_size", new NumericUpDownUserControlLink(ChatMessageFont));
+            AddControlLink("panel_on_right", new CheckBoxUserControlLink(PanelOnRightCheckBox));
         }
 
         private void AddUserType(TranslationManager translation, string key, string defaultVal)
@@ -54,14 +62,8 @@ namespace StreamGlass.StreamChat
 
         private void ChatModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            string displayType = (string)ChatModeComboBox.SelectedItem;
-            switch (displayType)
-            {
-                case "To bottom": m_StreamChat.SetDisplayType(ScrollPanelDisplayType.TOP_TO_BOTTOM); break;
-                case "Reversed to bottom": m_StreamChat.SetDisplayType(ScrollPanelDisplayType.REVERSED_TOP_TO_BOTTOM); break;
-                case "To top": m_StreamChat.SetDisplayType(ScrollPanelDisplayType.BOTTOM_TO_TOP); break;
-                case "Reversed to top": m_StreamChat.SetDisplayType(ScrollPanelDisplayType.REVERSED_BOTTOM_TO_TOP); break;
-            }
+            if (ChatModeComboBox.SelectedEnumValue != m_StreamChat.GetDisplayType())
+                m_StreamChat.SetDisplayType(ChatModeComboBox.SelectedEnumValue);
         }
 
         private void ChatNameFont_ValueChanged(object sender, ValueChangedEventArgs e)
@@ -83,11 +85,32 @@ namespace StreamGlass.StreamChat
         {
             if (sender is CheckBox checkBox)
             {
-                if (checkBox.IsChecked != null && checkBox.IsChecked.Value)
-                    m_Window.SetChatPanelOnRight();
-                else
-                    m_Window.SetChatPanelOnLeft();
+                bool isPanelOnRight = checkBox.IsChecked ?? false;
+                if (isPanelOnRight != m_Window.IsChatPanelOnRight)
+                {
+                    if (isPanelOnRight)
+                        m_Window.SetChatPanelOnRight();
+                    else
+                        m_Window.SetChatPanelOnLeft();
+                }
             }
+        }
+
+        protected override void OnSave()
+        {
+            SetSetting("display_type", ((int)ChatModeComboBox.SelectedEnumValue).ToString());
+        }
+
+        protected override void OnCancel()
+        {
+            m_StreamChat.SetDisplayType(m_OriginalDisplayType);
+            m_StreamChat.SetSenderFontSize(m_OriginalSenderFontSize);
+            m_StreamChat.SetSenderWidth(m_OriginalSenderWidth);
+            m_StreamChat.SetContentFontSize(m_OriginalContentFontSize);
+            if (m_OriginalIsPanelOnRight)
+                m_Window.SetChatPanelOnRight();
+            else
+                m_Window.SetChatPanelOnLeft();
         }
     }
 }

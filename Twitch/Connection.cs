@@ -6,10 +6,12 @@ using ChatClient = StreamGlass.Twitch.IRC.ChatClient;
 using StreamFeedstock;
 using StreamGlass.StreamAlert;
 using StreamGlass.Http;
+using StreamGlass.Connections;
+using StreamGlass.Settings;
 
 namespace StreamGlass.Twitch
 {
-    public class Bot : IStreamChat, IConnection
+    public class Connection : IStreamConnection
     {
         private bool m_IsConnected = false;
         private string m_Channel = "";
@@ -20,7 +22,7 @@ namespace StreamGlass.Twitch
         private readonly StreamGlassWindow m_Form;
         private readonly EventSub m_EventSub;
 
-        public Bot(Server webServer, Settings.Data settings, StreamGlassWindow form)
+        public Connection(Server webServer, Settings.Data settings, StreamGlassWindow form)
         {
             m_Settings = settings;
             m_Form = form;
@@ -130,7 +132,7 @@ namespace StreamGlass.Twitch
             Unregister();
         }
 
-        public Settings.TabItem GetSettings() => new TwitchSettingsItem(m_Settings, this);
+        public TabItemContent[] GetSettings() => new TabItemContent[] { new TwitchSettingsItem(m_Settings, this) };
 
         private void OnConnected(int _)
         {
@@ -187,10 +189,10 @@ namespace StreamGlass.Twitch
             UpdateStreamInfoArgs args = (UpdateStreamInfoArgs)arg!;
             if (m_OriginalBroadcasterChannelInfo != null)
             {
-                if (string.IsNullOrWhiteSpace(args.Title) && string.IsNullOrWhiteSpace(args.Game) && string.IsNullOrWhiteSpace(args.Language))
+                if (string.IsNullOrWhiteSpace(args.Title) && string.IsNullOrWhiteSpace(args.Category.ID) && string.IsNullOrWhiteSpace(args.Language))
                     API.SetChannelInfoFromID(m_OriginalBroadcasterChannelInfo.Broadcaster.ID, m_OriginalBroadcasterChannelInfo.Title, m_OriginalBroadcasterChannelInfo.GameID, m_OriginalBroadcasterChannelInfo.BroadcasterLanguage);
                 else
-                    API.SetChannelInfoFromID(m_OriginalBroadcasterChannelInfo.Broadcaster.ID, args.Title, args.Game, args.Language);
+                    API.SetChannelInfoFromID(m_OriginalBroadcasterChannelInfo.Broadcaster.ID, args.Title, args.Category.ID, args.Language);
             }
         }
 
@@ -219,13 +221,27 @@ namespace StreamGlass.Twitch
         private void OnRaid(int _, object? obj)
         {
             RaidEventArgs e = (RaidEventArgs)obj!;
-            CanalManager.Emit(StreamGlassCanals.ALERT, new Alert("../Assets/parachute.png", new(string.Format("{0} is raiding you with {1} viewers", e.From, e.NbViewers))));
+            if (e.ToID == m_OriginalBroadcasterChannelInfo!.Broadcaster.ID)
+                CanalManager.Emit(StreamGlassCanals.ALERT, new Alert("../Assets/parachute.png", new(string.Format("{0} is raiding you with {1} viewers", e.From, e.NbViewers))));
+            else
+                CanalManager.Emit(StreamGlassCanals.ALERT, new Alert("../Assets/parachute.png", new(string.Format("You are raiding {0} with {1} viewers", e.To, e.NbViewers))));
         }
 
         private void OnReward(int _, object? obj)
         {
             RewardEventArgs e = (RewardEventArgs)obj!;
             CanalManager.Emit(StreamGlassCanals.ALERT, new Alert("../Assets/chest.png", new(string.Format("{0} retrieve {1}: {2}", e.From, e.Reward, e.Input))));
+        }
+
+        public Profile.CategoryInfo? SearchCategoryInfo(Window parent, Profile.CategoryInfo? info)
+        {
+            CategorySearchDialog dialog = new(parent, info);
+            dialog.ShowDialog();
+            return dialog.CategoryInfo;
+        }
+
+        public void Test()
+        {
         }
     }
 }

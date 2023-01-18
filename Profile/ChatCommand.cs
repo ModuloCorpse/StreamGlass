@@ -1,4 +1,5 @@
 ﻿using StreamFeedstock;
+using StreamGlass.Connections;
 using StreamGlass.StreamChat;
 using System;
 using System.Collections.Generic;
@@ -211,7 +212,7 @@ namespace StreamGlass.Profile
             return content;
         }
 
-        internal void Trigger(string[] arguments, IStreamChat streamChat, string channel)
+        internal void Trigger(string[] arguments, ConnectionManager connectionManager, string channel)
         {
             string contentToSend = m_Content;
             if (!string.IsNullOrWhiteSpace(contentToSend))
@@ -228,7 +229,7 @@ namespace StreamGlass.Profile
                         treatedMatches.Add(match.Value);
                     }
                 }
-                streamChat.SendMessage(channel, contentToSend);
+                connectionManager.SendMessage(channel, contentToSend);
                 CanalManager.Emit(StreamGlassCanals.COMMANDS, new CommandEventArgs(m_Name, arguments));
                 Reset();
             }

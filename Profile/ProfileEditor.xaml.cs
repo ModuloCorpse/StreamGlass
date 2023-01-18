@@ -1,8 +1,8 @@
-﻿using StreamGlass.StreamChat;
-using StreamFeedstock.Controls;
+﻿using StreamFeedstock.Controls;
 using System;
 using System.Collections.Generic;
 using System.Windows;
+using StreamGlass.Connections;
 
 namespace StreamGlass.Profile
 {
@@ -11,11 +11,12 @@ namespace StreamGlass.Profile
         private readonly string m_ID = Guid.NewGuid().ToString();
         private Profile? m_CreatedProfile = null;
         private readonly Dictionary<string, ChatCommand> m_ChatCommands = new();
-        private readonly IStreamChat m_StreamChat;
+        private readonly ConnectionManager m_ConnectionManager;
+        private readonly CategoryInfo m_CategoryInfo = new("");
 
-        public ProfileEditor(StreamFeedstock.Controls.Window parent, ProfileManager profileManager, IStreamChat streamChat): base(parent)
+        public ProfileEditor(StreamFeedstock.Controls.Window parent, ProfileManager profileManager, ConnectionManager connectionManager): base(parent)
         {
-            m_StreamChat = streamChat;
+            m_ConnectionManager = connectionManager;
             InitializeComponent();
             ChatCommandsList.SetConversionDelegate(ConvertCommand);
             ChatCommandsList.ItemAdded += ChatCommandsList_AddChatCommand;
@@ -23,9 +24,10 @@ namespace StreamGlass.Profile
             ChatCommandsList.ItemEdited += ChatCommandsList_EditChatCommand;
             profileManager.FillComboBox(ref ParentComboBox);
             ParentComboBox.SelectedIndex = 0;
+            IsSelectableCheckBox.IsChecked = true;
         }
 
-        public ProfileEditor(StreamFeedstock.Controls.Window parent, ProfileManager profileManager, IStreamChat streamChat, Profile profile): this(parent, profileManager, streamChat)
+        public ProfileEditor(StreamFeedstock.Controls.Window parent, ProfileManager profileManager, ConnectionManager connectionManager, Profile profile): this(parent, profileManager, connectionManager)
         {
             ParentComboBox.Items.Remove(profile.ObjectInfo);
             m_ID = profile.ID;
@@ -33,10 +35,12 @@ namespace StreamGlass.Profile
             Profile? profileParent = profile.Parent;
             if (profileParent != null)
                 ParentComboBox.SelectedItem = profileParent.ObjectInfo;
+            m_CategoryInfo.Copy(profile.GetStreamCategory());
             StreamInfoTitleTextBox.Text = profile.GetStreamTitle();
-            StreamInfoCategoryTextBox.Text = profile.GetStreamCategory();
+            StreamInfoCategoryTextBox.Text = m_CategoryInfo.Name;
             StreamInfoDescriptionTextBox.Text = profile.GetStreamDescription();
             StreamInfoLanguageTextBox.Text = profile.GetStreamLanguage();
+            IsSelectableCheckBox.IsChecked = profile.IsSelectable;
             foreach (ChatCommand chatCommand in profile.Commands)
                 AddCommand(chatCommand);
         }
@@ -50,7 +54,7 @@ namespace StreamGlass.Profile
         }
 
         internal Profile? Profile => m_CreatedProfile;
-        internal string ParentID => ((Profile?)ParentComboBox.SelectedItem)?.ID ?? "";
+        internal string ParentID => ((Profile.Info?)ParentComboBox.SelectedItem)?.ID ?? "";
 
         private void ChatCommandsList_AddChatCommand(object? sender, EventArgs _)
         {
@@ -101,7 +105,8 @@ namespace StreamGlass.Profile
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             Profile newProfile = new(m_ID, NameTextBox.Text);
-            newProfile.SaveStreamInfo(StreamInfoTitleTextBox.Text, StreamInfoDescriptionTextBox.Text, StreamInfoCategoryTextBox.Text, StreamInfoLanguageTextBox.Text);
+            newProfile.SetIsSelectable(IsSelectableCheckBox.IsChecked ?? true);
+            newProfile.SaveStreamInfo(StreamInfoTitleTextBox.Text, StreamInfoDescriptionTextBox.Text, m_CategoryInfo, StreamInfoLanguageTextBox.Text);
             foreach (ChatCommand command in m_ChatCommands.Values)
                 newProfile.AddCommand(command);
             m_CreatedProfile = newProfile;
@@ -112,6 +117,16 @@ namespace StreamGlass.Profile
         {
             m_CreatedProfile = null;
             Close();
+        }
+
+        private void StreamInfoCategorySearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            CategoryInfo? searchedCategory = m_ConnectionManager.SearchCategoryInfo(this, m_CategoryInfo);
+            if (searchedCategory != null)
+            {
+                m_CategoryInfo.Copy(searchedCategory);
+                StreamInfoCategoryTextBox.Text = m_CategoryInfo.Name;
+            }
         }
     }
 }

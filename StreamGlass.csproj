@@ -13,6 +13,7 @@
     <None Remove="Assets\chess-queen.png" />
     <None Remove="Assets\chest.png" />
     <None Remove="Assets\hearts.png" />
+    <None Remove="Assets\megaphone.png" />
     <None Remove="Assets\parachute.png" />
     <None Remove="Assets\stars-stack-1.png" />
     <None Remove="Assets\stars-stack-2.png" />
@@ -38,6 +39,7 @@
     <Resource Include="Assets\chess-queen.png" />
     <Resource Include="Assets\chest.png" />
     <Resource Include="Assets\hearts.png" />
+    <Resource Include="Assets\megaphone.png" />
     <Resource Include="Assets\parachute.png" />
     <Resource Include="Assets\stars-stack-1.png" />
     <Resource Include="Assets\stars-stack-2.png" />
@@ -49,8 +51,6 @@
     <Resource Include="Assets\sight-disabled.png" />
     <Resource Include="Assets\sight-enabled.png" />
     <Resource Include="Assets\stream-glass-logo.png" />
-    <Resource Include="Assets\stream-glass-settings.ico" />
-    <Resource Include="Assets\stream-glass-settings.png" />
     <Resource Include="Assets\tinker.png" />
   </ItemGroup>
 
@@ -67,7 +67,16 @@
     <Compile Update="GeneralSettingsItem.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="StreamAlert\StreamAlertSettingsItem.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="StreamChat\DisplayedMessage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Twitch\CategoryControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Twitch\CategorySearchDialog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

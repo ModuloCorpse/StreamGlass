@@ -1,5 +1,6 @@
 ﻿using StreamFeedstock;
 using StreamFeedstock.Controls;
+using StreamGlass.Connections;
 using System;
 using System.Collections.Generic;
 
@@ -13,7 +14,7 @@ namespace StreamGlass.StreamChat
         private double m_MessageSenderWidth = 100;
         private double m_MessageContentFontSize = 14;
         private readonly HashSet<string> m_ChatHighlightedUsers = new();
-        private IStreamChat? m_StreamChat = null;
+        private ConnectionManager? m_ConnectionManager = null;
 
         public UserMessageScrollPanel() : base()
         {
@@ -24,9 +25,7 @@ namespace StreamGlass.StreamChat
 
         internal void SetTranslations(TranslationManager translations) => m_Translations = translations;
 
-        public void SetStreamChat(IStreamChat streamChat) => m_StreamChat = streamChat;
-
-        public string GetEmoteURL(string id) => m_StreamChat!.GetEmoteURL(id, m_ChatPalette);
+        public void SetConnectionManager(ConnectionManager connectionManager) => m_ConnectionManager = connectionManager;
 
         internal double MessageSenderFontSize => m_MessageSenderFontSize;
         internal double MessageSenderWidth => m_MessageSenderWidth;
@@ -72,7 +71,7 @@ namespace StreamGlass.StreamChat
             Dispatcher.Invoke((Delegate)(() =>
             {
                 Message chatMessage = new(this,
-                m_StreamChat!,
+                m_ConnectionManager!,
                 m_ChatPalette,
                 m_Translations,
                 message,

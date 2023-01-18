@@ -1,25 +1,32 @@
-﻿using StreamGlass.StreamChat;
-using StreamFeedstock.Controls;
+﻿using StreamFeedstock.Controls;
+using StreamGlass.Profile;
 using System.Collections.Generic;
+using static StreamGlass.Twitch.IRC.Message;
 
-namespace StreamGlass
+namespace StreamGlass.Connections
 {
-    public class ConnectionManager: IStreamChat
+    public class ConnectionManager
     {
         private readonly List<IConnection> m_Connections = new();
-        private readonly List<IStreamChat> m_StreamChatConnections = new();
+        private readonly List<IStreamConnection> m_StreamChatConnections = new();
 
         public void RegisterConnection(IConnection connection)
         {
             m_Connections.Add(connection);
-            if (connection is IStreamChat streamChatConnction)
-                m_StreamChatConnections.Add(streamChatConnction);
+            if (connection is IStreamConnection streamChatConnection)
+                m_StreamChatConnections.Add(streamChatConnection);
         }
 
         public void FillSettings(Settings.Dialog dialog)
         {
             foreach (var connection in m_Connections)
                 dialog.AddTabItem(connection.GetSettings());
+        }
+
+        public void Test()
+        {
+            foreach (var connection in m_Connections)
+                connection.Test();
         }
 
         public void Disconnect()
@@ -50,6 +57,17 @@ namespace StreamGlass
                     return url;
             }
             return url;
+        }
+
+        public CategoryInfo? SearchCategoryInfo(Window parent, CategoryInfo? info)
+        {
+            foreach (var connection in m_StreamChatConnections)
+            {
+                CategoryInfo? categoryInfo = connection.SearchCategoryInfo(parent, info);
+                if (categoryInfo != null)
+                    return categoryInfo;
+            }
+            return null;
         }
     }
 }
