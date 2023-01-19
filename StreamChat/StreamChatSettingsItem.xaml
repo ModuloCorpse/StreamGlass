@@ -29,5 +29,13 @@
             <ui:Label x:Name="ChatPanelOnRightLabel" TranslationKey="settings_chat_right" VerticalAlignment="Center" TextAlignment="Right" Text="Chat Panel On Right:" Width="150"/>
             <CheckBox x:Name="PanelOnRightCheckBox" Margin="4,7,0,0" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" />
         </ui:StackPanel>
+        <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
+            <ui:Label x:Name="DoWelcomeLabel" TranslationKey="settings_chat_do_welcome" VerticalAlignment="Center" TextAlignment="Right" Text="Do Welcome:" Width="150"/>
+            <CheckBox x:Name="DoWelcomeCheckBox" Margin="4,7,0,0" Checked="DoWelcomeCheckBox_Checked" Unchecked="DoWelcomeCheckBox_Checked" />
+        </ui:StackPanel>
+        <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
+            <ui:Label x:Name="WelcomeMessageLabel" TranslationKey="settings_chat_welcome_message" Margin="0,0,5,0" Text="Welcome Message:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="150"/>
+            <ui:TextBox x:Name="WelcomeMessageTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="200" Height="52"/>
+        </ui:StackPanel>
     </ui:StackPanel>
 </settings:TabItemContent>

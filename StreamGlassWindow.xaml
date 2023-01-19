@@ -23,19 +23,25 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <ui:Menu Grid.Column="0" x:Name="MenuBar">
-                <ui:MenuItem TranslationKey="menu_file" Header="File"/>
-                <ui:MenuItem TranslationKey="menu_settings" Header="Settings" Click="SettingsToolStripMenuItem_Click"/>
-                <ui:MenuItem x:Name="ProfilesMenu" TranslationKey="menu_profile" Header="Profiles">
-                    <ui:MenuItem x:Name="ProfileMenuEdit" TranslationKey="menu_edit_profile" Header="Edit profiles..." Click="EditProfilesButton_Click" />
-                    <Separator Name="ProfilesMenuSeparator"/>
-                </ui:MenuItem>
-                <ui:MenuItem Header="Test" Click="MenuItem_Click"/>
-                <ui:MenuItem TranslationKey="menu_help" Header="Help">
-                    <ui:MenuItem TranslationKey="menu_logs" Header="Logs"  Click="LogsToolStripMenuItem_Click" />
-                    <ui:MenuItem TranslationKey="menu_about" Header="About" />
-                </ui:MenuItem>
-            </ui:Menu>
+            <ui:Grid Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ui:Menu Grid.Column="0" x:Name="MenuBar" BrushPaletteKey="top_bar_background">
+                    <ui:MenuItem TranslationKey="menu_file" Header="File" BrushPaletteKey="top_bar_background"/>
+                    <ui:MenuItem TranslationKey="menu_settings" Header="Settings" Click="SettingsToolStripMenuItem_Click" BrushPaletteKey="top_bar_background"/>
+                    <ui:MenuItem x:Name="ProfilesMenu" TranslationKey="menu_profile" Header="Profiles" BrushPaletteKey="top_bar_background">
+                        <ui:MenuItem x:Name="ProfileMenuEdit" TranslationKey="menu_edit_profile" Header="Edit profiles..." Click="EditProfilesButton_Click" BrushPaletteKey="top_bar_background"/>
+                        <Separator Name="ProfilesMenuSeparator"/>
+                    </ui:MenuItem>
+                    <ui:MenuItem Header="Test" Click="MenuItem_Click" BrushPaletteKey="top_bar_background"/>
+                    <ui:MenuItem TranslationKey="menu_help" Header="Help" BrushPaletteKey="top_bar_background">
+                        <ui:MenuItem TranslationKey="menu_logs" Header="Logs"  Click="LogsToolStripMenuItem_Click" BrushPaletteKey="top_bar_background"/>
+                        <ui:MenuItem TranslationKey="menu_about" Header="About" BrushPaletteKey="top_bar_background"/>
+                    </ui:MenuItem>
+                </ui:Menu>
+            </ui:Grid>
             <ui:StackPanel HorizontalAlignment="Center" Grid.Column="1" Orientation="Horizontal">
                 <Image Source="Assets/stream-glass-logo.ico" Width="15" Height="15" />
                 <ui:Label BrushPaletteKey="top_bar_text" TranslationKey="app_name" Margin="2,2,0,0" Text="StreamGlass" />

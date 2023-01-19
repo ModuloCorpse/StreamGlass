@@ -24,7 +24,7 @@
         </ui:StackPanel>
         <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
             <ui:Label x:Name="TwitchBrowserTextBoxLabel" TranslationKey="settings_twitch_browser" Margin="0,0,5,0" Text="Browser:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="150"/>
-            <ui:TextBox x:Name="TwitchBrowserTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="250" Height="25"/>
+            <ui:TextBox x:Name="TwitchBrowserTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="200" Height="25"/>
             <ui:Button x:Name="TwitchBrowserTextBoxButton" Margin="3,0,0,0" Width="34" HorizontalAlignment="Left" VerticalAlignment="Top" Click="TwitchBrowserFileDialog_Click">
                 <Image Height="20" Width="20" Source="/Assets/magnifying-glass.png" />
                 <Button.Resources>
@@ -36,11 +36,11 @@
         </ui:StackPanel>
         <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
             <ui:Label x:Name="TwitchBotPublicTextBoxLabel" TranslationKey="settings_twitch_bot_public" Margin="0,0,5,0" Text="Bot public key:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="150"/>
-            <ui:TextBox x:Name="TwitchBotPublicTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="250" Height="25"/>
+            <ui:TextBox x:Name="TwitchBotPublicTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="200" Height="25"/>
         </ui:StackPanel>
         <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
             <ui:Label x:Name="TwitchBotSecretPasswordBoxLbel" TranslationKey="settings_twitch_bot_private" Margin="0,0,5,0" Text="Bot secret key:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="150"/>
-            <ui:PasswordBox x:Name="TwitchBotSecretPasswordBox" PasswordChar="*" HorizontalAlignment="Center" VerticalAlignment="Center" Width="250" Height="25"/>
+            <ui:PasswordBox x:Name="TwitchBotSecretPasswordBox" PasswordChar="*" HorizontalAlignment="Center" VerticalAlignment="Center" Width="200" Height="25"/>
             <ui:Button x:Name="TwitchBotSecretVisibility" Margin="3,0,0,0" Width="34" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <Image Name="TwitchBotSecretVisibilityImage" Height="20" Width="20" Source="/Assets/sight-disabled.png" />
                 <Button.Resources>
@@ -52,7 +52,7 @@
         </ui:StackPanel>
         <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
             <ui:Label x:Name="TwitchSubModeComboBoxLabel" TranslationKey="settings_twitch_sub_mode" Margin="0,0,5,0" Text="Sub mode:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="150"/>
-            <ComboBox Name="TwitchSubModeComboBox" HorizontalAlignment="Center" VerticalAlignment="Top" Width="250" Height="25"/>
+            <ComboBox Name="TwitchSubModeComboBox" HorizontalAlignment="Center" VerticalAlignment="Top" Width="200" Height="25"/>
         </ui:StackPanel>
     </ui:StackPanel>
 </settings:TabItemContent>

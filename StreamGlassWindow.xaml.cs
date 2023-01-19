@@ -10,6 +10,8 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Threading;
 using StreamGlass.Connections;
+using System.Windows.Input;
+using static StreamGlass.StreamAlert.AlertScrollPanel;
 
 namespace StreamGlass
 {
@@ -37,7 +39,6 @@ namespace StreamGlass
             CanalManager.NewCanal<RaidEventArgs>(StreamGlassCanals.RAID);
             CanalManager.NewCanal<RewardEventArgs>(StreamGlassCanals.REWARD);
             CanalManager.NewCanal<CommandEventArgs>(StreamGlassCanals.COMMANDS);
-            CanalManager.NewCanal<Alert>(StreamGlassCanals.ALERT);
             CanalManager.NewCanal<string>(StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM);
         }
 
@@ -130,6 +131,8 @@ namespace StreamGlass
             translation.AddTranslation("settings_chat_name_width", "Chat Name Width:");
             translation.AddTranslation("settings_chat_font", "Chat Font Size:");
             translation.AddTranslation("settings_chat_right", "Chat Panel On Right:");
+            translation.AddTranslation("settings_chat_do_welcome", "Do Welcome:");
+            translation.AddTranslation("settings_chat_welcome_message", "Welcome Message:");
             translation.AddTranslation("settings_twitch_autoconnect", "Auto-Connect:");
             translation.AddTranslation("settings_twitch_connect", "Connect");
             translation.AddTranslation("settings_twitch_browser", "Browser:");
@@ -151,43 +154,74 @@ namespace StreamGlass
             translation.AddTranslation("chat_display_type_rbtt", "Reversed to top");
             translation.AddTranslation("sub_mode_claimed", "Claimed");
             translation.AddTranslation("sub_mode_all", "All");
+            translation.AddTranslation("alert_editor_enable", "Enable:");
+            translation.AddTranslation("alert_editor_image", "Image:");
+            translation.AddTranslation("alert_editor_prefix", "Prefix:");
+            translation.AddTranslation("settings_alert_alerts", "Alerts");
+            translation.AddTranslation("alert_name_inc_raid", "Incomming raid");
+            translation.AddTranslation("alert_name_out_raid", "Outgoing raid");
+            translation.AddTranslation("alert_name_donation", "Donation");
+            translation.AddTranslation("alert_name_reward", "Reward");
+            translation.AddTranslation("alert_name_follow", "Follow");
+            translation.AddTranslation("alert_name_tier1", "Tier 1");
+            translation.AddTranslation("alert_name_tier2", "Tier 2");
+            translation.AddTranslation("alert_name_tier3", "Tier 3");
+            translation.AddTranslation("alert_name_tier4", "Prime/Tier 4");
             translationManager.Load();
             StreamChatPanel.SetTranslations(translationManager);
             StreamAlertPanel.SetTranslations(translationManager);
+        }
+
+        private void InitializeAlertSetting(AlertScrollPanel.AlertType alertType, string imgPath, string prefix, bool isEnabled)
+        {
+            m_Settings.Create("alert", string.Format("{0}_path", alertType), imgPath);
+            m_Settings.Create("alert", string.Format("{0}_prefix", alertType), prefix);
+            m_Settings.Create("alert", string.Format("{0}_enabled", alertType), (isEnabled) ? "true" : "false");
+            string loadedImgPath = m_Settings.Get("alert", string.Format("{0}_path", alertType));
+            string loadedPrefix = m_Settings.Get("alert", string.Format("{0}_prefix", alertType));
+            bool loadedIsEnabled = m_Settings.Get("alert", string.Format("{0}_enabled", alertType)) == "true";
+            StreamAlertPanel.SetAlertInfo(alertType, loadedImgPath, loadedPrefix, loadedIsEnabled);
         }
 
         private void InitializeSettings()
         {
             //Chat
             m_Settings.Create("chat", "display_type", "0");
+            StreamChatPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(m_Settings.Get("chat", "display_type")));
             m_Settings.Create("chat", "sender_font_size", "14");
+            StreamChatPanel.SetSenderFontSize(double.Parse(m_Settings.Get("chat", "sender_font_size")));
             m_Settings.Create("chat", "sender_size", "100");
+            StreamChatPanel.SetSenderWidth(double.Parse(m_Settings.Get("chat", "sender_size")));
             m_Settings.Create("chat", "message_font_size", "14");
+            StreamChatPanel.SetContentFontSize(double.Parse(m_Settings.Get("chat", "message_font_size")));
             m_Settings.Create("chat", "panel_on_right", "false");
+            if (m_Settings.Get("chat", "panel_on_right") == "true")
+                SetChatPanelOnRight();
+            m_Settings.Create("chat", "do_welcome", "true");
+            m_Settings.Create("chat", "welcome_message", "Hello World! Je suis un bot connecté via StreamGlass!");
 
             //Alert
             m_Settings.Create("alert", "display_type", "0");
+            StreamAlertPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(m_Settings.Get("alert", "display_type")));
             m_Settings.Create("alert", "message_font_size", "20");
+            StreamAlertPanel.SetContentFontSize(double.Parse(m_Settings.Get("alert", "message_font_size")));
+            InitializeAlertSetting(AlertScrollPanel.AlertType.INCOMMING_RAID, "../Assets/parachute.png", "${e.From} is raiding you with ${e.NbViewers} viewers", true);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.OUTGOING_RAID, "../Assets/parachute.png", "You are raiding ${e.To} with ${e.NbViewers} viewers", true);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.DONATION, "../Assets/take-my-money.png", "${e.Name} as donated ${e.Amount} ${e.Currency}: ", true);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.REWARD, "../Assets/chest.png", "${e.From} retrieve ${e.Reward}: ${e.Input}", true);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.FOLLOW, "../Assets/hearts.png", "${e.Name} is now following you: ", true);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER1, "../Assets/stars-stack-1.png", "${e.Name} as subscribed to you with a tier 1: ", true);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER2, "../Assets/stars-stack-2.png", "${e.Name} as subscribed to you with a tier 2: ", true);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER3, "../Assets/stars-stack-3.png", "${e.Name} as subscribed to you with a tier 3: ", true);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER4, "../Assets/chess-queen.png", "${e.Name} as subscribed to you with a prime: ", true);
         }
 
         public StreamGlassWindow(): base(new(), new())
         {
             InitializeCanals();
             InitializeComponent();
-            ChatCommand.Init();
             m_Settings.Load();
             InitializeSettings();
-
-            StreamChatPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(m_Settings.Get("chat", "display_type")));
-            StreamChatPanel.SetSenderWidth(double.Parse(m_Settings.Get("chat", "sender_size")));
-            StreamChatPanel.SetSenderFontSize(double.Parse(m_Settings.Get("chat", "sender_font_size")));
-            StreamChatPanel.SetContentFontSize(double.Parse(m_Settings.Get("chat", "message_font_size")));
-            if (m_Settings.Get("chat", "panel_on_right") == "true")
-                SetChatPanelOnRight();
-
-            StreamAlertPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(m_Settings.Get("alert", "display_type")));
-            StreamAlertPanel.SetContentFontSize(double.Parse(m_Settings.Get("alert", "message_font_size")));
-
             InitializeBrushPalette();
             InitializeTranslation();
 
@@ -264,9 +298,11 @@ namespace StreamGlass
             Application.Current.Shutdown();
         }
 
-        internal void JoinChannel(string _)
+        internal void JoinChannel(string channel)
         {
             m_Manager.UpdateStreamInfo();
+            if (m_Settings.Get("chat", "do_welcome") == "true")
+                m_ConnectionManager.SendMessage(channel, m_Settings.Get("chat", "welcome_message"));
         }
 
         private void SettingsToolStripMenuItem_Click(object sender, RoutedEventArgs e)
@@ -317,11 +353,7 @@ namespace StreamGlass
 
         private void EditProfilesButton_Click(object sender, RoutedEventArgs e)
         {
-            ProfilesDialog dialog = new(this, m_Manager, m_ConnectionManager)
-            {
-                Owner = this,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
+            ProfilesDialog dialog = new(this, m_Manager, m_ConnectionManager);
             dialog.ShowDialog();
             UpdateProfilesMenuList();
         }
@@ -335,7 +367,7 @@ namespace StreamGlass
             CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 3, false, 69, 42, -1));
             CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 4, false, 69, 42, -1));
             CanalManager.Emit(StreamGlassCanals.DONATION, new DonationEventArgs("Jean-Michel Jarre", 666, "bits", new("J'aime le Pop-Corn")));
-            CanalManager.Emit(StreamGlassCanals.RAID, new RaidEventArgs("", "Jean-Michel Jarre", "", "Capterge", 40));
+            CanalManager.Emit(StreamGlassCanals.RAID, new RaidEventArgs("", "Jean-Michel Jarre", "", "Capterge", 40, true));
             CanalManager.Emit(StreamGlassCanals.REWARD, new RewardEventArgs("", "Jean-Michel Jarre", "Chante", "J'aime le Pop-Corn"));
         }
     }

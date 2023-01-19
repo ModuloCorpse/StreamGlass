@@ -38,7 +38,7 @@
             <ui:StackPanel Width="450">
                 <ui:StackPanel Margin="0,5,0,0">
                     <ui:GroupBox x:Name="ProfileGroupBox" TranslationKey="section_profiles" Header="Profiles">
-                        <ui:EditableList x:Name="ProfileList" Height="315" />
+                        <ui:EditableList x:Name="ProfileList" Height="315" EditImageSource="../Assets/pencil.png" SearchImageSource="../Assets/magnifying-glass.png" />
                     </ui:GroupBox>
                 </ui:StackPanel>
             </ui:StackPanel>

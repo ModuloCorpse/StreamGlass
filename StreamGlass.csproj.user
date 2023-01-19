@@ -45,6 +45,9 @@
     <Page Update="GeneralSettingsItem.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="StreamAlert\AlertEditor.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="StreamAlert\StreamAlertSettingsItem.xaml">
       <SubType>Designer</SubType>
     </Page>

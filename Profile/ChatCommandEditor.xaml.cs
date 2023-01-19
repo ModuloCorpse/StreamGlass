@@ -32,16 +32,16 @@ namespace StreamGlass.Profile
         public ChatCommandEditor(StreamFeedstock.Controls.Window parent, ChatCommand command): this(parent)
         {
             NameTextBox.Text = command.Name;
-            TimeUpDown.QuietSetValue(command.AwaitTime);
-            NbMessageUpDown.QuietSetValue(command.NbMessage);
-            NbArgumentsUpDown.QuietSetValue(command.NBArguments);
+            TimeUpDown.Value = command.AwaitTime;
+            NbMessageUpDown.Value = command.NbMessage;
+            NbArgumentsUpDown.Value = command.NBArguments;
             ContentTextBox.Text = command.Content;
             UserComboBox.SelectedIndex = (int)command.UserType;
             SubCommandList.AddObjects(command.Commands);
 
             AutoTriggerEnableCheckBox.IsChecked = command.AutoTrigger;
-            AutoTriggerTimeUpDown.QuietSetValue(command.AutoTriggerTime);
-            AutoTriggerTimeDeltaUpDown.QuietSetValue(command.AutoTriggerDeltaTime);
+            AutoTriggerTimeUpDown.Value = command.AutoTriggerTime;
+            AutoTriggerTimeDeltaUpDown.Value = command.AutoTriggerDeltaTime;
             AutoTriggerArguments.AddObjects(command.AutoTriggerArguments);
 
             UpdateAutoTriggerVisibility();

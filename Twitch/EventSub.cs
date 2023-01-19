@@ -95,6 +95,8 @@ namespace StreamGlass.Twitch
                 foreach (var pair in conditionObject.ToDictionary<string>())
                     m_Conditions[pair.Key] = pair.Value;
             }
+
+            public bool HaveCondition(string condition) => m_Conditions.ContainsKey(condition);
         }
 
         public class EventData
@@ -295,12 +297,12 @@ namespace StreamGlass.Twitch
             }
         }
 
-        private static void HandleRaid(EventData data)
+        private static void HandleRaid(EventData data, bool incomming)
         {
             EventData.User? from = data.GetUser("from_broadcaster_");
             EventData.User? to = data.GetUser("to_broadcaster_");
             if (from != null && to != null && data.TryGet("viewers", out int? viewers))
-                CanalManager.Emit(StreamGlassCanals.RAID, new RaidEventArgs(from.ID, from.Name, to.ID, to.Name, (int)viewers!));
+                CanalManager.Emit(StreamGlassCanals.RAID, new RaidEventArgs(from.ID, from.Name, to.ID, to.Name, (int)viewers!, incomming));
         }
 
         private static void HandleStreamStart()
@@ -328,7 +330,7 @@ namespace StreamGlass.Twitch
                         case "channel.follow": HandleFollow(eventData); break;
                         case "channel.subscribe": HandleSub(eventData); break;
                         case "channel.subscription.gift": HandleSubGift(eventData); break;
-                        case "channel.raid": HandleRaid(eventData); break;
+                        case "channel.raid": HandleRaid(eventData, subscription.HaveCondition("to_broadcaster_user_id")); break;
                         case "channel.channel_points_custom_reward_redemption.add": HandleReward(eventData); break;
                         case "stream.online": HandleStreamStart(); break;
                         case "stream.offline": HandleStreamStop(); break;

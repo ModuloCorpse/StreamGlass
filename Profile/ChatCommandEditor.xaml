@@ -61,7 +61,7 @@
                     <ComboBox Margin="5,0,0,0" x:Name="UserComboBox" Height="26" Width="250"/>
                 </ui:StackPanel>
                 <ui:GroupBox x:Name="SubCommandGroupBox" TranslationKey="section_sub_commands" Header="Sub commands">
-                    <ui:EditableList x:Name="SubCommandList" Height="75" />
+                    <ui:EditableList x:Name="SubCommandList" Height="75" EditImageSource="../Assets/pencil.png" IsSearchable="False" />
                 </ui:GroupBox>
                 <ui:GroupBox TranslationKey="section_auto_trigger" Header="Auto-trigger" >
                     <ui:StackPanel>
@@ -78,7 +78,7 @@
                             <ui:NumericUpDown Margin="5,0,0,0" x:Name="AutoTriggerTimeDeltaUpDown" MinValue="0" Height="26" Width="250"/>
                         </ui:StackPanel>
                         <ui:GroupBox x:Name="AutoTriggerDefaultArgumentGroupBox" TranslationKey="section_default_arguments" Header="Default arguments">
-                            <ui:EditableList x:Name="AutoTriggerArguments" Height="75" />
+                            <ui:EditableList x:Name="AutoTriggerArguments" Height="75" EditImageSource="../Assets/pencil.png" IsSearchable="False" />
                         </ui:GroupBox>
                     </ui:StackPanel>
                 </ui:GroupBox>

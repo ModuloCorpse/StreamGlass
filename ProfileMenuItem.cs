@@ -13,6 +13,7 @@ namespace StreamGlass
 
         public ProfileMenuItem(ProfileManager manager, string profileID)
         {
+            BrushPaletteKey = "top_bar_background";
             m_Manager = manager;
             m_ProfileID = profileID;
             Click += ProfileMenuItem_Click;

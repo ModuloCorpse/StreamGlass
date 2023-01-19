@@ -56,11 +56,7 @@ namespace StreamGlass.Profile
         
         private void ProfileList_EditProfile(object? sender, object args)
         {
-            ProfileEditor dialog = new(this, m_ProfileManager, m_ConnectionManager, (Profile)args)
-            {
-                Owner = this,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
+            ProfileEditor dialog = new(this, m_ProfileManager, m_ConnectionManager, (Profile)args);
             dialog.ShowDialog();
             Profile? editedProfile = dialog.Profile;
             if (editedProfile != null)

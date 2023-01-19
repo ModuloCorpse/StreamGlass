@@ -14,7 +14,6 @@
         RAID,
         REWARD,
         COMMANDS,
-        ALERT,
         PROFILE_CHANGED_MENU_ITEM
     }
 }

@@ -8,6 +8,8 @@ using StreamGlass.StreamAlert;
 using StreamGlass.Http;
 using StreamGlass.Connections;
 using StreamGlass.Settings;
+using StreamFeedstock.Placeholder;
+using System;
 
 namespace StreamGlass.Twitch
 {
@@ -47,10 +49,6 @@ namespace StreamGlass.Twitch
             CanalManager.Register<string>(StreamGlassCanals.CHAT_JOINED, OnJoinedChannel);
             CanalManager.Register<string>(StreamGlassCanals.USER_JOINED, OnUserJoinedChannel);
             CanalManager.Register<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
-            CanalManager.Register<FollowEventArgs>(StreamGlassCanals.FOLLOW, OnNewFollow);
-            CanalManager.Register<DonationEventArgs>(StreamGlassCanals.DONATION, OnDonation);
-            CanalManager.Register<RaidEventArgs>(StreamGlassCanals.RAID, OnRaid);
-            CanalManager.Register<RewardEventArgs>(StreamGlassCanals.REWARD, OnReward);
 
             ChatCommand.AddFunction("Game", (string[] variables) => {
                 var channelInfo = API.GetChannelInfoFromLogin(variables[0]);
@@ -78,10 +76,6 @@ namespace StreamGlass.Twitch
             CanalManager.Unregister<string>(StreamGlassCanals.CHAT_JOINED, OnJoinedChannel);
             CanalManager.Unregister<string>(StreamGlassCanals.USER_JOINED, OnUserJoinedChannel);
             CanalManager.Unregister<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
-            CanalManager.Unregister<FollowEventArgs>(StreamGlassCanals.FOLLOW, OnNewFollow);
-            CanalManager.Unregister<DonationEventArgs>(StreamGlassCanals.DONATION, OnDonation);
-            CanalManager.Unregister<RaidEventArgs>(StreamGlassCanals.RAID, OnRaid);
-            CanalManager.Unregister<RewardEventArgs>(StreamGlassCanals.REWARD, OnReward);
             ChatCommand.RemoveFunction("Game");
             ChatCommand.RemoveFunction("DisplayName");
             ChatCommand.RemoveFunction("Channel");
@@ -153,7 +147,6 @@ namespace StreamGlass.Twitch
                 ResetStreamInfo();
                 m_OriginalBroadcasterChannelInfo = API.GetChannelInfoFromLogin(channel[1..]);
                 m_Form.JoinChannel(channel);
-                m_Client.SendMessage(channel, "Hello World! Je suis un bot connecté via StreamGlass!");
                 if (m_OriginalBroadcasterChannelInfo != null)
                     m_EventSub.Connect(m_OriginalBroadcasterChannelInfo.Broadcaster.ID);
             }
@@ -194,43 +187,6 @@ namespace StreamGlass.Twitch
                 else
                     API.SetChannelInfoFromID(m_OriginalBroadcasterChannelInfo.Broadcaster.ID, args.Title, args.Category.ID, args.Language);
             }
-        }
-
-        private void OnNewFollow(int _, object? obj)
-        {
-            FollowEventArgs e = (FollowEventArgs)obj!;
-            Alert? alert = e.Tier switch
-            {
-                0 => new("../Assets/hearts.png", DisplayableMessage.AppendPrefix(e.Message, string.Format("{0} is now following you: ", e.Name))),
-                1 => new("../Assets/stars-stack-1.png", DisplayableMessage.AppendPrefix(e.Message, string.Format("{0} as subscribed to you with a tier 1: ", e.Name))),
-                2 => new("../Assets/stars-stack-2.png", DisplayableMessage.AppendPrefix(e.Message, string.Format("{0} as subscribed to you with a tier 2: ", e.Name))),
-                3 => new("../Assets/stars-stack-3.png", DisplayableMessage.AppendPrefix(e.Message, string.Format("{0} as subscribed to you with a tier 3: ", e.Name))),
-                4 => new("../Assets/chess-queen.png", DisplayableMessage.AppendPrefix(e.Message, string.Format("{0} as subscribed to you with a prime: ", e.Name))),
-                _ => null
-            };
-            if (alert != null)
-                CanalManager.Emit(StreamGlassCanals.ALERT, alert);
-        }
-
-        private void OnDonation(int _, object? obj)
-        {
-            DonationEventArgs e = (DonationEventArgs)obj!;
-            CanalManager.Emit(StreamGlassCanals.ALERT, new Alert("../Assets/take-my-money.png", DisplayableMessage.AppendPrefix(e.Message, string.Format("{0} as donated {1} {2}: ", e.Name, e.Amount, e.Currency))));
-        }
-
-        private void OnRaid(int _, object? obj)
-        {
-            RaidEventArgs e = (RaidEventArgs)obj!;
-            if (e.ToID == m_OriginalBroadcasterChannelInfo!.Broadcaster.ID)
-                CanalManager.Emit(StreamGlassCanals.ALERT, new Alert("../Assets/parachute.png", new(string.Format("{0} is raiding you with {1} viewers", e.From, e.NbViewers))));
-            else
-                CanalManager.Emit(StreamGlassCanals.ALERT, new Alert("../Assets/parachute.png", new(string.Format("You are raiding {0} with {1} viewers", e.To, e.NbViewers))));
-        }
-
-        private void OnReward(int _, object? obj)
-        {
-            RewardEventArgs e = (RewardEventArgs)obj!;
-            CanalManager.Emit(StreamGlassCanals.ALERT, new Alert("../Assets/chest.png", new(string.Format("{0} retrieve {1}: {2}", e.From, e.Reward, e.Input))));
         }
 
         public Profile.CategoryInfo? SearchCategoryInfo(Window parent, Profile.CategoryInfo? info)

@@ -80,11 +80,7 @@ namespace StreamGlass.Profile
         private void ChatCommandsList_EditChatCommand(object? sender, object args)
         {
             ChatCommand chatCommand = (ChatCommand)args;
-            ChatCommandEditor dialog = new(this, chatCommand)
-            {
-                Owner = this,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
+            ChatCommandEditor dialog = new(this, chatCommand);
             dialog.ShowDialog();
             ChatCommand? editedCommand = dialog.Command;
             if (editedCommand != null)

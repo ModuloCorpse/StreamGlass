@@ -28,11 +28,14 @@ namespace StreamGlass.StreamChat
             m_OriginalIsPanelOnRight = m_Window.IsChatPanelOnRight;
 
             ChatModeComboBox.SetSelectedEnumValue(m_OriginalDisplayType);
+            DoWelcomeCheckBox.IsChecked = GetSetting("do_welcome") == "true";
+
 
             AddControlLink("sender_font_size", new NumericUpDownUserControlLink(ChatNameFont));
             AddControlLink("sender_size", new NumericUpDownUserControlLink(ChatNameWidth));
             AddControlLink("message_font_size", new NumericUpDownUserControlLink(ChatMessageFont));
             AddControlLink("panel_on_right", new CheckBoxUserControlLink(PanelOnRightCheckBox));
+            AddControlLink("welcome_message", new TextBoxUserControlLink(WelcomeMessageTextBox));
         }
 
         private void AddUserType(TranslationManager translation, string key, string defaultVal)
@@ -96,9 +99,15 @@ namespace StreamGlass.StreamChat
             }
         }
 
+        private void DoWelcomeCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+
+        }
+
         protected override void OnSave()
         {
             SetSetting("display_type", ((int)ChatModeComboBox.SelectedEnumValue).ToString());
+            SetSetting("do_welcome", (DoWelcomeCheckBox.IsChecked ?? false) ? "true" : "false");
         }
 
         protected override void OnCancel()
