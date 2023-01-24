@@ -135,8 +135,7 @@ namespace StreamGlass.Twitch.IRC
                 {
                     if (message.HaveTag("msg-param-sub-plan") &&
                         message.HaveTag("msg-param-cumulative-months") &&
-                        message.HaveTag("msg-param-should-share-streak") &&
-                        message.HaveTag("msg-param-streak-months"))
+                        message.HaveTag("msg-param-should-share-streak"))
                     {
                         string username = message.GetTag("display-name");
                         if (string.IsNullOrEmpty(username))
@@ -152,7 +151,7 @@ namespace StreamGlass.Twitch.IRC
                         }
                         int cumulativeMonth = int.Parse(message.GetTag("msg-param-cumulative-months"));
                         bool shareStreakMonth = message.GetTag("msg-param-cumulative-months") == "1";
-                        int streakMonth = int.Parse(message.GetTag("msg-param-streak-months"));
+                        int streakMonth = (message.HaveTag("msg-param-streak-months")) ? int.Parse(message.GetTag("msg-param-streak-months")) : -1;
                         DisplayableMessage displayableMessage = Helper.Convert(message.Parameters, message.Emotes);
                         CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs(username, displayableMessage, followTier, false, cumulativeMonth, (shareStreakMonth) ? streakMonth : -1, -1));
                     }

@@ -10,8 +10,6 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Threading;
 using StreamGlass.Connections;
-using System.Windows.Input;
-using static StreamGlass.StreamAlert.AlertScrollPanel;
 
 namespace StreamGlass
 {

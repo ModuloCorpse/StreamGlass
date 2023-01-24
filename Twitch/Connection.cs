@@ -182,10 +182,11 @@ namespace StreamGlass.Twitch
             UpdateStreamInfoArgs args = (UpdateStreamInfoArgs)arg!;
             if (m_OriginalBroadcasterChannelInfo != null)
             {
-                if (string.IsNullOrWhiteSpace(args.Title) && string.IsNullOrWhiteSpace(args.Category.ID) && string.IsNullOrWhiteSpace(args.Language))
-                    API.SetChannelInfoFromID(m_OriginalBroadcasterChannelInfo.Broadcaster.ID, m_OriginalBroadcasterChannelInfo.Title, m_OriginalBroadcasterChannelInfo.GameID, m_OriginalBroadcasterChannelInfo.BroadcasterLanguage);
-                else
-                    API.SetChannelInfoFromID(m_OriginalBroadcasterChannelInfo.Broadcaster.ID, args.Title, args.Category.ID, args.Language);
+                string id = m_OriginalBroadcasterChannelInfo.Broadcaster.ID;
+                string title = (string.IsNullOrWhiteSpace(args.Title)) ? m_OriginalBroadcasterChannelInfo.Title : args.Title;
+                string category = (string.IsNullOrWhiteSpace(args.Category.ID)) ? m_OriginalBroadcasterChannelInfo.GameID : args.Category.ID;
+                string language = (string.IsNullOrWhiteSpace(args.Language)) ? m_OriginalBroadcasterChannelInfo.BroadcasterLanguage : args.Language;
+                API.SetChannelInfoFromID(id, title, category, language);
             }
         }
 

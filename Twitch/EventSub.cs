@@ -97,6 +97,7 @@ namespace StreamGlass.Twitch
             }
 
             public bool HaveCondition(string condition) => m_Conditions.ContainsKey(condition);
+            public string GetCondition(string condition) => m_Conditions[condition];
         }
 
         public class EventData
@@ -315,6 +316,8 @@ namespace StreamGlass.Twitch
             CanalManager.Emit(StreamGlassCanals.STREAM_STOP);
         }
 
+        private bool IsIncommingRaid(Subscription subscription) => !(subscription.HaveCondition("from_broadcaster_user_id") && !string.IsNullOrEmpty(subscription.GetCondition("from_broadcaster_user_id")));
+
         private void HandleNotification(Metadata metadata, Json payload, string message)
         {
             Logger.Log("EventSub", string.Format("<= {0}", metadata.Subscription));
@@ -330,7 +333,7 @@ namespace StreamGlass.Twitch
                         case "channel.follow": HandleFollow(eventData); break;
                         case "channel.subscribe": HandleSub(eventData); break;
                         case "channel.subscription.gift": HandleSubGift(eventData); break;
-                        case "channel.raid": HandleRaid(eventData, subscription.HaveCondition("to_broadcaster_user_id")); break;
+                        case "channel.raid": HandleRaid(eventData, IsIncommingRaid(subscription)); break;
                         case "channel.channel_points_custom_reward_redemption.add": HandleReward(eventData); break;
                         case "stream.online": HandleStreamStart(); break;
                         case "stream.offline": HandleStreamStop(); break;
