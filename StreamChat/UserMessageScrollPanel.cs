@@ -75,7 +75,7 @@ namespace StreamGlass.StreamChat
                 m_ChatPalette,
                 m_Translations,
                 message,
-                m_ChatHighlightedUsers.Contains(message.UserName),
+                m_ChatHighlightedUsers.Contains(message.UserDisplayName),
                 m_MessageSenderWidth,
                 m_MessageSenderFontSize,
                 m_MessageContentFontSize);

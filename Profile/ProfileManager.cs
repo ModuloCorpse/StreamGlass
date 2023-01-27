@@ -66,7 +66,7 @@ namespace StreamGlass.Profile
         {
             if (message == null)
                 return;
-            if (message.SenderType != UserMessage.UserType.SELF)
+            if (message.SenderType != User.Type.SELF)
             {
                 ++m_NbMessage;
                 CurrentObject?.OnMessage(message, m_ConnectionManager, m_Channel);

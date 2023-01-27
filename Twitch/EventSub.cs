@@ -1,6 +1,7 @@
 ﻿using Quicksand.Web;
 using Quicksand.Web.WebSocket;
 using StreamFeedstock;
+using StreamGlass.Events;
 using StreamGlass.Http;
 using System;
 using System.Collections.Generic;
@@ -199,7 +200,7 @@ namespace StreamGlass.Twitch
             message.Set("version", subscriptionVersion);
             message.Set("condition", conditionJson);
             message.Set("transport", transportJson);
-            Http.Request subscriptionRequest = new("https://api.twitch.tv/helix/eventsub/subscriptions", message, Http.Request.RequestType.POST, m_Token);
+            PostRequest subscriptionRequest = new("https://api.twitch.tv/helix/eventsub/subscriptions", message, m_Token);
             subscriptionRequest.Send();
             if (subscriptionRequest.GetStatusCode() == 202)
             {

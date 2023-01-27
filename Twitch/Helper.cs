@@ -7,7 +7,7 @@ namespace StreamGlass.Twitch
 {
     public static class Helper
     {
-        public static DisplayableMessage Convert(string message, List<SimpleEmote> emoteList)
+        public static DisplayableMessage Convert(API api, string message, List<SimpleEmote> emoteList)
         {
             List<Tuple<int, string>> emotes = new();
             string replacement = "     ";
@@ -15,7 +15,7 @@ namespace StreamGlass.Twitch
             string emotelessMessage = message;
             foreach (SimpleEmote emote in emoteList)
             {
-                EmoteInfo? emoteInfo = API.GetEmoteFromID(emote.ID);
+                EmoteInfo? emoteInfo = api.GetEmoteFromID(emote.ID);
                 if (emoteInfo != null)
                 {
                     int emoteLength = (emote.End + 1) - emote.Start;

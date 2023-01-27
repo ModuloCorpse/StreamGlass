@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Threading;
 using StreamGlass.Connections;
+using StreamGlass.Events;
 
 namespace StreamGlass
 {
@@ -28,7 +29,7 @@ namespace StreamGlass
             CanalManager.NewCanal<UserMessage>(StreamGlassCanals.CHAT_MESSAGE);
             CanalManager.NewCanal(StreamGlassCanals.CHAT_CONNECTED);
             CanalManager.NewCanal<string>(StreamGlassCanals.CHAT_JOINED);
-            CanalManager.NewCanal<string>(StreamGlassCanals.USER_JOINED);
+            CanalManager.NewCanal<User>(StreamGlassCanals.USER_JOINED);
             CanalManager.NewCanal<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO);
             CanalManager.NewCanal(StreamGlassCanals.STREAM_START);
             CanalManager.NewCanal(StreamGlassCanals.STREAM_STOP);

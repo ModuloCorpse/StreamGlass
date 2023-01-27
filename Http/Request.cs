@@ -8,26 +8,17 @@ using System.Threading.Tasks;
 
 namespace StreamGlass.Http
 {
-    public class Request
+    public abstract class Request
     {
-        public enum RequestType
-        {
-            POST,
-            GET,
-            PATCH
-        }
-
-        private readonly HttpClient m_Client = new();
+        protected readonly HttpClient m_Client = new();
+        protected readonly HttpContent? m_ContentToSend = null;
+        protected readonly URL m_URL;
         private readonly OAuthToken? m_Token;
         private HttpResponseMessage? m_Response = null;
-        private readonly HttpContent? m_ContentToSend = null;
-        private readonly URL m_URL;
-        private readonly RequestType m_Type;
 
-        private Request(URL url, RequestType type, HttpContent? contentToSend, OAuthToken? token)
+        protected Request(URL url, HttpContent? contentToSend, OAuthToken? token)
         {
             m_URL = url;
-            m_Type = type;
             m_ContentToSend = contentToSend;
             if (token != null)
             {
@@ -37,30 +28,14 @@ namespace StreamGlass.Http
             }
         }
 
-        public Request(URL url, RequestType type, OAuthToken? token = null) : this(url, type, null, token) { }
-        public Request(string url, RequestType type, OAuthToken? token = null) : this(new(url), type, null, token) { }
-
-        public Request(URL url, string contentToSend, RequestType type, OAuthToken? token = null) : this(url, type, new StringContent(contentToSend, Encoding.UTF8, "text/plain"), token) { }
-        public Request(string url, string contentToSend, RequestType type, OAuthToken? token = null) : this(new(url), type, new StringContent(contentToSend, Encoding.UTF8, "text/plain"), token) { }
-
-        public Request(URL url, string contentToSend, string mimeType, RequestType type, OAuthToken? token = null) : this(url, type, new StringContent(contentToSend, Encoding.UTF8, mimeType), token) { }
-        public Request(string url, string contentToSend, string mimeType, RequestType type, OAuthToken? token = null) : this(new(url), type, new StringContent(contentToSend, Encoding.UTF8, mimeType), token) { }
-
-        public Request(URL url, Json contentToSend, RequestType type, OAuthToken? token = null) : this(url, type, new StringContent(contentToSend.ToNetworkString(), Encoding.UTF8, "application/json"), token) { }
-        public Request(string url, Json contentToSend, RequestType type, OAuthToken? token = null) : this(new(url), type, new StringContent(contentToSend.ToNetworkString(), Encoding.UTF8, "application/json"), token) { }
-
         public void AddHeaderField(string name, string value) => m_Client.DefaultRequestHeaders.Add(name, value);
         public void AddHeaderField(AuthenticationHeaderValue authenticationHeaderValue) => m_Client.DefaultRequestHeaders.Authorization = authenticationHeaderValue;
 
+        protected abstract Task<HttpResponseMessage> SendRequest();
+
         private void SyncSend()
         {
-            Task<HttpResponseMessage> task = m_Type switch
-            {
-                RequestType.POST => m_Client.PostAsync(m_URL.ToString(), m_ContentToSend),
-                RequestType.GET => m_Client.GetAsync(m_URL.ToString()),
-                RequestType.PATCH => m_Client.PatchAsync(m_URL.ToString(), m_ContentToSend),
-                _ => throw new System.NotImplementedException()
-            };
+            Task<HttpResponseMessage> task = SendRequest();
             task.Wait();
             m_Response = task.Result;
         }
@@ -94,5 +69,48 @@ namespace StreamGlass.Http
             }
             return "";
         }
+    }
+
+    public class DeleteRequest : Request
+    {
+        public DeleteRequest(URL url, OAuthToken? token = null) : base(url, null, token) { }
+        public DeleteRequest(string url, OAuthToken? token = null) : base(new(url), null, token) { }
+        protected override Task<HttpResponseMessage> SendRequest() => m_Client.DeleteAsync(m_URL.ToString());
+    }
+
+    public class GetRequest : Request
+    {
+        public GetRequest(URL url, OAuthToken? token = null) : base(url, null, token) { }
+        public GetRequest(string url, OAuthToken? token = null) : base(new(url), null, token) { }
+
+        protected override Task<HttpResponseMessage> SendRequest() => m_Client.GetAsync(m_URL.ToString());
+    }
+
+    public class PostRequest : Request
+    {
+        public PostRequest(URL url, OAuthToken? token = null) : base(url, null, token) { }
+        public PostRequest(string url, OAuthToken? token = null) : base(new(url), null, token) { }
+        public PostRequest(URL url, string contentToSend, OAuthToken? token = null) : base(url, new StringContent(contentToSend, Encoding.UTF8, "text/plain"), token) { }
+        public PostRequest(string url, string contentToSend, OAuthToken? token = null) : base(new(url), new StringContent(contentToSend, Encoding.UTF8, "text/plain"), token) { }
+        public PostRequest(URL url, string contentToSend, string mimeType, OAuthToken? token = null) : base(url, new StringContent(contentToSend, Encoding.UTF8, mimeType), token) { }
+        public PostRequest(string url, string contentToSend, string mimeType, OAuthToken? token = null) : base(new(url), new StringContent(contentToSend, Encoding.UTF8, mimeType), token) { }
+        public PostRequest(URL url, Json contentToSend, OAuthToken? token = null) : base(url, new StringContent(contentToSend.ToNetworkString(), Encoding.UTF8, "application/json"), token) { }
+        public PostRequest(string url, Json contentToSend, OAuthToken? token = null) : base(new(url), new StringContent(contentToSend.ToNetworkString(), Encoding.UTF8, "application/json"), token) { }
+
+        protected override Task<HttpResponseMessage> SendRequest() => m_Client.PostAsync(m_URL.ToString(), m_ContentToSend);
+    }
+
+    public class PatchRequest : Request
+    {
+        public PatchRequest(URL url, OAuthToken? token = null) : base(url, null, token) { }
+        public PatchRequest(string url, OAuthToken? token = null) : base(new(url), null, token) { }
+        public PatchRequest(URL url, string contentToSend, OAuthToken? token = null) : base(url, new StringContent(contentToSend, Encoding.UTF8, "text/plain"), token) { }
+        public PatchRequest(string url, string contentToSend, OAuthToken? token = null) : base(new(url), new StringContent(contentToSend, Encoding.UTF8, "text/plain"), token) { }
+        public PatchRequest(URL url, string contentToSend, string mimeType, OAuthToken? token = null) : base(url, new StringContent(contentToSend, Encoding.UTF8, mimeType), token) { }
+        public PatchRequest(string url, string contentToSend, string mimeType, OAuthToken? token = null) : base(new(url), new StringContent(contentToSend, Encoding.UTF8, mimeType), token) { }
+        public PatchRequest(URL url, Json contentToSend, OAuthToken? token = null) : base(url, new StringContent(contentToSend.ToNetworkString(), Encoding.UTF8, "application/json"), token) { }
+        public PatchRequest(string url, Json contentToSend, OAuthToken? token = null) : base(new(url), new StringContent(contentToSend.ToNetworkString(), Encoding.UTF8, "application/json"), token) { }
+
+        protected override Task<HttpResponseMessage> SendRequest() => m_Client.PatchAsync(m_URL.ToString(), m_ContentToSend);
     }
 }

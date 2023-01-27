@@ -1,131 +1,90 @@
 ﻿using StreamFeedstock;
 using StreamFeedstock.Controls;
 using StreamGlass.Http;
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web;
-using Request = StreamGlass.Http.Request;
 
 namespace StreamGlass.Twitch
 {
-    public static class API
+    public class API
     {
-        private static readonly HashSet<string> ms_LoadedChannelIDEmoteSets = new();
-        private static readonly HashSet<string> ms_LoadedChannelEmoteSets = new();
-        private static readonly HashSet<string> ms_LoadedEmoteSets = new();
-        private static readonly APICache ms_Cache = new();
-        private static OAuthToken? ms_AccessToken = null;
-        private static string ms_EmoteURLTemplate = "";
+        private readonly HashSet<string> ms_LoadedChannelIDEmoteSets = new();
+        private readonly HashSet<string> ms_LoadedChannelEmoteSets = new();
+        private readonly HashSet<string> ms_LoadedEmoteSets = new();
+        private readonly APICache ms_Cache = new();
+        private OAuthToken? ms_AccessToken = null;
+        private User ms_SelfUserInfo = new("", "", User.Type.BROADCASTER);
+        private string ms_EmoteURLTemplate = "";
 
-        internal static void Authenticate(OAuthToken accessToken)
+        internal void Authenticate(OAuthToken accessToken)
         {
             ms_AccessToken = accessToken;
-        }
-
-        private static void LoadEmoteContent(Json data)
-        {
-            List<string> format = data.GetList<string>("format");
-            List<string> scale = data.GetList<string>("scale");
-            List<string> themeMode = data.GetList<string>("theme_mode");
-            if (data.TryGet("id", out string? id) &&
-                data.TryGet("name", out string? name) &&
-                data.TryGet("emote_type", out string? emoteType) &&
-                format.Count != 0 && scale.Count != 0 && themeMode.Count != 0)
-                ms_Cache.AddEmote(new(id!, name!, emoteType!, format, scale, themeMode));
-        }
-
-        private static Json JsonParse(string content)
-        {
-            if (string.IsNullOrEmpty(content))
-                return new();
-            try
+            GetRequest request = new("https://api.twitch.tv/helix/users", accessToken);
+            request.Send();
+            User? user = GetUserInfo(request.GetResponse(), User.Type.BROADCASTER);
+            if (user != null)
             {
-                return new Json(content);
-            } catch (Exception e)
-            {
-                Logger.Log("API", string.Format("Json Exception: {0}", e));
-                return new();
+                ms_SelfUserInfo = user;
+                LoadChannelEmoteSet(user);
             }
         }
 
-        private static Json LoadEmoteSetContent(string content)
+        private Json LoadEmoteSetContent(string content)
         {
-            Json responseJson = JsonParse(content);
+            Json responseJson = new(content);
             List<Json> datas = responseJson.GetList<Json>("data");
             foreach (Json data in datas)
-                LoadEmoteContent(data);
+            {
+                List<string> format = data.GetList<string>("format");
+                List<string> scale = data.GetList<string>("scale");
+                List<string> themeMode = data.GetList<string>("theme_mode");
+                if (data.TryGet("id", out string? id) &&
+                    data.TryGet("name", out string? name) &&
+                    data.TryGet("emote_type", out string? emoteType) &&
+                    format.Count != 0 && scale.Count != 0 && themeMode.Count != 0)
+                    ms_Cache.AddEmote(new(id!, name!, emoteType!, format, scale, themeMode));
+            }
             return responseJson;
         }
 
-        public static void LoadGlobalEmoteSet()
+        public void LoadGlobalEmoteSet()
         {
-            Request request = new("https://api.twitch.tv/helix/chat/emotes/global", Request.RequestType.GET, ms_AccessToken);
+            GetRequest request = new("https://api.twitch.tv/helix/chat/emotes/global", ms_AccessToken);
             request.Send();
             Json responseJson = LoadEmoteSetContent(request.GetResponse());
             if (responseJson.TryGet("template", out string? template))
                 ms_EmoteURLTemplate = template!;
         }
 
-        public static void ReloadChannelEmoteSetFromID(string id)
+        public void LoadChannelEmoteSet(User user)
         {
-            Request request = new(string.Format("https://api.twitch.tv/helix/chat/emotes?broadcaster_id={0}", id), Request.RequestType.GET, ms_AccessToken);
+            if (ms_LoadedChannelIDEmoteSets.Contains(user.ID))
+                return;
+            ms_LoadedChannelIDEmoteSets.Add(user.ID);
+            GetRequest request = new(string.Format("https://api.twitch.tv/helix/chat/emotes?broadcaster_id={0}", user.ID), ms_AccessToken);
             request.Send();
             LoadEmoteSetContent(request.GetResponse());
         }
 
-        public static void LoadChannelEmoteSetFromID(string id)
-        {
-            if (ms_LoadedChannelIDEmoteSets.Contains(id))
-                return;
-            ms_LoadedChannelIDEmoteSets.Add(id);
-            ReloadChannelEmoteSetFromID(id);
-        }
-
-        public static void ReloadChannelEmoteSetFromLogin(string login)
-        {
-            UserInfo? userInfo = GetUserInfoFromLogin(login);
-            if (userInfo != null)
-                LoadChannelEmoteSetFromID(userInfo.ID);
-        }
-
-        public static void LoadChannelEmoteSetFromLogin(string login)
-        {
-            if (ms_LoadedChannelEmoteSets.Contains(login))
-                return;
-            ms_LoadedChannelEmoteSets.Add(login);
-            ReloadChannelEmoteSetFromLogin(login);
-        }
-
-        public static void ReloadEmoteSet(string emoteSetID)
-        {
-            Request request = new(string.Format("https://api.twitch.tv/helix/chat/emotes/set?emote_set_id={0}", emoteSetID), Request.RequestType.GET, ms_AccessToken);
-            request.Send();
-            LoadEmoteSetContent(request.GetResponse());
-        }
-
-        public static void LoadEmoteSet(string emoteSetID)
+        public void LoadEmoteSet(string emoteSetID)
         {
             if (ms_LoadedEmoteSets.Contains(emoteSetID))
                 return;
             ms_LoadedEmoteSets.Add(emoteSetID);
-            ReloadEmoteSet(emoteSetID);
+            GetRequest request = new(string.Format("https://api.twitch.tv/helix/chat/emotes/set?emote_set_id={0}", emoteSetID), ms_AccessToken);
+            request.Send();
+            LoadEmoteSetContent(request.GetResponse());
         }
 
-        public static void LoadEmoteSetFromFollowedChannelOfLogin(string login)
+        public void LoadEmoteSetFromFollowedChannel(User user)
         {
-            List<string> followedBy = GetChannelFollowedByLogin(login);
-            foreach (string followedID in followedBy)
-                LoadChannelEmoteSetFromID(followedID);
+            List<User> followedBy = GetChannelFollowedByID(user);
+            foreach (User followed in followedBy)
+                LoadChannelEmoteSet(followed);
         }
 
-        public static void LoadEmoteSetFromFollowedChannelOfID(string id)
-        {
-            List<string> followedBy = GetChannelFollowedByID(id);
-            foreach (string followedID in followedBy)
-                LoadChannelEmoteSetFromID(followedID);
-        }
-
-        public static string GetEmoteURL(string id, BrushPalette.Type paletteType)
+        public string GetEmoteURL(string id, BrushPalette.Type paletteType)
         {
             EmoteInfo? emoteInfo = ms_Cache.GetEmote(id);
             if (emoteInfo != null)
@@ -139,7 +98,7 @@ namespace StreamGlass.Twitch
             return "";
         }
 
-        public static EmoteInfo? GetEmoteFromID(string id)
+        public EmoteInfo? GetEmoteFromID(string id)
         {
             EmoteInfo? emoteInfo = ms_Cache.GetEmote(id);
             if (emoteInfo != null)
@@ -147,9 +106,43 @@ namespace StreamGlass.Twitch
             return null;
         }
 
-        private static UserInfo? GetUserInfo(string content)
+        public User.Type GetUserType(bool self, bool mod, string type, string id)
         {
-            Json responseJson = JsonParse(content);
+            User.Type userType = User.Type.NONE;
+            if (self)
+                userType = User.Type.SELF;
+            else
+            {
+                if (mod)
+                    userType = User.Type.MOD;
+                switch (type)
+                {
+                    case "admin": userType = User.Type.ADMIN; break;
+                    case "global_mod": userType = User.Type.GLOBAL_MOD; break;
+                    case "staff": userType = User.Type.STAFF; break;
+                }
+                if (id == (ms_SelfUserInfo?.ID ?? ""))
+                    userType = User.Type.BROADCASTER;
+            }
+            return userType;
+        }
+
+        public User.Type GetUserType(bool self, string type, string id)
+        {
+            bool isMod = false;
+            if (ms_SelfUserInfo != null)
+            {
+                GetRequest request = new(string.Format("https://api.twitch.tv/helix/moderation/moderators?broadcaster_id={0}&user_id={1}", ms_SelfUserInfo.ID, id), ms_AccessToken);
+                request.Send();
+                Json json = new(request.GetResponse());
+                isMod = json.GetList<Json>("data").Count != 0;
+            }
+            return GetUserType(self, isMod, type, id);
+        }
+
+        private User? GetUserInfo(string content, User.Type? userType)
+        {
+            Json responseJson = new(content);
             List<Json> datas = responseJson.GetList<Json>("data");
             if (datas.Count > 0)
             {
@@ -157,140 +150,62 @@ namespace StreamGlass.Twitch
                 if (data.TryGet("id", out string? id) &&
                     data.TryGet("login", out string? login) &&
                     data.TryGet("display_name", out string? displayName) &&
-                    data.TryGet("type", out string? type) &&
-                    data.TryGet("broadcaster_type", out string? broadcasterType) &&
-                    data.TryGet("description", out string? description))
-                    return new UserInfo(id!, login!, displayName!, type!, broadcasterType!, description!);
+                    data.TryGet("type", out string? type))
+                    return new(id!, login!, displayName!, (userType != null) ? (User.Type)userType! : GetUserType(false, type!, id!));
             }
             return null;
         }
 
-        public static UserInfo? GetUserInfoOfToken(OAuthToken token)
+        public User? GetUserInfoOfToken(OAuthToken token)
         {
-            Request request = new("https://api.twitch.tv/helix/users", Request.RequestType.GET, token);
+            GetRequest request = new("https://api.twitch.tv/helix/users", token);
             request.Send();
-            return GetUserInfo(request.GetResponse());
+            return GetUserInfo(request.GetResponse(), User.Type.SELF);
         }
 
-        public static UserInfo? GetSelfUserInfo()
-        {
-            Request request = new("https://api.twitch.tv/helix/users", Request.RequestType.GET, ms_AccessToken);
-            request.Send();
-            return GetUserInfo(request.GetResponse());
-        }
+        public User GetSelfUserInfo() => ms_SelfUserInfo;
 
-        public static string GetSelfUserID()
+        public User? GetUserInfoFromLogin(string login)
         {
-            Request request = new("https://api.twitch.tv/helix/users", Request.RequestType.GET, ms_AccessToken);
-            request.Send();
-            UserInfo? ret = GetUserInfo(request.GetResponse());
-            if (ret != null)
-                return ret.ID;
-            return "";
-        }
-
-        public static UserInfo? GetUserInfoFromID(string id)
-        {
-            UserInfo? userInfo = null;
-            userInfo ??= ms_Cache.GetUserInfoByID(id);
-            if (userInfo != null)
-                return userInfo;
-            Request request = new(string.Format("https://api.twitch.tv/helix/users?id={0}", id), Request.RequestType.GET, ms_AccessToken);
-            request.Send();
-            UserInfo? ret = GetUserInfo(request.GetResponse());
-            if (ret != null)
-                ms_Cache.AddUserInfo(ret);
-            return ret;
-        }
-
-        public static UserInfo? GetUserInfoFromLogin(string login)
-        {
-            UserInfo? userInfo = null;
+            User? userInfo = null;
             userInfo ??= ms_Cache.GetUserInfoByLogin(login);
             if (userInfo != null)
                 return userInfo;
-            Request request = new(string.Format("https://api.twitch.tv/helix/users?login={0}", login), Request.RequestType.GET, ms_AccessToken);
+            GetRequest request = new(string.Format("https://api.twitch.tv/helix/users?login={0}", login), ms_AccessToken);
             request.Send();
-            UserInfo? ret = GetUserInfo(request.GetResponse());
+            User? ret = GetUserInfo(request.GetResponse(), null);
             if (ret != null)
                 ms_Cache.AddUserInfo(ret);
             return ret;
         }
 
-        private static StreamInfo? GetStreamInfo(string content)
-        {
-            Json responseJson = JsonParse(content);
-            List<Json> datas = responseJson.GetList<Json>("data");
-            if (datas.Count > 0)
-            {
-                Json data = datas[0];
-                UserInfo? broadcasterInfo = null;
-                if (data.TryGet("user_id", out string? userID))
-                    broadcasterInfo = GetUserInfoFromID(userID!);
-                int viewers = data.GetOrDefault("viewer_count", -1);
-                if (data.TryGet("id", out string? id) &&
-                    broadcasterInfo != null &&
-                    data.TryGet("game_id", out string? gameID) &&
-                    data.TryGet("game_name", out string? gameName) &&
-                    data.TryGet("type", out string? type) &&
-                    data.TryGet("title", out string? title) &&
-                    viewers != -1 &&
-                    data.TryGet("language", out string? language))
-                    return new StreamInfo(broadcasterInfo, id!, gameID!, gameName!, type!, title!, language!, viewers, data.GetOrDefault("is_mature", false));
-            }
-            return null;
-        }
-
-        public static StreamInfo? GetStreamInfoFromLogin(string login)
-        {
-            StreamInfo? streamInfo = null;
-            if (streamInfo != null)
-                return streamInfo;
-            Request request = new(string.Format("https://api.twitch.tv/helix/streams?user_login={0}", login), Request.RequestType.GET, ms_AccessToken);
-            request.Send();
-            return GetStreamInfo(request.GetResponse());
-        }
-
-        private static ChannelInfo? GetChannelInfo(string content, UserInfo broadcasterInfo)
-        {
-            Json responseJson = JsonParse(content);
-            List<Json> datas = responseJson.GetList<Json>("data");
-            if (datas.Count > 0)
-            {
-                Json data = datas[0];
-                if (data.TryGet("game_id", out string? gameID) &&
-                    data.TryGet("game_name", out string? gameName) &&
-                    data.TryGet("title", out string? title) &&
-                    data.TryGet("broadcaster_language", out string? language))
-                    return new ChannelInfo(broadcasterInfo, gameID!, gameName!, title!, language!);
-            }
-            return null;
-        }
-
-        public static ChannelInfo? GetChannelInfoFromLogin(string login)
+        public ChannelInfo? GetChannelInfo(string login)
         {
             ChannelInfo? channelInfo = null;
             if (channelInfo != null)
                 return channelInfo;
-            UserInfo? broadcasterInfo = GetUserInfoFromLogin(login);
+            User? broadcasterInfo = GetUserInfoFromLogin(login);
             if (broadcasterInfo != null)
             {
-                Request request = new(string.Format("https://api.twitch.tv/helix/channels?broadcaster_id={0}", broadcasterInfo.ID), Request.RequestType.GET, ms_AccessToken);
+                GetRequest request = new(string.Format("https://api.twitch.tv/helix/channels?broadcaster_id={0}", broadcasterInfo.ID), ms_AccessToken);
                 request.Send();
-                return GetChannelInfo(request.GetResponse(), broadcasterInfo);
+
+                Json responseJson = new(request.GetResponse());
+                List<Json> datas = responseJson.GetList<Json>("data");
+                if (datas.Count > 0)
+                {
+                    Json data = datas[0];
+                    if (data.TryGet("game_id", out string? gameID) &&
+                        data.TryGet("game_name", out string? gameName) &&
+                        data.TryGet("title", out string? title) &&
+                        data.TryGet("broadcaster_language", out string? language))
+                        return new ChannelInfo(broadcasterInfo, gameID!, gameName!, title!, language!);
+                }
             }
             return null;
         }
 
-        public static bool SetChannelInfoFromLogin(string login, string title, string gameID, string language = "")
-        {
-            UserInfo? broadcasterInfo = GetUserInfoFromLogin(login);
-            if (broadcasterInfo != null)
-                return SetChannelInfoFromID(broadcasterInfo.ID, title, gameID, language);
-            return false;
-        }
-
-        public static bool SetChannelInfoFromID(string id, string title, string gameID, string language = "")
+        public bool SetChannelInfo(User user, string title, string gameID, string language = "")
         {
             if (string.IsNullOrEmpty(title) && string.IsNullOrEmpty(gameID) && string.IsNullOrEmpty(language))
                 return false;
@@ -301,39 +216,33 @@ namespace StreamGlass.Twitch
                 body.Set("game_id", gameID);
             if (!string.IsNullOrEmpty(language))
                 body.Set("broadcaster_language", language);
-            Request request = new(string.Format("https://api.twitch.tv/helix/channels?broadcaster_id={0}", id), body.ToString(), "application/json", Request.RequestType.PATCH, ms_AccessToken);
+            PatchRequest request = new(string.Format("https://api.twitch.tv/helix/channels?broadcaster_id={0}", user.ID), body.ToString(), "application/json", ms_AccessToken);
             request.Send();
             return (request.GetStatusCode() == 204);
         }
 
-        public static List<string> GetChannelFollowedByID(string id)
+        public List<User> GetChannelFollowedByID(User user)
         {
-            List<string> ret = new();
-            Request request = new(string.Format("https://api.twitch.tv/helix/users/follows?from_id={0}", id), Request.RequestType.GET, ms_AccessToken);
+            List<User> ret = new();
+            GetRequest request = new(string.Format("https://api.twitch.tv/helix/users/follows?from_id={0}", user.ID), ms_AccessToken);
             request.Send();
-            Json responseJson = JsonParse(request.GetResponse());
+            Json responseJson = new(request.GetResponse());
             foreach (Json data in responseJson.GetList<Json>("data"))
             {
-                if (data.TryGet("to_id", out string? toID))
-                    ret.Add(toID!);
+                if (data.TryGet("to_id", out string? toID) &&
+                    data.TryGet("to_login", out string? toLogin) &&
+                    data.TryGet("to_name", out string? toName))
+                    ret.Add(new(toID!, toLogin!, toName!, GetUserType(false, "", toID!)));
             }
             return ret;
         }
 
-        public static List<string> GetChannelFollowedByLogin(string login)
-        {
-            UserInfo? broadcasterInfo = GetUserInfoFromLogin(login);
-            if (broadcasterInfo != null)
-                return GetChannelFollowedByID(broadcasterInfo.ID);
-            return new();
-        }
-
-        public static List<CategoryInfo> SearchCategoryInfo(string query)
+        public List<CategoryInfo> SearchCategoryInfo(string query)
         {
             List<CategoryInfo> ret = new();
-            Request request = new(string.Format("https://api.twitch.tv/helix/search/categories?query={0}", HttpUtility.UrlEncode(query)), Request.RequestType.GET, ms_AccessToken);
+            GetRequest request = new(string.Format("https://api.twitch.tv/helix/search/categories?query={0}", HttpUtility.UrlEncode(query)), ms_AccessToken);
             request.Send();
-            Json responseJson = JsonParse(request.GetResponse());
+            Json responseJson = new(request.GetResponse());
             foreach (Json data in responseJson.GetList<Json>("data"))
             {
                 if (data.TryGet("id", out string? id) &&
@@ -342,6 +251,42 @@ namespace StreamGlass.Twitch
                     ret.Add(new(id!, name!, imageURL!));
             }
             return ret;
+        }
+
+        public bool ManageHeldMessage(string senderID, string messageID, bool allow)
+        {
+            Json json = new();
+            json.Set("user_id", senderID);
+            json.Set("msg_id", messageID);
+            json.Set("action", (allow) ? "ALLOW" : "DENY");
+            PostRequest request = new("https://api.twitch.tv/helix/moderation/automod/message", json, ms_AccessToken);
+            request.Send();
+            return (request.GetStatusCode() == 204);
+        }
+
+        public bool BanUser(User user, string reason, uint duration = 0)
+        {
+            if (ms_SelfUserInfo == null)
+                return false;
+            Json json = new();
+            Json data = new();
+            data.Set("user_id", user.ID);
+            if (duration > 0)
+                data.Set("duration", duration);
+            data.Set("reason", reason);
+            json.Set("data", data);
+            PostRequest request = new(string.Format("https://api.twitch.tv/helix/moderation/bans?broadcaster_id={0}&moderator_id={0}", ms_SelfUserInfo.ID), json, ms_AccessToken);
+            request.Send();
+            return (request.GetStatusCode() == 200);
+        }
+
+        public bool UnbanUser(string moderatorID, string userID)
+        {
+            if (ms_SelfUserInfo == null)
+                return false;
+            DeleteRequest request = new(string.Format("https://api.twitch.tv/helix/moderation/bans?broadcaster_id={0}&moderator_id={1}&user_id={2}", ms_SelfUserInfo.ID, moderatorID, userID), ms_AccessToken);
+            request.Send();
+            return (request.GetStatusCode() == 204);
         }
     }
 }

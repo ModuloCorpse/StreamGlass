@@ -37,7 +37,7 @@ namespace StreamGlass.StreamChat
             InitializeComponent();
             m_StreamChat = streamChatPanel;
             m_Message = message;
-            MessageSender.Text = message.UserName;
+            MessageSender.Text = message.UserDisplayName;
             MessageSender.Width = senderWidth;
             SetSenderNameFontSize(senderFontSize, false);
             MessageContent.SetDisplayableMessage(connectionManager, palette, message.DisplayableMessage);
@@ -49,7 +49,7 @@ namespace StreamGlass.StreamChat
                 if (color != null)
                     MessageSender.Foreground = color;
             }
-            m_IsHighlighted = (isHighligted || message.IsHighlighted() || (message.SenderType > UserMessage.UserType.MOD && message.SenderType < UserMessage.UserType.MOD));
+            m_IsHighlighted = (isHighligted || message.IsHighlighted() || (message.SenderType > User.Type.MOD && message.SenderType < User.Type.BROADCASTER));
             if (m_IsHighlighted)
             {
                 MessagePanel.BrushPaletteKey = "chat_highlight_background";
@@ -96,7 +96,7 @@ namespace StreamGlass.StreamChat
 
         private void ToggleHighlight_Click(object sender, RoutedEventArgs e)
         {
-            m_StreamChat.ToggleHighlightedUser(m_Message.UserName);
+            m_StreamChat.ToggleHighlightedUser(m_Message.UserDisplayName);
         }
 
         private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)

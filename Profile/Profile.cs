@@ -29,7 +29,7 @@ namespace StreamGlass.Profile
             m_Commands.Add(command);
         }
 
-        private void TriggerCommand(ConnectionManager connectionManager, string channel, string command, UserMessage.UserType userType, bool isForced)
+        private void TriggerCommand(ConnectionManager connectionManager, string channel, string command, User.Type userType, bool isForced)
         {
             string[] arguments = command.Split(' ');
             if (m_CommandLocation.TryGetValue(arguments[0], out var contentIdx))
@@ -67,7 +67,7 @@ namespace StreamGlass.Profile
                 {
                     command.Trigger(command.AutoTriggerArguments, connectionManager, channel);
                     foreach (string child in command.Commands)
-                        TriggerCommand(connectionManager, channel, child, UserMessage.UserType.SELF, true);
+                        TriggerCommand(connectionManager, channel, child, User.Type.SELF, true);
                 }
             }
             Parent?.ForceUpdate(deltaTime, nbMessage, connectionManager, channel);

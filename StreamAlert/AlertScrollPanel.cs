@@ -2,6 +2,7 @@
 using StreamFeedstock.Controls;
 using StreamFeedstock.Placeholder;
 using StreamGlass.Connections;
+using StreamGlass.Events;
 using StreamGlass.StreamChat;
 using System;
 using System.Windows.Controls;

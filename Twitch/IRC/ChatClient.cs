@@ -1,6 +1,7 @@
 ﻿using Quicksand.Web;
 using Quicksand.Web.WebSocket;
 using StreamFeedstock;
+using StreamGlass.Events;
 using StreamGlass.Http;
 using StreamGlass.StreamChat;
 using System;
@@ -33,22 +34,24 @@ namespace StreamGlass.Twitch.IRC
             "#00ff7f"
         };
 
+        private readonly API m_API;
         private readonly Settings.Data m_Settings;
         private readonly Quicksand.Web.WebSocket.Client m_Client;
-        private UserInfo? m_SelfUserInfo = null;
+        private User? m_SelfUserInfo = null;
         private OAuthToken? m_AccessToken = null;
         private string m_ChatColor = "";
         private string m_Channel = "";
         private string m_UserName = "";
         private bool m_CanReconnect = true;
 
-        public ChatClient(Settings.Data settings)
+        public ChatClient(API api, Settings.Data settings)
         {
+            m_API = api;
             m_Settings = settings;
             m_Client = new(this, "wss://irc-ws.chat.twitch.tv:443");
         }
 
-        public void SetSelfUserInfo(UserInfo? info) => m_SelfUserInfo = info;
+        public void SetSelfUserInfo(User? info) => m_SelfUserInfo = info;
 
         public void Init(string username, OAuthToken token)
         {
@@ -82,44 +85,27 @@ namespace StreamGlass.Twitch.IRC
 
         private void CreateUserMessage(Message message, bool highlight, bool self)
         {
-            string username;
+            string displayName;
             if (self)
             {
                 if (m_SelfUserInfo != null)
-                    username = m_SelfUserInfo.DisplayName;
+                    displayName = m_SelfUserInfo.DisplayName;
                 else
-                    username = "StreamGlass";
+                    displayName = "StreamGlass";
             }
             else
-            {
-                username = message.GetTag("display-name");
-                if (string.IsNullOrEmpty(username))
-                    username = message.Nick;
-            }
-            UserType userType = UserType.NONE;
-            if (self)
-                userType = UserType.SELF;
-            else
-            {
-                if (message.GetTag("mod") == "1")
-                    userType = UserType.MOD;
-                switch (message.GetTag("user-type"))
-                {
-                    case "admin": userType = UserType.ADMIN; break;
-                    case "global_mod": userType = UserType.GLOBAL_MOD; break;
-                    case "staff": userType = UserType.STAFF; break;
-                }
-                if (message.HaveBadge("broadcaster"))
-                    userType = UserType.BROADCASTER;
-            }
-            DisplayableMessage displayableMessage = Helper.Convert(message.Parameters, message.Emotes);
-            CanalManager.Emit(StreamGlassCanals.CHAT_MESSAGE, new UserMessage(highlight, message.GetTag("id"),
-                username, GetUserMessageColor(username, (self) ? m_ChatColor : message.GetTag("color")),
-                message.GetCommand().Channel, userType, displayableMessage));
+                displayName = message.GetTag("display-name");
+            string userID = message.GetTag("user-id");
+            User.Type userType = m_API.GetUserType(self, message.GetTag("mod") == "1", message.GetTag("user-type"), userID);
+            User user = new(userID, message.Nick, displayName, userType);
+            DisplayableMessage displayableMessage = Helper.Convert(m_API, message.Parameters, message.Emotes);
+            CanalManager.Emit(StreamGlassCanals.CHAT_MESSAGE, new UserMessage(user, highlight, message.GetTag("id"),
+                GetUserMessageColor(displayName, (self) ? m_ChatColor : message.GetTag("color")),
+                message.GetCommand().Channel, displayableMessage));
             if (message.HaveTag("bits"))
             {
                 int bits = int.Parse(message.GetTag("bits"));
-                CanalManager.Emit(StreamGlassCanals.DONATION, new DonationEventArgs(username, bits!, "Bits", displayableMessage));
+                CanalManager.Emit(StreamGlassCanals.DONATION, new DonationEventArgs(displayName, bits!, "Bits", displayableMessage));
             }
         }
 
@@ -152,21 +138,21 @@ namespace StreamGlass.Twitch.IRC
                         int cumulativeMonth = int.Parse(message.GetTag("msg-param-cumulative-months"));
                         bool shareStreakMonth = message.GetTag("msg-param-cumulative-months") == "1";
                         int streakMonth = (message.HaveTag("msg-param-streak-months")) ? int.Parse(message.GetTag("msg-param-streak-months")) : -1;
-                        DisplayableMessage displayableMessage = Helper.Convert(message.Parameters, message.Emotes);
+                        DisplayableMessage displayableMessage = Helper.Convert(m_API, message.Parameters, message.Emotes);
                         CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs(username, displayableMessage, followTier, false, cumulativeMonth, (shareStreakMonth) ? streakMonth : -1, -1));
                     }
                 }
             }
         }
 
-        private static void LoadEmoteSets(Message message)
+        private void LoadEmoteSets(Message message)
         {
             if (message.HaveTag("emote-sets"))
             {
                 string emoteSetsStr = message.GetTag("emote-sets");
                 string[] emoteSetIDs = emoteSetsStr.Split(',');
                 foreach (string emoteSetID in emoteSetIDs)
-                    API.LoadEmoteSet(emoteSetID);
+                    m_API.LoadEmoteSet(emoteSetID);
             }
         }
 
@@ -181,7 +167,7 @@ namespace StreamGlass.Twitch.IRC
                     string data = dataBuffer[..position];
                     Logger.Log("Twitch IRC", string.Format("<= {0}", data));
                     dataBuffer = dataBuffer[(position + 2)..];
-                    Message? message = Message.Parse(data);
+                    Message? message = Message.Parse(data, m_API);
                     if (message != null)
                     {
                         switch (message.GetCommand().Name)
@@ -200,17 +186,25 @@ namespace StreamGlass.Twitch.IRC
                                 }
                             case "JOIN":
                                 {
-                                    if (m_SelfUserInfo?.Login != message.Nick)
-                                        CanalManager.Emit(StreamGlassCanals.USER_JOINED, message.Nick);
+                                    if (m_SelfUserInfo?.Name != message.Nick)
+                                    {
+                                        User? user = m_API.GetUserInfoFromLogin(message.Nick);
+                                        if (user != null)
+                                            CanalManager.Emit(StreamGlassCanals.USER_JOINED, user);
+                                    }
                                     break;
                                 }
                             case "USERLIST":
                                 {
                                     string[] users = message.Parameters.Split(' ');
-                                    foreach (string user in users)
+                                    foreach (string userLogin in users)
                                     {
-                                        if (m_SelfUserInfo?.Login != user)
-                                            CanalManager.Emit(StreamGlassCanals.USER_JOINED, user);
+                                        if (m_SelfUserInfo?.Name != userLogin)
+                                        {
+                                            User? user = m_API.GetUserInfoFromLogin(userLogin);
+                                            if (user != null)
+                                                CanalManager.Emit(StreamGlassCanals.USER_JOINED, user);
+                                        }
                                     }
                                     break;
                                 }

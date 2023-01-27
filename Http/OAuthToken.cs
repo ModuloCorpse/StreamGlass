@@ -37,7 +37,7 @@ namespace StreamGlass.Http
 
         private void GetAccessToken(string request)
         {
-            Request oauthRequest = new(m_OAuthURL, request, "application/x-www-form-urlencoded", Request.RequestType.POST);
+            PostRequest oauthRequest = new(m_OAuthURL, request, "application/x-www-form-urlencoded");
             oauthRequest.Send();
             string responseJsonStr = oauthRequest.GetResponse();
             if (string.IsNullOrWhiteSpace(responseJsonStr))

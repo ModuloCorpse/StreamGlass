@@ -6,13 +6,15 @@ namespace StreamGlass.Twitch
 {
     public partial class CategorySearchDialog : Dialog
     {
+        private readonly API m_API;
         private Profile.CategoryInfo? m_SearchedCategoryInfo = null;
         private readonly List<CategoryControl> m_Categories = new();
         private string m_CategoryID = "";
         private string m_CategoryName = "";
 
-        public CategorySearchDialog(StreamFeedstock.Controls.Window parent, Profile.CategoryInfo? info): base(parent)
+        public CategorySearchDialog(StreamFeedstock.Controls.Window parent, Profile.CategoryInfo? info, API api) : base(parent)
         {
+            m_API = api;
             InitializeComponent();
             if (info != null)
             {
@@ -49,7 +51,7 @@ namespace StreamGlass.Twitch
 
         private void StreamInfoCategorySearchButton_Click(object sender, RoutedEventArgs e)
         {
-            List<CategoryInfo> categories = API.SearchCategoryInfo(SearchFieldTextBox.Text);
+            List<CategoryInfo> categories = m_API.SearchCategoryInfo(SearchFieldTextBox.Text);
             bool clearSelection = true;
             SearchResultsPanel.Children.Clear();
             m_Categories.Clear();

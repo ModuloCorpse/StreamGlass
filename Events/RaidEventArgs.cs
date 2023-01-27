@@ -1,4 +1,4 @@
-﻿namespace StreamGlass
+﻿namespace StreamGlass.Events
 {
     public class RaidEventArgs
     {

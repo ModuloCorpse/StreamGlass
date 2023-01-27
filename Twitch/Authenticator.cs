@@ -76,6 +76,7 @@ namespace StreamGlass.Twitch
         private readonly List<string> m_Scopes = new() {
             "bits:read",
             "channel:manage:broadcast",
+            "channel:manage:moderators",
             "channel:manage:polls",
             "channel:manage:redemptions",
             "channel:moderate",
@@ -84,6 +85,12 @@ namespace StreamGlass.Twitch
             "channel:read:subscriptions",
             "chat:read",
             "chat:edit",
+            "moderator:manage:automod",
+            "moderator:read:automod_settings",
+            "moderator:manage:banned_users",
+            "moderator:manage:blocked_terms",
+            "moderator:manage:chat_messages",
+            "moderation:read",
             "user:read:email",
             "whispers:read"
         };

@@ -262,7 +262,7 @@ namespace StreamGlass.Twitch.IRC
             return "";
         }
 
-        internal static Message? Parse(string message)
+        internal static Message? Parse(string message, API api)
         {
             string rawTagsComponent = "";
             string rawSourceComponent = "";
@@ -356,7 +356,7 @@ namespace StreamGlass.Twitch.IRC
                             foreach (string emoteSetID in emoteSetIds)
                             {
                                 tags.AddEmoteSet(emoteSetID);
-                                API.LoadEmoteSet(emoteSetID);
+                                api.LoadEmoteSet(emoteSetID);
                             }
                         }
                         else

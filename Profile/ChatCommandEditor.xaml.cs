@@ -84,7 +84,7 @@ namespace StreamGlass.Profile
             int nbMessage = (int)NbMessageUpDown.Value;
             int nbArguments = (int)NbArgumentsUpDown.Value;
             string content = ContentTextBox.Text;
-            UserType userType = (UserType)UserComboBox.SelectedIndex;
+            User.Type userType = (User.Type)UserComboBox.SelectedIndex;
             List<string> commands = SubCommandList.GetItems().Cast<string>().ToList();
             bool autoTrigger = AutoTriggerEnableCheckBox.IsChecked ?? false;
             int autoTriggerTime = (int)AutoTriggerTimeUpDown.Value;

@@ -6,13 +6,14 @@ namespace StreamGlass.Connections
 {
     public class ConnectionManager
     {
-        private readonly List<IConnection> m_Connections = new();
-        private readonly List<IStreamConnection> m_StreamChatConnections = new();
+        private readonly List<AConnection> m_Connections = new();
+        private readonly List<AStreamConnection> m_StreamChatConnections = new();
 
-        public void RegisterConnection(IConnection connection)
+        public void RegisterConnection(AConnection connection)
         {
+            connection.OnCreate();
             m_Connections.Add(connection);
-            if (connection is IStreamConnection streamChatConnection)
+            if (connection is AStreamConnection streamChatConnection)
                 m_StreamChatConnections.Add(streamChatConnection);
         }
 

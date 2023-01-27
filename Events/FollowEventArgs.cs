@@ -1,6 +1,6 @@
 ﻿using StreamGlass.StreamChat;
 
-namespace StreamGlass
+namespace StreamGlass.Events
 {
     public class FollowEventArgs
     {

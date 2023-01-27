@@ -1,138 +1,144 @@
 ﻿using Quicksand.Web;
 using StreamGlass.Profile;
-using StreamGlass.StreamChat;
 using StreamFeedstock.Controls;
 using ChatClient = StreamGlass.Twitch.IRC.ChatClient;
 using StreamFeedstock;
-using StreamGlass.StreamAlert;
 using StreamGlass.Http;
 using StreamGlass.Connections;
 using StreamGlass.Settings;
-using StreamFeedstock.Placeholder;
-using System;
 
 namespace StreamGlass.Twitch
 {
-    public class Connection : IStreamConnection
+    public class Connection : AStreamConnection
     {
-        private readonly Data m_Settings;
         private readonly ChatClient m_Client;
+        private readonly EventSub m_EventSub;
+        private readonly PubSub m_PubSub;
         private ChannelInfo? m_OriginalBroadcasterChannelInfo = null;
         private readonly Authenticator m_Authenticator;
-        private readonly StreamGlassWindow m_Form;
-        private readonly EventSub m_EventSub;
+        private readonly API m_API = new();
+        private OAuthToken? m_APIToken = null;
+        private OAuthToken? m_IRCToken = null;
         private string m_Channel = "";
-        private bool m_IsConnected = false;
 
-        public Connection(Server webServer, Data settings, StreamGlassWindow form)
+        public Connection(Server webServer, Data settings, StreamGlassWindow form): base(settings, form, "twitch")
         {
-            m_Settings = settings;
-            m_Form = form;
             m_Authenticator = new(webServer, settings);
-            //This section will create the settings variables ONLY if they where not loaded
-            m_Settings.Create("twitch", "auto_connect", "false");
-            m_Settings.Create("twitch", "browser", "");
-            m_Settings.Create("twitch", "public_key", "");
-            m_Settings.Create("twitch", "secret_key", "");
-            m_Settings.Create("twitch", "sub_mode", "all");
-
-            m_Client = new(m_Settings);
-            m_EventSub = new(m_Settings);
-
-            if (m_Settings.Get("twitch", "auto_connect") == "true")
-                Connect();
+            m_Client = new(m_API, settings);
+            m_EventSub = new(settings);
+            m_PubSub = new(settings);
         }
 
-        private void Register()
+        protected override void InitSettings()
+        {
+            CreateSetting("browser", "");
+            CreateSetting("public_key", "");
+            CreateSetting("secret_key", "");
+            CreateSetting("sub_mode", "all");
+        }
+
+        protected override void LoadSettings() { }
+
+        protected override void BeforeConnect()
         {
             CanalManager.Register(StreamGlassCanals.CHAT_CONNECTED, OnConnected);
             CanalManager.Register<string>(StreamGlassCanals.CHAT_JOINED, OnJoinedChannel);
-            CanalManager.Register<string>(StreamGlassCanals.USER_JOINED, OnUserJoinedChannel);
+            CanalManager.Register<User>(StreamGlassCanals.USER_JOINED, OnUserJoinedChannel);
             CanalManager.Register<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
 
             ChatCommand.AddFunction("Game", (string[] variables) => {
-                var channelInfo = API.GetChannelInfoFromLogin(variables[0]);
+                var channelInfo = m_API.GetChannelInfo(variables[0]);
                 if (channelInfo != null)
                     return channelInfo.GameName;
                 return variables[0];
             });
             ChatCommand.AddFunction("DisplayName", (string[] variables) => {
-                var userInfo = API.GetUserInfoFromLogin(variables[0]);
+                var userInfo = m_API.GetUserInfoFromLogin(variables[0]);
                 if (userInfo != null)
                     return userInfo.DisplayName;
                 return variables[0];
             });
             ChatCommand.AddFunction("Channel", (string[] variables) => {
-                var userInfo = API.GetUserInfoFromLogin(variables[0]);
+                var userInfo = m_API.GetUserInfoFromLogin(variables[0]);
                 if (userInfo != null)
-                    return userInfo.Login;
+                    return userInfo.Name;
                 return variables[0];
             });
         }
 
-        private void Unregister()
+        protected override void AfterConnect() { }
+
+        protected override bool Authenticate()
+        {
+            m_APIToken = m_Authenticator.Authenticate();
+            string browser = GetSetting("browser");
+            if (string.IsNullOrWhiteSpace(browser))
+                m_IRCToken = m_APIToken;
+            else
+                m_IRCToken = m_Authenticator.Authenticate(browser);
+            return m_APIToken != null && m_IRCToken != null;
+        }
+
+        protected override bool Init()
+        {
+            if (m_APIToken == null || m_IRCToken == null)
+                return false;
+            m_EventSub.SetToken(m_APIToken);
+            m_PubSub.SetToken(m_APIToken);
+            m_API.Authenticate(m_APIToken);
+            m_API.LoadGlobalEmoteSet();
+            User? creator = m_API.GetUserInfoFromLogin("chaporon_");
+            if (creator != null)
+                m_API.LoadChannelEmoteSet(creator);
+
+            User? userInfoOfToken = m_API.GetUserInfoOfToken(m_IRCToken);
+            m_Client.SetSelfUserInfo(userInfoOfToken);
+            if (userInfoOfToken != null)
+                m_API.LoadEmoteSetFromFollowedChannel(userInfoOfToken);
+            m_Client.Init("StreamGlass", m_IRCToken);
+            return true;
+        }
+
+        protected override bool OnReconnect()
+        {
+            m_Client.Reconnect();
+            return true;
+        }
+
+        internal void ReconnectEventSub() => m_EventSub.Reconnect();
+
+        protected override void BeforeDisconnect() { }
+
+        protected override void Unauthenticate()
+        {
+            m_PubSub.Disconnect();
+            m_EventSub.Disconnect();
+            m_Client.Disconnect();
+        }
+
+        protected override void Clean()
+        {
+            ResetStreamInfo();
+        }
+
+        protected override void AfterDisconnect()
         {
             CanalManager.Unregister(StreamGlassCanals.CHAT_CONNECTED, OnConnected);
             CanalManager.Unregister<string>(StreamGlassCanals.CHAT_JOINED, OnJoinedChannel);
-            CanalManager.Unregister<string>(StreamGlassCanals.USER_JOINED, OnUserJoinedChannel);
+            CanalManager.Unregister<User>(StreamGlassCanals.USER_JOINED, OnUserJoinedChannel);
             CanalManager.Unregister<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
             ChatCommand.RemoveFunction("Game");
             ChatCommand.RemoveFunction("DisplayName");
             ChatCommand.RemoveFunction("Channel");
         }
 
-        public void Connect()
-        {
-            if (!m_IsConnected)
-            {
-                Register();
-                OAuthToken? apiToken = m_Authenticator.Authenticate();
-                if (apiToken != null)
-                {
-                    m_IsConnected = true;
-                    m_EventSub.SetToken(apiToken);
-                    API.Authenticate(apiToken);
-                    API.LoadGlobalEmoteSet();
-                    API.LoadChannelEmoteSetFromLogin("chaporon_");
-                    OAuthToken? ircToken;
-                    string browser = m_Settings.Get("twitch", "browser");
-                    if (string.IsNullOrWhiteSpace(browser))
-                        ircToken = apiToken;
-                    else
-                        ircToken = m_Authenticator.Authenticate(browser);
-                    if (ircToken != null)
-                    {
-                        UserInfo? userInfoOfToken = API.GetUserInfoOfToken(ircToken);
-                        m_Client.SetSelfUserInfo(userInfoOfToken);
-                        if (userInfoOfToken != null)
-                            API.LoadEmoteSetFromFollowedChannelOfID(userInfoOfToken.ID);
-                        m_Client.Init("StreamGlass", ircToken);
-                    }
-                }
-            }
-            else
-            {
-                m_Client.Reconnect();
-            }
-        }
-
-        internal void ReconnectEventSub() => m_EventSub.Reconnect();
-
-        public void Disconnect()
-        {
-            m_EventSub.Disconnect();
-            m_Client.Disconnect();
-            ResetStreamInfo();
-            Unregister();
-        }
-
-        public TabItemContent[] GetSettings() => new TabItemContent[] { new TwitchSettingsItem(m_Settings, this) };
+        public override TabItemContent[] GetSettings() => new TabItemContent[] { new TwitchSettingsItem(Settings, this) };
 
         private void OnConnected(int _)
         {
-            UserInfo? selfUserInfo = API.GetSelfUserInfo();
-            if (selfUserInfo != null)
-                m_Client.Join(selfUserInfo.Login);
+            User selfUserInfo = m_API.GetSelfUserInfo();
+            if (!string.IsNullOrEmpty(selfUserInfo.Name))
+                m_Client.Join(selfUserInfo.Name);
         }
 
         private void OnJoinedChannel(int _, object? arg)
@@ -143,36 +149,41 @@ namespace StreamGlass.Twitch
             if (m_Channel != channel)
             {
                 m_Channel = channel;
-                API.LoadChannelEmoteSetFromLogin(channel[1..]);
                 ResetStreamInfo();
-                m_OriginalBroadcasterChannelInfo = API.GetChannelInfoFromLogin(channel[1..]);
-                m_Form.JoinChannel(channel);
+                m_OriginalBroadcasterChannelInfo = m_API.GetChannelInfo(channel[1..]);
+                Form.JoinChannel(channel);
                 if (m_OriginalBroadcasterChannelInfo != null)
+                {
                     m_EventSub.Connect(m_OriginalBroadcasterChannelInfo.Broadcaster.ID);
+                    m_PubSub.Connect(m_OriginalBroadcasterChannelInfo.Broadcaster.ID);
+                }
             }
         }
 
-        public void Update(long _) {}
+        protected override void OnUpdate(long deltaTime)
+        {
+            m_PubSub.Update(deltaTime);
+        }
 
         private void OnUserJoinedChannel(int _, object? arg)
         {
             if (arg == null)
                 return;
-            string login = (string)arg!;
-            API.LoadEmoteSetFromFollowedChannelOfLogin(login);
+            User user = (User)arg!;
+            m_API.LoadEmoteSetFromFollowedChannel(user);
         }
 
-        public void SendMessage(string channel, string message) => m_Client.SendMessage(channel, message);
+        public override void SendMessage(string channel, string message) => m_Client.SendMessage(channel, message);
 
-        public string GetEmoteURL(string emoteID, BrushPaletteManager palette)
+        public override string GetEmoteURL(string emoteID, BrushPaletteManager palette)
         {
-            return API.GetEmoteURL(emoteID, palette.GetPaletteType());
+            return m_API.GetEmoteURL(emoteID, palette.GetPaletteType());
         }
 
         private void ResetStreamInfo()
         {
             if (m_OriginalBroadcasterChannelInfo != null)
-                API.SetChannelInfoFromID(m_OriginalBroadcasterChannelInfo.Broadcaster.ID, m_OriginalBroadcasterChannelInfo.Title, m_OriginalBroadcasterChannelInfo.GameID, m_OriginalBroadcasterChannelInfo.BroadcasterLanguage);
+                m_API.SetChannelInfo(m_OriginalBroadcasterChannelInfo.Broadcaster, m_OriginalBroadcasterChannelInfo.Title, m_OriginalBroadcasterChannelInfo.GameID, m_OriginalBroadcasterChannelInfo.BroadcasterLanguage);
         }
 
         private void SetStreamInfo(int _, object? arg)
@@ -182,23 +193,24 @@ namespace StreamGlass.Twitch
             UpdateStreamInfoArgs args = (UpdateStreamInfoArgs)arg!;
             if (m_OriginalBroadcasterChannelInfo != null)
             {
-                string id = m_OriginalBroadcasterChannelInfo.Broadcaster.ID;
                 string title = (string.IsNullOrWhiteSpace(args.Title)) ? m_OriginalBroadcasterChannelInfo.Title : args.Title;
                 string category = (string.IsNullOrWhiteSpace(args.Category.ID)) ? m_OriginalBroadcasterChannelInfo.GameID : args.Category.ID;
                 string language = (string.IsNullOrWhiteSpace(args.Language)) ? m_OriginalBroadcasterChannelInfo.BroadcasterLanguage : args.Language;
-                API.SetChannelInfoFromID(id, title, category, language);
+                m_API.SetChannelInfo(m_OriginalBroadcasterChannelInfo.Broadcaster, title, category, language);
             }
         }
 
-        public Profile.CategoryInfo? SearchCategoryInfo(Window parent, Profile.CategoryInfo? info)
+        public override Profile.CategoryInfo? SearchCategoryInfo(Window parent, Profile.CategoryInfo? info)
         {
-            CategorySearchDialog dialog = new(parent, info);
+            CategorySearchDialog dialog = new(parent, info, m_API);
             dialog.ShowDialog();
             return dialog.CategoryInfo;
         }
 
-        public void Test()
+        protected override void OnTest()
         {
+            string raidEvent = "{\"metadata\":{\"message_id\":\"Eksw0vF_C8pr18N2QurlWf10SbjYxwm_S3i5iejL3F0=\",\"message_type\":\"notification\",\"message_timestamp\":\"2023-01-21T23:05:09.22883373Z\",\"subscription_type\":\"channel.raid\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"5f67ff22-76ad-47aa-84d1-061757c0a8a2\",\"status\":\"enabled\",\"type\":\"channel.raid\",\"version\":\"1\",\"condition\":{\"from_broadcaster_user_id\":\"52792239\",\"to_broadcaster_user_id\":\"\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AQoQMvTjh3BiR_SeA_WDbO29khAB\"},\"created_at\":\"2023-01-21T21:15:16.482046894Z\",\"cost\":0},\"event\":{\"from_broadcaster_user_id\":\"52792239\",\"from_broadcaster_user_login\":\"chaporon_\",\"from_broadcaster_user_name\":\"ChapORon_\",\"to_broadcaster_user_id\":\"164831380\",\"to_broadcaster_user_login\":\"fxt_volv\",\"to_broadcaster_user_name\":\"FxT_VolV\",\"viewers\":2}}}";
+            m_EventSub.OnWebSocketMessage(0, raidEvent);
         }
     }
 }
