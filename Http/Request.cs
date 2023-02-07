@@ -45,7 +45,7 @@ namespace StreamGlass.Http
             SyncSend();
             if (m_Token != null && (int)m_Response!.StatusCode == 401)
             {
-                Logger.Log("HTTP", "<= Refreshing OAuth token");
+                Log.Str("HTTP", "<= Refreshing OAuth token");
                 m_Token.Refresh();
                 m_Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", m_Token.Token);
                 m_Client.DefaultRequestHeaders.Add("Client-Id", m_Token.ClientID);

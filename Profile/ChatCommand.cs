@@ -18,7 +18,6 @@ namespace StreamGlass.Profile
         private readonly string m_Name = "";
         private readonly int m_AwaitTime = 0;
         private readonly int m_NbMessage = 0;
-        private readonly int m_NBArguments = 0;
         private readonly string m_Content = "";
         private readonly User.Type m_UserType = User.Type.NONE;
         private readonly List<string> m_Commands = new();
@@ -35,7 +34,6 @@ namespace StreamGlass.Profile
         public string Name => m_Name;
         public int AwaitTime => m_AwaitTime;
         public int NbMessage => m_NbMessage;
-        public int NBArguments => m_NBArguments;
         public string Content => m_Content;
         public User.Type UserType => m_UserType;
         public ReadOnlyCollection<string> Commands => m_Commands.AsReadOnly();
@@ -49,7 +47,6 @@ namespace StreamGlass.Profile
             m_Name = json.GetOrDefault("name", "");
             m_AwaitTime = json.GetOrDefault("time", 0);
             m_NbMessage = json.GetOrDefault("messages", 0);
-            m_NBArguments = json.GetOrDefault("argc", -1);
             m_Content = json.GetOrDefault("content", "");
             m_UserType = json.GetOrDefault("user", User.Type.SELF);
             m_Commands = json.GetList<string>("commands");
@@ -63,7 +60,6 @@ namespace StreamGlass.Profile
         public ChatCommand(string name,
             int awaitTime,
             int nbMessage,
-            int nBArguments,
             string content,
             User.Type userType,
             List<string> commands,
@@ -75,7 +71,6 @@ namespace StreamGlass.Profile
             m_Name = name;
             m_AwaitTime = awaitTime;
             m_NbMessage = nbMessage;
-            m_NBArguments = nBArguments;
             m_Content = content;
             m_UserType = userType;
             m_Commands = commands;
@@ -95,8 +90,6 @@ namespace StreamGlass.Profile
                 json.Set("time", m_AwaitTime);
             if (m_NbMessage != 0)
                 json.Set("messages", m_NbMessage);
-            if (m_NBArguments != -1)
-                json.Set("argc", m_NBArguments);
             if (!string.IsNullOrWhiteSpace(m_Content))
                 json.Set("content", m_Content);
             if (m_UserType != User.Type.SELF)
@@ -125,7 +118,7 @@ namespace StreamGlass.Profile
                 m_DeltaTime = new Random().Next((int)m_AutoTriggerDeltaTime, -(int)m_AutoTriggerDeltaTime) * 1000;
         }
 
-        public bool CanTrigger(int argc, User.Type type) => (m_NBArguments == -1 || argc == m_NBArguments) && m_MessageSinceLastTrigger >= m_NbMessage && m_TimeSinceLastTrigger >= (m_AwaitTime * 1000) && m_UserType <= type;
+        public bool CanTrigger(User.Type type) => m_MessageSinceLastTrigger >= m_NbMessage && m_TimeSinceLastTrigger >= (m_AwaitTime * 1000) && m_UserType <= type;
         public bool CanAutoTrigger() => m_AutoTrigger && m_MessageSinceLastTrigger >= m_NbMessage && (m_TimeSinceLastTrigger + m_DeltaTime) >= (m_AutoTriggerTime * 1000);
 
         internal void Update(long elapsedTime, int nbMessage)

@@ -1,11 +1,12 @@
-﻿using System;
+﻿using StreamFeedstock.StructuredText;
+using System;
 using System.Collections.Generic;
 
 namespace StreamGlass.StreamChat
 {
     public class UserMessage
     {
-        private readonly DisplayableMessage m_DisplayableMessage;
+        private readonly Text m_Message;
         private readonly User m_User;
         private readonly string m_ID;
         private readonly string m_Color;
@@ -19,33 +20,28 @@ namespace StreamGlass.StreamChat
             m_User = user;
             m_Color = "#6441A5";
             m_Channel = channel;
-            m_DisplayableMessage = new(message);
+            m_Message = new(message);
         }
 
-        public UserMessage(User user, bool ishighlighted, string id, string color, string channel, DisplayableMessage displayableMessage)
+        public UserMessage(User user, bool ishighlighted, string id, string color, string channel, Text displayableMessage)
         {
             m_User = user;
             m_IsHighlighted = ishighlighted;
             m_ID = id;
             m_Color = color;
             m_Channel = channel;
-            m_DisplayableMessage = displayableMessage;
+            m_Message = displayableMessage;
         }
 
         public bool IsHighlighted() => m_IsHighlighted;
-        public bool IsOfType(User.Type type) => type <= m_User.UserType;
-        public bool IsNotOfType(User.Type type) => type > m_User.UserType;
 
         public string ID => m_ID;
         public string UserID => m_User.ID;
-        public string UserName => m_User.Name;
         public string UserDisplayName => m_User.DisplayName;
         public string Color => m_Color;
-        public DisplayableMessage DisplayableMessage => m_DisplayableMessage;
-        public string Message => m_DisplayableMessage.Message;
-        public string EmotelessMessage => m_DisplayableMessage.EmotelessMessage;
-        public string Channel => m_Channel;
+        public Text Message => m_Message;
         public User.Type SenderType => m_User.UserType;
-        public List<Tuple<int, string>> Emotes => m_DisplayableMessage.Emotes;
+
+        public User Sender => m_User;
     }
 }

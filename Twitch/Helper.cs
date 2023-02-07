@@ -1,4 +1,6 @@
-﻿using StreamGlass.StreamChat;
+﻿using StreamFeedstock.Controls;
+using StreamFeedstock.StructuredText;
+using StreamGlass.StreamChat;
 using System;
 using System.Collections.Generic;
 using static StreamGlass.Twitch.IRC.Message;
@@ -7,28 +9,21 @@ namespace StreamGlass.Twitch
 {
     public static class Helper
     {
-        public static DisplayableMessage Convert(API api, string message, List<SimpleEmote> emoteList)
+        public static Text Convert(API api, string message, List<SimpleEmote> emoteList)
         {
-            List<Tuple<int, string>> emotes = new();
-            string replacement = "     ";
-            int offset = 0;
-            string emotelessMessage = message;
+            Text ret = new();
+            int lastIndex = 0;
             foreach (SimpleEmote emote in emoteList)
             {
+                ret.AddText(message[lastIndex..emote.Start]);
                 EmoteInfo? emoteInfo = api.GetEmoteFromID(emote.ID);
                 if (emoteInfo != null)
-                {
-                    int emoteLength = (emote.End + 1) - emote.Start;
-                    int idx = emote.Start + offset;
-                    offset += replacement.Length - emoteLength;
-                    emotelessMessage = emotelessMessage[..idx] + replacement + emotelessMessage[(idx + emoteLength)..];
-                    emotes.Add(new(idx, emote.ID));
-                }
+                    ret.AddImage(api.GetEmoteURL(emote.ID, BrushPalette.Type.LIGHT));
+                lastIndex = emote.End + 1;
             }
-            DisplayableMessage displayableMessage = new(message, emotelessMessage);
-            foreach (Tuple<int, string> emote in emotes)
-                displayableMessage.AddEmote(emote.Item1, emote.Item2);
-            return displayableMessage;
+            if (lastIndex < message.Length)
+                ret.AddText(message[lastIndex..message.Length]);
+            return ret;
         }
     }
 }

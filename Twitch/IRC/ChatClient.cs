@@ -1,6 +1,7 @@
 ﻿using Quicksand.Web;
 using Quicksand.Web.WebSocket;
 using StreamFeedstock;
+using StreamFeedstock.StructuredText;
 using StreamGlass.Events;
 using StreamGlass.Http;
 using StreamGlass.StreamChat;
@@ -98,7 +99,7 @@ namespace StreamGlass.Twitch.IRC
             string userID = message.GetTag("user-id");
             User.Type userType = m_API.GetUserType(self, message.GetTag("mod") == "1", message.GetTag("user-type"), userID);
             User user = new(userID, message.Nick, displayName, userType);
-            DisplayableMessage displayableMessage = Helper.Convert(m_API, message.Parameters, message.Emotes);
+            Text displayableMessage = Helper.Convert(m_API, message.Parameters, message.Emotes);
             CanalManager.Emit(StreamGlassCanals.CHAT_MESSAGE, new UserMessage(user, highlight, message.GetTag("id"),
                 GetUserMessageColor(displayName, (self) ? m_ChatColor : message.GetTag("color")),
                 message.GetCommand().Channel, displayableMessage));
@@ -138,7 +139,7 @@ namespace StreamGlass.Twitch.IRC
                         int cumulativeMonth = int.Parse(message.GetTag("msg-param-cumulative-months"));
                         bool shareStreakMonth = message.GetTag("msg-param-cumulative-months") == "1";
                         int streakMonth = (message.HaveTag("msg-param-streak-months")) ? int.Parse(message.GetTag("msg-param-streak-months")) : -1;
-                        DisplayableMessage displayableMessage = Helper.Convert(m_API, message.Parameters, message.Emotes);
+                        Text displayableMessage = Helper.Convert(m_API, message.Parameters, message.Emotes);
                         CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs(username, displayableMessage, followTier, false, cumulativeMonth, (shareStreakMonth) ? streakMonth : -1, -1));
                     }
                 }
@@ -165,7 +166,7 @@ namespace StreamGlass.Twitch.IRC
                 if (position >= 0)
                 {
                     string data = dataBuffer[..position];
-                    Logger.Log("Twitch IRC", string.Format("<= {0}", data));
+                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
                     dataBuffer = dataBuffer[(position + 2)..];
                     Message? message = Message.Parse(data, m_API);
                     if (message != null)
@@ -251,24 +252,24 @@ namespace StreamGlass.Twitch.IRC
             try
             {
                 string messageData = message.ToString();
-                Logger.Log("Twitch IRC", string.Format("=> {0}", Regex.Replace(messageData.Trim(), "(oauth:).+", "oauth:*****")));
+                Log.Str("Twitch IRC", string.Format("=> {0}", Regex.Replace(messageData.Trim(), "(oauth:).+", "oauth:*****")));
                 m_Client.Send(messageData);
             }
             catch (Exception e)
             {
-                Logger.Log("Twitch IRC", string.Format("On send exception: {0}", e));
+                Log.Str("Twitch IRC", string.Format("On send exception: {0}", e));
             }
         }
 
         private async Task TryReconnect()
         {
-            Logger.Log("Twitch IRC", "Trying to reconnect");
+            Log.Str("Twitch IRC", "Trying to reconnect");
             var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(15));
             while (await periodicTimer.WaitForNextTickAsync())
             {
                 if (m_Client.Connect())
                 {
-                    Logger.Log("Twitch IRC", "Reconnected");
+                    Log.Str("Twitch IRC", "Reconnected");
                     return;
                 }
             }
@@ -276,7 +277,7 @@ namespace StreamGlass.Twitch.IRC
 
         public override void OnClientDisconnect(int clientID)
         {
-            Logger.Log("Twitch IRC", "Disconnecting");
+            Log.Str("Twitch IRC", "Disconnecting");
             if (m_CanReconnect && m_Settings.Get("twitch", "auto_connect") == "true")
                 _ = TryReconnect();
         }
@@ -293,22 +294,22 @@ namespace StreamGlass.Twitch.IRC
 
         public override void OnWebSocketClose(int clientID, short code, string closeMessage)
         {
-            Logger.Log("Twitch IRC", string.Format("<=[Error] WebSocket closed ({0}): {1}", code, closeMessage));
+            Log.Str("Twitch IRC", string.Format("<=[Error] WebSocket closed ({0}): {1}", code, closeMessage));
         }
 
         public override void OnWebSocketError(int clientID, string error)
         {
-            Logger.Log("Twitch IRC", string.Format("<=[Error] WebSocket error: {0}", error));
+            Log.Str("Twitch IRC", string.Format("<=[Error] WebSocket error: {0}", error));
         }
 
         public override void OnWebSocketFrame(int clientID, Frame frame)
         {
-            Logger.Log("Twitch IRC", string.Format("<=[WS] {0}", frame.ToString().Trim()));
+            Log.Str("Twitch IRC", string.Format("<=[WS] {0}", frame.ToString().Trim()));
         }
 
         public override void OnWebSocketFrameSent(int clientID, Frame frame)
         {
-            Logger.Log("Twitch IRC", string.Format("[WS]=> {0}", frame.ToString().Trim()));
+            Log.Str("Twitch IRC", string.Format("[WS]=> {0}", frame.ToString().Trim()));
         }
 
         internal void Disconnect()

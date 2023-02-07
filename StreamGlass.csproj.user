@@ -7,6 +7,9 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Moderation\HeldMessage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Profile\ProfileEditor.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -24,6 +27,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Moderation\HeldMessage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="StreamAlert\AlertControl.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -51,9 +57,6 @@
     <Page Update="StreamAlert\StreamAlertSettingsItem.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="StreamChat\DisplayedMessage.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Update="StreamChat\Message.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -61,6 +64,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="StreamChat\StreamChatSettingsItem.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="StreamChat\BanDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="StreamGlassWindow.xaml">

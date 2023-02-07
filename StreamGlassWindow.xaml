@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:chat="clr-namespace:StreamGlass.StreamChat"
         xmlns:alert="clr-namespace:StreamGlass.StreamAlert"
+        xmlns:mod="clr-namespace:StreamGlass.Moderation"
         xmlns:ui="clr-namespace:StreamFeedstock.Controls;assembly=StreamFeedstock"
         mc:Ignorable="d"
         Title="StreamGlass"
@@ -35,7 +36,7 @@
                         <ui:MenuItem x:Name="ProfileMenuEdit" TranslationKey="menu_edit_profile" Header="Edit profiles..." Click="EditProfilesButton_Click" BrushPaletteKey="top_bar_background"/>
                         <Separator Name="ProfilesMenuSeparator"/>
                     </ui:MenuItem>
-                    <!--<ui:MenuItem Header="Test" Click="MenuItem_Click" BrushPaletteKey="top_bar_background"/>-->
+                    <ui:MenuItem Header="Test" Click="MenuItem_Click" BrushPaletteKey="top_bar_background"/>
                     <ui:MenuItem TranslationKey="menu_help" Header="Help" BrushPaletteKey="top_bar_background">
                         <ui:MenuItem TranslationKey="menu_logs" Header="Logs"  Click="LogsToolStripMenuItem_Click" BrushPaletteKey="top_bar_background"/>
                         <ui:MenuItem TranslationKey="menu_about" Header="About" BrushPaletteKey="top_bar_background"/>
@@ -75,8 +76,8 @@
                 <ui:TabItem TranslationKey="tab_stream_events">
                     <ui:Grid x:Name="MainGrid">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*"/>
-                            <ColumnDefinition Width="3*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
                         </Grid.ColumnDefinitions>
                         <ui:DockPanel x:Name="StreamChatDock" LastChildFill="True" Grid.Column="0">
                             <ui:Border x:Name="StreamChatBorder" BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top">
@@ -84,9 +85,18 @@
                             </ui:Border>
                         </ui:DockPanel>
                         <ui:DockPanel x:Name="ProfilePanel" LastChildFill="True" Grid.Column="1">
-                            <ui:Border BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top">
-                                <alert:AlertScrollPanel x:Name="StreamAlertPanel" />
-                            </ui:Border>
+                            <ui:Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="1*" />
+                                    <RowDefinition Height="1*" />
+                                </Grid.RowDefinitions>
+                                <ui:Border Grid.Row="0" BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top">
+                                    <alert:AlertScrollPanel x:Name="StreamAlertPanel" />
+                                </ui:Border>
+                                <ui:Border Grid.Row="1" BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top">
+                                    <mod:HeldMessageScrollPanel x:Name="HeldMessagePanel" />
+                                </ui:Border>
+                            </ui:Grid>
                         </ui:DockPanel>
                     </ui:Grid>
                 </ui:TabItem>

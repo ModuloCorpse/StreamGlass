@@ -6,6 +6,7 @@ using StreamFeedstock;
 using StreamGlass.Http;
 using StreamGlass.Connections;
 using StreamGlass.Settings;
+using StreamGlass.Events;
 
 namespace StreamGlass.Twitch
 {
@@ -26,7 +27,7 @@ namespace StreamGlass.Twitch
             m_Authenticator = new(webServer, settings);
             m_Client = new(m_API, settings);
             m_EventSub = new(settings);
-            m_PubSub = new(settings);
+            m_PubSub = new(m_API, settings);
         }
 
         protected override void InitSettings()
@@ -45,6 +46,8 @@ namespace StreamGlass.Twitch
             CanalManager.Register<string>(StreamGlassCanals.CHAT_JOINED, OnJoinedChannel);
             CanalManager.Register<User>(StreamGlassCanals.USER_JOINED, OnUserJoinedChannel);
             CanalManager.Register<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
+            CanalManager.Register<BanEventArgs>(StreamGlassCanals.BAN, BanUser);
+            CanalManager.Register<MessageAllowedEventArgs>(StreamGlassCanals.ALLOW_MESSAGE, AllowMessage);
 
             ChatCommand.AddFunction("Game", (string[] variables) => {
                 var channelInfo = m_API.GetChannelInfo(variables[0]);
@@ -127,6 +130,8 @@ namespace StreamGlass.Twitch
             CanalManager.Unregister<string>(StreamGlassCanals.CHAT_JOINED, OnJoinedChannel);
             CanalManager.Unregister<User>(StreamGlassCanals.USER_JOINED, OnUserJoinedChannel);
             CanalManager.Unregister<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
+            CanalManager.Unregister<BanEventArgs>(StreamGlassCanals.BAN, BanUser);
+            CanalManager.Unregister<MessageAllowedEventArgs>(StreamGlassCanals.ALLOW_MESSAGE, AllowMessage);
             ChatCommand.RemoveFunction("Game");
             ChatCommand.RemoveFunction("DisplayName");
             ChatCommand.RemoveFunction("Channel");
@@ -211,6 +216,25 @@ namespace StreamGlass.Twitch
         {
             string raidEvent = "{\"metadata\":{\"message_id\":\"Eksw0vF_C8pr18N2QurlWf10SbjYxwm_S3i5iejL3F0=\",\"message_type\":\"notification\",\"message_timestamp\":\"2023-01-21T23:05:09.22883373Z\",\"subscription_type\":\"channel.raid\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"5f67ff22-76ad-47aa-84d1-061757c0a8a2\",\"status\":\"enabled\",\"type\":\"channel.raid\",\"version\":\"1\",\"condition\":{\"from_broadcaster_user_id\":\"52792239\",\"to_broadcaster_user_id\":\"\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AQoQMvTjh3BiR_SeA_WDbO29khAB\"},\"created_at\":\"2023-01-21T21:15:16.482046894Z\",\"cost\":0},\"event\":{\"from_broadcaster_user_id\":\"52792239\",\"from_broadcaster_user_login\":\"chaporon_\",\"from_broadcaster_user_name\":\"ChapORon_\",\"to_broadcaster_user_id\":\"164831380\",\"to_broadcaster_user_login\":\"fxt_volv\",\"to_broadcaster_user_name\":\"FxT_VolV\",\"viewers\":2}}}";
             m_EventSub.OnWebSocketMessage(0, raidEvent);
+
+            string heldMessage = "{\"type\":\"MESSAGE\",\"data\":{\"topic\":\"automod-queue.52792239.52792239\",\"message\":\"{\\\"type\\\":\\\"automod_caught_message\\\",\\\"data\\\":{\\\"content_classification\\\":{\\\"category\\\":\\\"homophobia\\\",\\\"level\\\":1},\\\"message\\\":{\\\"content\\\":{\\\"text\\\":\\\"sale gay\\\",\\\"fragments\\\":[{\\\"text\\\":\\\"sale gay\\\",\\\"automod\\\":{\\\"topics\\\":{\\\"identity\\\":7}}}]},\\\"id\\\":\\\"6b650b9d-a719-4760-976a-fbb74a5b3313\\\",\\\"sender\\\":{\\\"user_id\\\":\\\"750309830\\\",\\\"login\\\":\\\"crashtestroadto8c\\\",\\\"display_name\\\":\\\"crashtestroadto8c\\\"},\\\"sent_at\\\":\\\"2023-02-01T15:50:49.103887653Z\\\"},\\\"reason_code\\\":\\\"\\\",\\\"resolver_id\\\":\\\"\\\",\\\"resolver_login\\\":\\\"\\\",\\\"status\\\":\\\"PENDING\\\"}}\"}}\r\n";
+            m_PubSub.OnWebSocketMessage(0, heldMessage);
+        }
+
+        private void BanUser(int _, object? arg)
+        {
+            if (arg == null)
+                return;
+            BanEventArgs args = (BanEventArgs)arg!;
+            m_API.BanUser(args.User, args.Reason, args.Delay);
+        }
+
+        private void AllowMessage(int _, object? arg)
+        {
+            if (arg == null)
+                return;
+            MessageAllowedEventArgs args = (MessageAllowedEventArgs)arg!;
+            m_API.ManageHeldMessage(args.Sender.ID, args.MessageID, args.IsAllowed);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using StreamFeedstock;
 using StreamFeedstock.Controls;
 using StreamFeedstock.Placeholder;
+using StreamFeedstock.StructuredText;
 using StreamGlass.Connections;
 using StreamGlass.Events;
 using StreamGlass.StreamChat;
@@ -77,7 +78,7 @@ namespace StreamGlass.StreamAlert
         internal AlertInfo GetAlertInfo(AlertType alertType) => m_AlertInfo[(int)alertType];
 
 
-        private void NewAlert(AlertType alertType, object e, DisplayableMessage? message = null)
+        private void NewAlert(AlertType alertType, object e, Text? message = null)
         {
             Dispatcher.Invoke((Delegate)(() =>
             {
@@ -87,14 +88,12 @@ namespace StreamGlass.StreamAlert
                     Context context = new();
                     context.AddVariable("e", e);
                     string alertPrefix = Converter.Convert(alertInfo.Prefix, context);
-                    DisplayableMessage alertMessage = (message == null) ? new(alertPrefix) : DisplayableMessage.AppendPrefix(message, alertPrefix);
+                    Text alertMessage = new(alertPrefix);
+                    if (message != null)
+                        alertMessage.Append(message);
                     Alert alert = new(alertInfo.ImgPath, alertMessage);
                     AlertControl alertControl = new(m_ConnectionManager!, m_ChatPalette, m_Translations, alert, m_MessageContentFontSize);
-                    alertControl.AlertMessage.Loaded += (sender, e) =>
-                    {
-                        alertControl.UpdateEmotes();
-                        UpdateControlsPosition();
-                    };
+                    alertControl.AlertMessage.Loaded += (sender, e) => { UpdateControlsPosition(); };
                     AddControl(alertControl);
                 }
             }));

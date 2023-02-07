@@ -39,6 +39,12 @@ namespace StreamGlass
             CanalManager.NewCanal<RewardEventArgs>(StreamGlassCanals.REWARD);
             CanalManager.NewCanal<CommandEventArgs>(StreamGlassCanals.COMMANDS);
             CanalManager.NewCanal<string>(StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM);
+            CanalManager.NewCanal<BanEventArgs>(StreamGlassCanals.BAN);
+            CanalManager.NewCanal<UserMessage>(StreamGlassCanals.HELD_MESSAGE);
+            CanalManager.NewCanal<MessageAllowedEventArgs>(StreamGlassCanals.ALLOW_MESSAGE);
+            CanalManager.NewCanal(StreamGlassCanals.CHAT_CLEAR);
+            CanalManager.NewCanal<string>(StreamGlassCanals.CHAT_CLEAR_USER);
+            CanalManager.NewCanal<string>(StreamGlassCanals.CHAT_CLEAR_MESSAGE);
         }
 
         private static void AddDefaultPalette(ref BrushPalette palette,
@@ -166,6 +172,11 @@ namespace StreamGlass
             translation.AddTranslation("alert_name_tier2", "Tier 2");
             translation.AddTranslation("alert_name_tier3", "Tier 3");
             translation.AddTranslation("alert_name_tier4", "Prime/Tier 4");
+            translation.AddTranslation("ban_button", "Ban");
+            translation.AddTranslation("ban_time", "Time (s):");
+            translation.AddTranslation("ban_reason", "Reason:");
+            translation.AddTranslation("message_menu_highlight", "Toggle Highlight");
+            translation.AddTranslation("message_menu_ban", "Ban User");
             translationManager.Load();
             StreamChatPanel.SetTranslations(translationManager);
             StreamAlertPanel.SetTranslations(translationManager);
@@ -213,6 +224,16 @@ namespace StreamGlass
             InitializeAlertSetting(AlertScrollPanel.AlertType.TIER2, "../Assets/stars-stack-2.png", "${e.Name} as subscribed to you with a tier 2: ", true);
             InitializeAlertSetting(AlertScrollPanel.AlertType.TIER3, "../Assets/stars-stack-3.png", "${e.Name} as subscribed to you with a tier 3: ", true);
             InitializeAlertSetting(AlertScrollPanel.AlertType.TIER4, "../Assets/chess-queen.png", "${e.Name} as subscribed to you with a prime: ", true);
+
+            //Held message
+            m_Settings.Create("moderation", "display_type", "0");
+            HeldMessagePanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(m_Settings.Get("moderation", "display_type")));
+            m_Settings.Create("moderation", "sender_font_size", "14");
+            HeldMessagePanel.SetSenderFontSize(double.Parse(m_Settings.Get("moderation", "sender_font_size")));
+            m_Settings.Create("moderation", "sender_size", "200");
+            HeldMessagePanel.SetSenderWidth(double.Parse(m_Settings.Get("moderation", "sender_size")));
+            m_Settings.Create("moderation", "message_font_size", "14");
+            HeldMessagePanel.SetContentFontSize(double.Parse(m_Settings.Get("moderation", "message_font_size")));
         }
 
         public StreamGlassWindow(): base(new(), new())
@@ -293,7 +314,7 @@ namespace StreamGlass
             m_Watch.Stop();
             m_DispatcherTimer.Stop();
             m_WebServer.Stop();
-            Logger.StopLogger();
+            Log.Stop();
             Application.Current.Shutdown();
         }
 

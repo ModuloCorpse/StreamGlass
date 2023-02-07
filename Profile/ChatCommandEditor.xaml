@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="clr-namespace:StreamFeedstock.Controls;assembly=StreamFeedstock"
         mc:Ignorable="d"
-        d:DesignHeight="566"
+        d:DesignHeight="536"
         d:DesignWidth="454"
-        Height="566"
+        Height="536"
         Width="454"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -51,10 +51,6 @@
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                     <ui:Label x:Name="NbMessageTextBoxLabel" TranslationKey="profile_editor_messages" VerticalAlignment="Center" TextAlignment="Right" Text="Messages Number:" Width="150"/>
                     <ui:NumericUpDown Margin="5,0,0,0" x:Name="NbMessageUpDown" MinValue="0" Height="26" Width="250"/>
-                </ui:StackPanel>
-                <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <ui:Label x:Name="NbArgumentsTextBoxLabel" TranslationKey="profile_editor_arguments" VerticalAlignment="Center" TextAlignment="Right" Text="Arguments Number:" Width="150"/>
-                    <ui:NumericUpDown Margin="5,0,0,0" x:Name="NbArgumentsUpDown" MinValue="0" Height="26" Width="250"/>
                 </ui:StackPanel>
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                     <ui:Label x:Name="UserComboBoxLabel" TranslationKey="profile_editor_user" VerticalAlignment="Center" TextAlignment="Right" Text="User:" Width="150"/>

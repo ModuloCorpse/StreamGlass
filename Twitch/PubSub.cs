@@ -2,14 +2,18 @@
 using Quicksand.Web.Http;
 using Quicksand.Web.WebSocket;
 using StreamFeedstock;
+using StreamFeedstock.StructuredText;
 using StreamGlass.Http;
+using StreamGlass.StreamChat;
 using System;
 using System.Collections.Generic;
+using static StreamGlass.Twitch.EventSub.EventData;
 
 namespace StreamGlass.Twitch
 {
     public class PubSub : AClientListener
     {
+        private readonly API m_API;
         private readonly Settings.Data m_Settings;
         private readonly Quicksand.Web.WebSocket.Client m_Websocket;
         private OAuthToken? m_Token;
@@ -18,8 +22,9 @@ namespace StreamGlass.Twitch
         private long m_TimeSinceLastPing = 0;
         private long m_TimeBeforeNextPing = (new Random().Next(-15, 15) + 135) * 1000;
 
-        public PubSub(Settings.Data settings)
+        public PubSub(API api, Settings.Data settings)
         {
+            m_API = api;
             m_Settings = settings;
             m_Websocket = new(this, "wss://pubsub-edge.twitch.tv");
         }
@@ -43,7 +48,7 @@ namespace StreamGlass.Twitch
 
         private void HandleReconnect()
         {
-            Logger.Log("PubSub", "<= Reconnect");
+            Log.Str("PubSub", "<= Reconnect");
             m_Websocket.Disconnect();
             ConnectToServer();
         }
@@ -60,11 +65,48 @@ namespace StreamGlass.Twitch
             m_Websocket.Send(json.ToNetworkString());
         }
 
+        private static Text GetMessage(Json messageData)
+        {
+            string messageText = messageData.GetOrDefault("text", "");
+            List<Json> fragmentsObject = messageData.GetList<Json>("fragments");
+            List<string> fragments = new();
+            foreach (Json fragment in fragmentsObject)
+            {
+                if (fragment.TryGet("text", out string? str))
+                    fragments.Add(str!);
+            }
+            return new(messageText);
+        }
+
+        private void HandleAutoModQueueData(Json json)
+        {
+            if (json.TryGet("data", out Json? data))
+            {
+                if (data!.TryGet("status", out string? status) &&
+                    data!.TryGet("message", out Json? message))
+                {
+                    if (status == "PENDING" &&
+                        message!.TryGet("id", out string? messageID) &&
+                        message.TryGet("content", out Json? messageData) &&
+                        message.TryGet("sender", out Json? messageSender))
+                    {
+                        if (messageSender!.TryGet("login", out string? login))
+                        {
+                            string color = messageSender.GetOrDefault("chat_color", "");
+                            User? sender = m_API.GetUserInfoFromLogin(login!);
+                            if (sender != null)
+                                CanalManager.Emit(StreamGlassCanals.HELD_MESSAGE, new UserMessage(sender, false, messageID!, color!, "", GetMessage(messageData!)));
+                        }
+                    }
+                }
+            }
+        }
+
         public override void OnWebSocketMessage(int clientID, string message)
         {
-            Logger.Log("PubSub", string.Format("<= {0}", message));
-            Json data = new(message);
-            if (data.TryGet("type", out string? type))
+            Log.Str("PubSub", string.Format("<= {0}", message));
+            Json receivedEvent = new(message);
+            if (receivedEvent.TryGet("type", out string? type))
             {
                 switch (type)
                 {
@@ -75,7 +117,16 @@ namespace StreamGlass.Twitch
                         }
                     case "MESSAGE":
                         {
-
+                            if (receivedEvent.TryGet("data", out Json? data))
+                            {
+                                if (data!.TryGet("topic", out string? topic) &&
+                                    data.TryGet("message", out string? messageDataStr))
+                                {
+                                    Json messageData = new(messageDataStr!);
+                                    if (topic!.StartsWith("automod-queue"))
+                                        HandleAutoModQueueData(messageData!);
+                                }
+                            }
                             break;
                         }
                 }
@@ -95,27 +146,27 @@ namespace StreamGlass.Twitch
 
         public override void OnWebSocketClose(int clientID, short code, string closeMessage)
         {
-            Logger.Log("PubSub", string.Format("<=[Error] WebSocket closed ({0}): {1}", code, closeMessage));
+            Log.Str("PubSub", string.Format("<=[Error] WebSocket closed ({0}): {1}", code, closeMessage));
         }
 
         public override void OnWebSocketError(int clientID, string error)
         {
-            Logger.Log("PubSub", string.Format("<=[Error] WebSocket error: {0}", error));
+            Log.Str("PubSub", string.Format("<=[Error] WebSocket error: {0}", error));
         }
 
         public override void OnClientDisconnect(int clientID)
         {
-            Logger.Log("PubSub", "<= Disconnected");
+            Log.Str("PubSub", "<= Disconnected");
         }
 
         public override void OnWebSocketFrame(int clientID, Frame frame)
         {
-            Logger.Log("PubSub", string.Format("<=[WS] {0}", frame.ToString().Trim()));
+            Log.Str("PubSub", string.Format("<=[WS] {0}", frame.ToString().Trim()));
         }
 
         public override void OnWebSocketFrameSent(int clientID, Frame frame)
         {
-            Logger.Log("PubSub", string.Format("[WS]=> {0}", frame.ToString().Trim()));
+            Log.Str("PubSub", string.Format("[WS]=> {0}", frame.ToString().Trim()));
         }
 
         public void Disconnect() => m_Websocket.Disconnect();

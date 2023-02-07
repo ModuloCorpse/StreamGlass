@@ -255,8 +255,10 @@ namespace StreamGlass.Twitch
 
         public bool ManageHeldMessage(string senderID, string messageID, bool allow)
         {
+            if (ms_SelfUserInfo == null)
+                return false;
             Json json = new();
-            json.Set("user_id", senderID);
+            json.Set("user_id", ms_SelfUserInfo.ID);
             json.Set("msg_id", messageID);
             json.Set("action", (allow) ? "ALLOW" : "DENY");
             PostRequest request = new("https://api.twitch.tv/helix/moderation/automod/message", json, ms_AccessToken);

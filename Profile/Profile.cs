@@ -35,7 +35,7 @@ namespace StreamGlass.Profile
             if (m_CommandLocation.TryGetValue(arguments[0], out var contentIdx))
             {
                 ChatCommand content = m_Commands[contentIdx];
-                if (isForced || content.CanTrigger(arguments.Length - 1, userType))
+                if (isForced || content.CanTrigger(userType))
                     content.Trigger(arguments, connectionManager, channel);
                 foreach (string child in content.Commands)
                     TriggerCommand(connectionManager, channel, child, userType, isForced);
@@ -46,8 +46,9 @@ namespace StreamGlass.Profile
 
         private void ForceOnMessage(UserMessage message, ConnectionManager connectionManager, string channel)
         {
-            if (message.Message.Length > 0 && message.Message[0] == '!')
-                TriggerCommand(connectionManager, channel, message.Message[1..], message.SenderType, false);
+            string messageContent = message.Message.ToString();
+            if (messageContent.Length > 0 && messageContent[0] == '!')
+                TriggerCommand(connectionManager, channel, messageContent[1..], message.SenderType, false);
         }
 
         internal void OnMessage(UserMessage message, ConnectionManager connectionManager, string channel)

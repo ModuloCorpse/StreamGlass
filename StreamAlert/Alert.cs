@@ -1,19 +1,19 @@
-﻿using StreamGlass.StreamChat;
+﻿using StreamFeedstock.StructuredText;
 
 namespace StreamGlass.StreamAlert
 {
     public class Alert
     {
-        private readonly DisplayableMessage m_DisplayableMessage;
+        private readonly Text m_Message;
         private readonly string m_ImagePath;
 
         public string ImagePath => m_ImagePath;
-        public DisplayableMessage DisplayableMessage => m_DisplayableMessage;
+        public Text Message => m_Message;
 
-        public Alert(string imagePath, DisplayableMessage displayableMessage)
+        public Alert(string imagePath, Text displayableMessage)
         {
             m_ImagePath = imagePath;
-            m_DisplayableMessage = displayableMessage;
+            m_Message = displayableMessage;
         }
     }
 }

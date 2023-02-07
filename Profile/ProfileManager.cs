@@ -42,7 +42,7 @@ namespace StreamGlass.Profile
 
         private void OnStreamStart()
         {
-            Logger.Log("Event", "Stream Started");
+            Log.Str("Event", "Stream Started");
             CurrentObject?.Reset();
         }
 

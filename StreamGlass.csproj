@@ -9,9 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\cancel.png" />
     <None Remove="Assets\chat-bubble.png" />
     <None Remove="Assets\chess-queen.png" />
     <None Remove="Assets\chest.png" />
+    <None Remove="Assets\confirmed.png" />
     <None Remove="Assets\hearts.png" />
     <None Remove="Assets\megaphone.png" />
     <None Remove="Assets\parachute.png" />
@@ -34,26 +36,64 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\chat-bubble.png">
-      <CopyToOutputDirectory></CopyToOutputDirectory>
+    <Resource Include="Assets\cancel.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Assets\chess-queen.png" />
-    <Resource Include="Assets\chest.png" />
-    <Resource Include="Assets\hearts.png" />
-    <Resource Include="Assets\megaphone.png" />
-    <Resource Include="Assets\parachute.png" />
-    <Resource Include="Assets\pencil.png" />
-    <Resource Include="Assets\stars-stack-1.png" />
-    <Resource Include="Assets\stars-stack-2.png" />
-    <Resource Include="Assets\stars-stack-3.png" />
+    <Resource Include="Assets\chat-bubble.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\chess-queen.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\chest.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\confirmed.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\hearts.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\megaphone.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\parachute.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\pencil.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\stars-stack-1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\stars-stack-2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\stars-stack-3.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Assets\stream-glass-logo.ico" />
-    <Resource Include="Assets\take-my-money.png" />
-    <Resource Include="Assets\twitch-logo.png" />
-    <Resource Include="Assets\magnifying-glass.png" />
-    <Resource Include="Assets\sight-disabled.png" />
-    <Resource Include="Assets\sight-enabled.png" />
-    <Resource Include="Assets\stream-glass-logo.png" />
-    <Resource Include="Assets\tinker.png" />
+    <Resource Include="Assets\take-my-money.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\twitch-logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\magnifying-glass.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\sight-disabled.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\sight-enabled.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\stream-glass-logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\tinker.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
@@ -73,9 +113,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="StreamAlert\StreamAlertSettingsItem.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="StreamChat\DisplayedMessage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Twitch\CategoryControl.xaml.cs">

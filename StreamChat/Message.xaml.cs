@@ -5,6 +5,7 @@ using System.Windows.Media;
 using StreamFeedstock;
 using StreamFeedstock.Controls;
 using StreamGlass.Connections;
+using StreamGlass.Events;
 
 namespace StreamGlass.StreamChat
 {
@@ -39,9 +40,9 @@ namespace StreamGlass.StreamChat
             m_Message = message;
             MessageSender.Text = message.UserDisplayName;
             MessageSender.Width = senderWidth;
-            SetSenderNameFontSize(senderFontSize, false);
-            MessageContent.SetDisplayableMessage(connectionManager, palette, message.DisplayableMessage);
-            MessageContent.SetMessageFontSize(contentFontSize, false);
+            SetSenderNameFontSize(senderFontSize);
+            MessageContent.SetText(message.Message);
+            MessageContent.SetFontSize(contentFontSize);
             BrushConverter converter = new();
             if (!string.IsNullOrWhiteSpace(message.Color))
             {
@@ -53,57 +54,57 @@ namespace StreamGlass.StreamChat
             if (m_IsHighlighted)
             {
                 MessagePanel.BrushPaletteKey = "chat_highlight_background";
-                MessageContent.SetPalette("chat_highlight_background", "chat_highlight_message");
+                MessageContent.BrushPaletteKey = "chat_highlight_background";
+                MessageContent.TextBrushPaletteKey = "chat_highlight_message";
             }
             else
-            {
                 MessagePanel.BrushPaletteKey = "chat_background";
-                MessageContent.SetPalette("chat_background", "chat_message");
-            }
             Update(palette, translation);
         }
+
+        public string UserID => m_Message.UserID;
+        public string ID => m_Message.ID;
 
         public double NameWidth { get => MessageSender.Width; }
         public double NameFontSize { get => MessageSender.FontSize; }
         public double MessageFontSize { get => MessageContent.FontSize; }
 
-        public void SetSenderNameWidth(double width, bool updateEmotes = true)
+        public void SetSenderNameWidth(double width)
         {
             MessageSender.Width = width;
             MessageContent.Width = (MessagePanel.ActualWidth - MessageSender.ActualWidth) - 20;
             MessageSender.FontSize = GetFontSize(MessageSender, m_MaxFontSize);
-            if (updateEmotes)
-                UpdateEmotes();
         }
 
-        public void SetSenderNameFontSize(double fontSize, bool updateEmotes = true)
+        public void SetSenderNameFontSize(double fontSize)
         {
             m_MaxFontSize = fontSize;
             MessageSender.FontSize = GetFontSize(MessageSender, fontSize);
-            if (updateEmotes)
-                UpdateEmotes();
         }
 
-        public void SetMessageFontSize(double fontSize, bool updateEmotes = true)
-        {
-            MessageContent.SetMessageFontSize(fontSize, updateEmotes);
-        }
-
-        internal void UpdateEmotes()
-        {
-            MessageContent.UpdateEmotes();
-        }
+        public void SetMessageFontSize(double fontSize) => MessageContent.SetFontSize(fontSize);
 
         private void ToggleHighlight_Click(object sender, RoutedEventArgs e)
         {
-            m_StreamChat.ToggleHighlightedUser(m_Message.UserDisplayName);
+            m_StreamChat.ToggleHighlightedUser(m_Message.UserID);
         }
 
         private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            MessageContent.MessageContent.Width = (MessagePanel.ActualWidth - MessageSender.ActualWidth) - 20;
-            Height = MessageContent.MessageContent.ActualHeight + Margin.Top + Margin.Bottom + MessageContent.Margin.Top + MessageContent.Margin.Bottom;
-            UpdateEmotes();
+            MessageContent.Width = (MessagePanel.ActualWidth - MessageSender.ActualWidth) - 20;
+            Height = MessageContent.ActualHeight + Margin.Top + Margin.Bottom + MessageContent.Margin.Top + MessageContent.Margin.Bottom;
+        }
+
+        private void BanUser_Click(object _, RoutedEventArgs e)
+        {
+            User sender = m_Message.Sender;
+            if (sender.UserType == User.Type.SELF)
+                return;
+            BanDialog dialog = new(GetWindow(), sender);
+            dialog.ShowDialog();
+            BanEventArgs? args = dialog.Event;
+            if (args != null)
+                CanalManager.Emit(StreamGlassCanals.BAN, args);
         }
     }
 }

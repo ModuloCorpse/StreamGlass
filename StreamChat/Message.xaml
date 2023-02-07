@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:ui="clr-namespace:StreamFeedstock.Controls;assembly=StreamFeedstock"
-             xmlns:chat="clr-namespace:StreamGlass.StreamChat;assembly="
              mc:Ignorable="d"
              d:DesignWidth="350"
              d:DesignHeight="30"
@@ -17,10 +16,11 @@
         <ui:Label x:Name="MessageSender" BrushPaletteKey="" Width="100" Height="Auto" Grid.Column="0" Text="StreamGlass" TextAlignment="Right" Foreground="#FF6441A5" FontWeight="Bold" FontSize="14" Margin="0">
             <TextBlock.ContextMenu>
                 <ui:ContextMenu>
-                    <ui:MenuItem Header="Toggle Highlight" Click="ToggleHighlight_Click"/>
+                    <ui:MenuItem TranslationKey="message_menu_highlight" Header="Toggle Highlight" Click="ToggleHighlight_Click"/>
+                    <ui:MenuItem TranslationKey="message_menu_ban" Header="Ban User" Click="BanUser_Click"/>
                 </ui:ContextMenu>
             </TextBlock.ContextMenu>
         </ui:Label>
-        <chat:DisplayedMessage x:Name="MessageContent" Grid.Column="1" Margin="0"/>
+        <ui:StructuredLabel x:Name="MessageContent" Grid.Column="1" Margin="0" BorderThickness="0"/>
     </ui:Grid>
 </ui:UserControl>

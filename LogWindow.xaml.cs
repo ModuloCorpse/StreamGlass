@@ -28,7 +28,7 @@ namespace StreamGlass
         {
             m_CurrentLogCategory = category;
             InitializeComponent();
-            Logger.SetLogWindow(this);
+            Log.SetLogWindow(this);
             UpdateLogListView();
         }
 
@@ -38,7 +38,7 @@ namespace StreamGlass
         {
             m_IsRefreshingComboBox = true;
             LogDisplayComboBox.Items.Clear();
-            foreach (string category in Logger.GetCategories())
+            foreach (string category in Log.GetCategories())
             {
                 if (category == m_CurrentLogCategory)
                     LogDisplayComboBox.SelectedIndex = LogDisplayComboBox.Items.Count;
@@ -47,7 +47,7 @@ namespace StreamGlass
             m_IsRefreshingComboBox = false;
 
             LogsListView.Items.Clear();
-            foreach (string log in Logger.GetLogs(m_CurrentLogCategory))
+            foreach (string log in Log.GetLogs(m_CurrentLogCategory))
             {
                 StreamFeedstock.Controls.ContextMenu contextMenu = new();
                 StreamFeedstock.Controls.MenuItem menuItem = new() { Header = "Copy" };
@@ -69,7 +69,7 @@ namespace StreamGlass
             }
         }
 
-        protected override void OnClosing(CancelEventArgs e) => Logger.SetLogWindow(null);
+        protected override void OnClosing(CancelEventArgs e) => Log.SetLogWindow(null);
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {

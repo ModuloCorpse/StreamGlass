@@ -136,7 +136,7 @@ namespace StreamGlass.StreamAlert
         private void AlertInfosList_ItemEdited(object _, object e)
         {
             AlertInfo alertInfo = m_AlertInfo[(int)e];
-            AlertEditor dialog = new((Window)System.Windows.Window.GetWindow(this), alertInfo);
+            AlertEditor dialog = new(GetWindow(), alertInfo);
             dialog.ShowDialog();
             AlertInfo? newInfo = dialog.AlertInfo;
             if (newInfo != null)

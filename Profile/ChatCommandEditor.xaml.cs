@@ -34,7 +34,6 @@ namespace StreamGlass.Profile
             NameTextBox.Text = command.Name;
             TimeUpDown.Value = command.AwaitTime;
             NbMessageUpDown.Value = command.NbMessage;
-            NbArgumentsUpDown.Value = command.NBArguments;
             ContentTextBox.Text = command.Content;
             UserComboBox.SelectedIndex = (int)command.UserType;
             SubCommandList.AddObjects(command.Commands);
@@ -82,7 +81,6 @@ namespace StreamGlass.Profile
             string name = NameTextBox.Text;
             int awaitTime = (int)TimeUpDown.Value;
             int nbMessage = (int)NbMessageUpDown.Value;
-            int nbArguments = (int)NbArgumentsUpDown.Value;
             string content = ContentTextBox.Text;
             User.Type userType = (User.Type)UserComboBox.SelectedIndex;
             List<string> commands = SubCommandList.GetItems().Cast<string>().ToList();
@@ -90,7 +88,7 @@ namespace StreamGlass.Profile
             int autoTriggerTime = (int)AutoTriggerTimeUpDown.Value;
             int autoTriggerDeltaTime = (int)AutoTriggerTimeDeltaUpDown.Value;
             string[] autoTriggerArguments = AutoTriggerArguments.GetItems().Cast<string>().ToArray();
-            m_CreatedCommand = new(name, awaitTime, nbMessage, nbArguments, content, userType, commands, autoTrigger, autoTriggerTime, autoTriggerDeltaTime, autoTriggerArguments);
+            m_CreatedCommand = new(name, awaitTime, nbMessage, content, userType, commands, autoTrigger, autoTriggerTime, autoTriggerDeltaTime, autoTriggerArguments);
             Close();
         }
 

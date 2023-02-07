@@ -14,6 +14,12 @@
         RAID,
         REWARD,
         COMMANDS,
-        PROFILE_CHANGED_MENU_ITEM
+        PROFILE_CHANGED_MENU_ITEM,
+        BAN,
+        HELD_MESSAGE,
+        ALLOW_MESSAGE,
+        CHAT_CLEAR,
+        CHAT_CLEAR_USER,
+        CHAT_CLEAR_MESSAGE
     }
 }
