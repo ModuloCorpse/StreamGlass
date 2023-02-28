@@ -14,6 +14,8 @@ namespace StreamGlass.Moderation
         private readonly UserMessage m_HeldMessage;
         private double m_MaxFontSize;
 
+        internal string ID => m_HeldMessage.ID;
+
         private static double GetFontSize(TextBlock textBlock, double textBlockFontSize)
         {
             Typeface typeFace = new(textBlock.FontFamily, textBlock.FontStyle, textBlock.FontWeight, textBlock.FontStretch);

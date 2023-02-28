@@ -6,8 +6,7 @@
              xmlns:ui="clr-namespace:StreamFeedstock.Controls;assembly=StreamFeedstock"
              mc:Ignorable="d"
              d:DesignWidth="350"
-             d:DesignHeight="30"
-             SizeChanged="UserControl_SizeChanged">
+             d:DesignHeight="30">
     <ui:Grid x:Name="MessagePanel" ShowGridLines="False">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"></ColumnDefinition>

@@ -1,11 +1,9 @@
 ﻿using Quicksand.Web;
-using Quicksand.Web.WebSocket;
 using StreamFeedstock;
 using StreamGlass.Events;
 using StreamGlass.Http;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace StreamGlass.Twitch
 {
@@ -174,7 +172,7 @@ namespace StreamGlass.Twitch
         internal void Reconnect()
         {
             m_Websocket.Disconnect();
-            Thread.Sleep(1000);
+            Log.Str("EventSub", "<= Reconnecting");
             ConnectToServer();
         }
 
@@ -188,7 +186,7 @@ namespace StreamGlass.Twitch
             Log.Str("EventSub", string.Format("<=[Error] WebSocket error: {0}", error));
         }
 
-        private bool RegisterSubscription(string sessionID, string subscriptionName, int subscriptionVersion, string condition = "broadcaster_user_id")
+        private bool RegisterSubscription(string sessionID, string subscriptionName, int subscriptionVersion, params string[] conditions)
         {
             if (m_Token == null)
                 return false;
@@ -196,7 +194,8 @@ namespace StreamGlass.Twitch
             transportJson.Set("method", "websocket");
             transportJson.Set("session_id", sessionID);
             Json conditionJson = new();
-            conditionJson.Set(condition, m_ChannelID);
+            foreach (string condition in conditions)
+                conditionJson.Set(condition, m_ChannelID);
             Json message = new();
             message.Set("type", subscriptionName);
             message.Set("version", subscriptionVersion);
@@ -223,21 +222,21 @@ namespace StreamGlass.Twitch
             {
                 if (sessionObj!.TryGet("id", out string? sessionID))
                 {
-                    if (!RegisterSubscription(sessionID!, "channel.follow", 1))
+                    if (!RegisterSubscription(sessionID!, "channel.follow", 2, "broadcaster_user_id", "moderator_user_id"))
                         return;
-                    if (!RegisterSubscription(sessionID!, "channel.subscribe", 1))
+                    if (!RegisterSubscription(sessionID!, "channel.subscribe", 1, "broadcaster_user_id"))
                         return;
-                    if (!RegisterSubscription(sessionID!, "channel.subscription.gift", 1))
+                    if (!RegisterSubscription(sessionID!, "channel.subscription.gift", 1, "broadcaster_user_id"))
                         return;
                     if (!RegisterSubscription(sessionID!, "channel.raid", 1, "to_broadcaster_user_id"))
                         return;
                     if (!RegisterSubscription(sessionID!, "channel.raid", 1, "from_broadcaster_user_id"))
                         return;
-                    if (!RegisterSubscription(sessionID!, "channel.channel_points_custom_reward_redemption.add", 1))
+                    if (!RegisterSubscription(sessionID!, "channel.channel_points_custom_reward_redemption.add", 1, "broadcaster_user_id"))
                         return;
-                    if (!RegisterSubscription(sessionID!, "stream.online", 1))
+                    if (!RegisterSubscription(sessionID!, "stream.online", 1, "broadcaster_user_id"))
                         return;
-                    RegisterSubscription(sessionID!, "stream.offline", 1);
+                    RegisterSubscription(sessionID!, "stream.offline", 1, "broadcaster_user_id");
                 }
             }
         }
@@ -393,16 +392,6 @@ namespace StreamGlass.Twitch
         public override void OnClientDisconnect(int clientID)
         {
             Log.Str("EventSub", "<= Disconnected");
-        }
-
-        public override void OnWebSocketFrame(int clientID, Frame frame)
-        {
-            Log.Str("EventSub", string.Format("<=[WS] {0}", frame.ToString().Trim()));
-        }
-
-        public override void OnWebSocketFrameSent(int clientID, Frame frame)
-        {
-            Log.Str("EventSub", string.Format("[WS]=> {0}", frame.ToString().Trim()));
         }
     }
 }

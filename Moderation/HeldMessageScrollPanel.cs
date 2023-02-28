@@ -14,6 +14,7 @@ namespace StreamGlass.Moderation
         public HeldMessageScrollPanel() : base()
         {
             CanalManager.Register<UserMessage>(StreamGlassCanals.HELD_MESSAGE, (int _, object? message) => OnHeldMessage((UserMessage?)message));
+            CanalManager.Register<string>(StreamGlassCanals.HELD_MESSAGE_MODERATED, (int _, object? id) => RemoveHeldMessage((string?)id));
         }
 
         internal double MessageSenderFontSize => m_MessageSenderFontSize;
@@ -48,12 +49,28 @@ namespace StreamGlass.Moderation
         {
             if (message == null)
                 return;
-
             Dispatcher.Invoke((Delegate)(() =>
             {
                 HeldMessage chatMessage = new(this, message, m_MessageSenderWidth, m_MessageSenderFontSize, m_MessageContentFontSize);
                 chatMessage.HeldMessageLabel.Loaded += (sender, e) => UpdateControlsPosition();
                 AddControl(chatMessage);
+            }));
+        }
+
+        private void RemoveHeldMessage(string? messageID)
+        {
+            if (messageID == null)
+                return;
+            Dispatcher.Invoke((Delegate)(() =>
+            {
+                foreach (HeldMessage message in Controls)
+                {
+                    if (message.ID == messageID)
+                    {
+                        RemoveControl(message);
+                        return;
+                    }
+                }
             }));
         }
     }

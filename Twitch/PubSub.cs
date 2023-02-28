@@ -98,6 +98,8 @@ namespace StreamGlass.Twitch
                                 CanalManager.Emit(StreamGlassCanals.HELD_MESSAGE, new UserMessage(sender, false, messageID!, color!, "", GetMessage(messageData!)));
                         }
                     }
+                    else if ((status == "ALLOWED" || status == "DENIED") && message!.TryGet("id", out string? moderatedMessageID))
+                        CanalManager.Emit(StreamGlassCanals.HELD_MESSAGE_MODERATED, moderatedMessageID!);
                 }
             }
         }
@@ -157,16 +159,6 @@ namespace StreamGlass.Twitch
         public override void OnClientDisconnect(int clientID)
         {
             Log.Str("PubSub", "<= Disconnected");
-        }
-
-        public override void OnWebSocketFrame(int clientID, Frame frame)
-        {
-            Log.Str("PubSub", string.Format("<=[WS] {0}", frame.ToString().Trim()));
-        }
-
-        public override void OnWebSocketFrameSent(int clientID, Frame frame)
-        {
-            Log.Str("PubSub", string.Format("[WS]=> {0}", frame.ToString().Trim()));
         }
 
         public void Disconnect() => m_Websocket.Disconnect();

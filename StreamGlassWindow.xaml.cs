@@ -41,6 +41,7 @@ namespace StreamGlass
             CanalManager.NewCanal<string>(StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM);
             CanalManager.NewCanal<BanEventArgs>(StreamGlassCanals.BAN);
             CanalManager.NewCanal<UserMessage>(StreamGlassCanals.HELD_MESSAGE);
+            CanalManager.NewCanal<string>(StreamGlassCanals.HELD_MESSAGE_MODERATED);
             CanalManager.NewCanal<MessageAllowedEventArgs>(StreamGlassCanals.ALLOW_MESSAGE);
             CanalManager.NewCanal(StreamGlassCanals.CHAT_CLEAR);
             CanalManager.NewCanal<string>(StreamGlassCanals.CHAT_CLEAR_USER);

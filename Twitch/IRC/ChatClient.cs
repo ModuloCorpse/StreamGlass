@@ -302,16 +302,6 @@ namespace StreamGlass.Twitch.IRC
             Log.Str("Twitch IRC", string.Format("<=[Error] WebSocket error: {0}", error));
         }
 
-        public override void OnWebSocketFrame(int clientID, Frame frame)
-        {
-            Log.Str("Twitch IRC", string.Format("<=[WS] {0}", frame.ToString().Trim()));
-        }
-
-        public override void OnWebSocketFrameSent(int clientID, Frame frame)
-        {
-            Log.Str("Twitch IRC", string.Format("[WS]=> {0}", frame.ToString().Trim()));
-        }
-
         internal void Disconnect()
         {
             m_CanReconnect = false;

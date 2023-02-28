@@ -87,6 +87,7 @@ namespace StreamGlass.Twitch
             "chat:edit",
             "moderator:manage:automod",
             "moderator:read:automod_settings",
+            "moderator:read:followers",
             "moderator:manage:banned_users",
             "moderator:manage:blocked_terms",
             "moderator:manage:chat_messages",

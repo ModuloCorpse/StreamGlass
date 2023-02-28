@@ -18,6 +18,7 @@
         BAN,
         HELD_MESSAGE,
         ALLOW_MESSAGE,
+        HELD_MESSAGE_MODERATED,
         CHAT_CLEAR,
         CHAT_CLEAR_USER,
         CHAT_CLEAR_MESSAGE

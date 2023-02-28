@@ -26,14 +26,5 @@ namespace StreamGlass.StreamAlert
         public double MessageFontSize { get => AlertMessage.FontSize; }
 
         public void SetMessageFontSize(double fontSize) => AlertMessage.SetFontSize(fontSize);
-
-        private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            AlertMessage.Width = (MessagePanel.ActualWidth - AlertImagePanel.ActualWidth) - 20;
-            Height = AlertMessage.ActualHeight + Margin.Top + Margin.Bottom + AlertMessage.Margin.Top + AlertMessage.Margin.Bottom;
-            if (Height < AlertImage.Height)
-                Height = AlertImage.Height;
-            AlertImagePanel.Height = Height;
-        }
     }
 }

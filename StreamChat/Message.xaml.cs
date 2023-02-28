@@ -89,12 +89,6 @@ namespace StreamGlass.StreamChat
             m_StreamChat.ToggleHighlightedUser(m_Message.UserID);
         }
 
-        private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            MessageContent.Width = (MessagePanel.ActualWidth - MessageSender.ActualWidth) - 20;
-            Height = MessageContent.ActualHeight + Margin.Top + Margin.Bottom + MessageContent.Margin.Top + MessageContent.Margin.Bottom;
-        }
-
         private void BanUser_Click(object _, RoutedEventArgs e)
         {
             User sender = m_Message.Sender;
