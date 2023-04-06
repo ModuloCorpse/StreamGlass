@@ -25,7 +25,12 @@ namespace StreamGlass.Profile
         public void AddCommand(ChatCommand command)
         {
             if (!string.IsNullOrWhiteSpace(command.Name))
-                m_CommandLocation[command.Name] = m_Commands.Count;
+            {
+                int commandLocation = m_Commands.Count;
+                m_CommandLocation[command.Name] = commandLocation;
+                foreach (string alias  in command.Aliases)
+                    m_CommandLocation[alias] = commandLocation;
+            }
             m_Commands.Add(command);
         }
 

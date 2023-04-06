@@ -166,7 +166,6 @@ namespace StreamGlass.Twitch.IRC
                 if (position >= 0)
                 {
                     string data = dataBuffer[..position];
-                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
                     dataBuffer = dataBuffer[(position + 2)..];
                     Message? message = Message.Parse(data, m_API);
                     if (message != null)
@@ -180,6 +179,7 @@ namespace StreamGlass.Twitch.IRC
                                 }
                             case "USERSTATE":
                                 {
+                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
                                     LoadEmoteSets(message);
                                     m_Channel = message.GetCommand().Channel;
                                     CanalManager.Emit(StreamGlassCanals.CHAT_JOINED, m_Channel);
@@ -187,6 +187,7 @@ namespace StreamGlass.Twitch.IRC
                                 }
                             case "JOIN":
                                 {
+                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
                                     if (m_SelfUserInfo?.Name != message.Nick)
                                     {
                                         User? user = m_API.GetUserInfoFromLogin(message.Nick);
@@ -197,6 +198,7 @@ namespace StreamGlass.Twitch.IRC
                                 }
                             case "USERLIST":
                                 {
+                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
                                     string[] users = message.Parameters.Split(' ');
                                     foreach (string userLogin in users)
                                     {
@@ -211,16 +213,19 @@ namespace StreamGlass.Twitch.IRC
                                 }
                             case "PRIVMSG":
                                 {
+                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
                                     CreateUserMessage(message, false, false);
                                     break;
                                 }
                             case "USERNOTICE":
                                 {
+                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
                                     TreatUserNotice(message);
                                     break;
                                 }
                             case "LOGGED":
                                 {
+                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
                                     CanalManager.Emit(StreamGlassCanals.CHAT_CONNECTED);
                                     if (!string.IsNullOrEmpty(m_Channel))
                                         SendMessage(new("JOIN", parameters: m_Channel));
@@ -228,8 +233,14 @@ namespace StreamGlass.Twitch.IRC
                                 }
                             case "GLOBALUSERSTATE":
                                 {
+                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
                                     LoadEmoteSets(message);
                                     m_ChatColor = message.GetTag("color");
+                                    break;
+                                }
+                            default:
+                                {
+                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
                                     break;
                                 }
                         }
@@ -252,7 +263,8 @@ namespace StreamGlass.Twitch.IRC
             try
             {
                 string messageData = message.ToString();
-                Log.Str("Twitch IRC", string.Format("=> {0}", Regex.Replace(messageData.Trim(), "(oauth:).+", "oauth:*****")));
+                if (!messageData.StartsWith("PONG"))
+                    Log.Str("Twitch IRC", string.Format("=> {0}", Regex.Replace(messageData.Trim(), "(oauth:).+", "oauth:*****")));
                 m_Client.Send(messageData);
             }
             catch (Exception e)

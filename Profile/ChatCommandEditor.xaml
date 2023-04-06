@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="clr-namespace:StreamFeedstock.Controls;assembly=StreamFeedstock"
         mc:Ignorable="d"
-        d:DesignHeight="536"
+        d:DesignHeight="631"
         d:DesignWidth="454"
-        Height="536"
+        Height="631"
         Width="454"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -56,6 +56,9 @@
                     <ui:Label x:Name="UserComboBoxLabel" TranslationKey="profile_editor_user" VerticalAlignment="Center" TextAlignment="Right" Text="User:" Width="150"/>
                     <ComboBox Margin="5,0,0,0" x:Name="UserComboBox" Height="26" Width="250"/>
                 </ui:StackPanel>
+                <ui:GroupBox x:Name="AliasesGroupBox" TranslationKey="section_aliases" Header="Aliases">
+                    <ui:EditableList x:Name="AliasesList" Height="75" EditImageSource="../Assets/pencil.png" IsSearchable="False" />
+                </ui:GroupBox>
                 <ui:GroupBox x:Name="SubCommandGroupBox" TranslationKey="section_sub_commands" Header="Sub commands">
                     <ui:EditableList x:Name="SubCommandList" Height="75" EditImageSource="../Assets/pencil.png" IsSearchable="False" />
                 </ui:GroupBox>

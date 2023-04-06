@@ -16,6 +16,7 @@ namespace StreamGlass.Profile
         public static void RemoveFunction(string functionName) => ms_Functions.Remove(functionName);
 
         private readonly string m_Name = "";
+        private readonly string[] m_Aliases = Array.Empty<string>();
         private readonly int m_AwaitTime = 0;
         private readonly int m_NbMessage = 0;
         private readonly string m_Content = "";
@@ -32,6 +33,7 @@ namespace StreamGlass.Profile
         private int m_MessageSinceLastTrigger = 0;
 
         public string Name => m_Name;
+        public string[] Aliases => m_Aliases;
         public int AwaitTime => m_AwaitTime;
         public int NbMessage => m_NbMessage;
         public string Content => m_Content;
@@ -45,6 +47,7 @@ namespace StreamGlass.Profile
         internal ChatCommand(Json json)
         {
             m_Name = json.GetOrDefault("name", "");
+            m_Aliases = json.GetList<string>("aliases").ToArray();
             m_AwaitTime = json.GetOrDefault("time", 0);
             m_NbMessage = json.GetOrDefault("messages", 0);
             m_Content = json.GetOrDefault("content", "");
@@ -58,6 +61,7 @@ namespace StreamGlass.Profile
         }
 
         public ChatCommand(string name,
+            string[] aliases,
             int awaitTime,
             int nbMessage,
             string content,
@@ -69,6 +73,7 @@ namespace StreamGlass.Profile
             string[] autoTriggerArguments)
         {
             m_Name = name;
+            m_Aliases = aliases;
             m_AwaitTime = awaitTime;
             m_NbMessage = nbMessage;
             m_Content = content;
@@ -86,6 +91,8 @@ namespace StreamGlass.Profile
             Json json = new();
             if (!string.IsNullOrWhiteSpace(m_Name))
                 json.Set("name", m_Name);
+            if (m_Aliases.Length > 0)
+                json.Set("aliases", m_Aliases);
             if (m_AwaitTime != 0)
                 json.Set("time", m_AwaitTime);
             if (m_NbMessage != 0)

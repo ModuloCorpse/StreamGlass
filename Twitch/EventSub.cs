@@ -351,7 +351,6 @@ namespace StreamGlass.Twitch
 
         public override void OnWebSocketMessage(int clientID, string message)
         {
-            Log.Str("EventSub", string.Format("<= {0}", message.Trim()));
             if (string.IsNullOrEmpty(message))
                 return;
             try

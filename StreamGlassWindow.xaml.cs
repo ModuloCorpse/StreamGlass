@@ -115,6 +115,7 @@ namespace StreamGlass
             translation.AddTranslation("section_profiles", "Profiles");
             translation.AddTranslation("section_stream_info", "Stream Info");
             translation.AddTranslation("section_commands", "Commands");
+            translation.AddTranslation("section_aliases", "Aliases");
             translation.AddTranslation("section_sub_commands", "Sub Commands");
             translation.AddTranslation("section_auto_trigger", "Auto Trigger");
             translation.AddTranslation("section_default_arguments", "Default Arguments");

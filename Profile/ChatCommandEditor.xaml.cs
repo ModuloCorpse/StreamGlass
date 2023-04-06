@@ -23,6 +23,8 @@ namespace StreamGlass.Profile
             UserComboBox.Items.Add("Streamer");
             UserComboBox.Items.Add("Bot");
             UserComboBox.SelectedIndex = 0;
+            AliasesList.ItemAdded += EditableList_AddString;
+            AliasesList.ItemEdited += EditableList_EditString;
             SubCommandList.ItemAdded += EditableList_AddString;
             SubCommandList.ItemEdited += EditableList_EditString;
             AutoTriggerArguments.ItemAdded += EditableList_AddString;
@@ -32,6 +34,7 @@ namespace StreamGlass.Profile
         public ChatCommandEditor(StreamFeedstock.Controls.Window parent, ChatCommand command): this(parent)
         {
             NameTextBox.Text = command.Name;
+            AliasesList.AddObjects(command.Aliases);
             TimeUpDown.Value = command.AwaitTime;
             NbMessageUpDown.Value = command.NbMessage;
             ContentTextBox.Text = command.Content;
@@ -79,6 +82,7 @@ namespace StreamGlass.Profile
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             string name = NameTextBox.Text;
+            string[] aliases = AliasesList.GetItems().Cast<string>().ToArray();
             int awaitTime = (int)TimeUpDown.Value;
             int nbMessage = (int)NbMessageUpDown.Value;
             string content = ContentTextBox.Text;
@@ -88,7 +92,7 @@ namespace StreamGlass.Profile
             int autoTriggerTime = (int)AutoTriggerTimeUpDown.Value;
             int autoTriggerDeltaTime = (int)AutoTriggerTimeDeltaUpDown.Value;
             string[] autoTriggerArguments = AutoTriggerArguments.GetItems().Cast<string>().ToArray();
-            m_CreatedCommand = new(name, awaitTime, nbMessage, content, userType, commands, autoTrigger, autoTriggerTime, autoTriggerDeltaTime, autoTriggerArguments);
+            m_CreatedCommand = new(name, aliases, awaitTime, nbMessage, content, userType, commands, autoTrigger, autoTriggerTime, autoTriggerDeltaTime, autoTriggerArguments);
             Close();
         }
 
