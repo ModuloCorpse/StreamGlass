@@ -1,5 +1,6 @@
-﻿using StreamFeedstock;
-using StreamFeedstock.ManagedObject;
+﻿using CorpseLib.Json;
+using CorpseLib.ManagedObject;
+using StreamGlass;
 using StreamGlass.Connections;
 using StreamGlass.StreamChat;
 
@@ -14,9 +15,9 @@ namespace StreamGlass.Profile
         public ProfileManager(ConnectionManager client) : base("./profiles")
         {
             m_ConnectionManager = client;
-            CanalManager.Register<UserMessage>(StreamGlassCanals.CHAT_MESSAGE, (int _, object? message) => OnChatMessage((UserMessage?)message));
-            CanalManager.Register<string>(StreamGlassCanals.CHAT_JOINED, (int _, object? channel) => OnJoinedChannel((string?)channel));
-            CanalManager.Register(StreamGlassCanals.STREAM_START, (int _) => OnStreamStart());
+            StreamGlassCanals.CHAT_MESSAGE.Register(OnChatMessage);
+            StreamGlassCanals.CHAT_JOINED.Register(OnJoinedChannel);
+            StreamGlassCanals.STREAM_START.Register(OnStreamStart);
         }
 
         public Profile NewProfile(string name)
@@ -40,11 +41,7 @@ namespace StreamGlass.Profile
 
         public void UpdateStreamInfo() => CurrentObject?.UpdateStreamInfo();
 
-        private void OnStreamStart()
-        {
-            Log.Str("Event", "Stream Started");
-            CurrentObject?.Reset();
-        }
+        private void OnStreamStart() => CurrentObject?.Reset();
 
         private void OnJoinedChannel(string? channel)
         {
@@ -59,7 +56,7 @@ namespace StreamGlass.Profile
         {
             if (SetCurrentObject(id))
                 CurrentObject?.Reset();
-            CanalManager.Emit(StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM, id);
+            StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM.Emit(id);
         }
 
         private void OnChatMessage(UserMessage? message)
@@ -79,7 +76,7 @@ namespace StreamGlass.Profile
             m_NbMessage = 0;
         }
 
-        protected override Profile? DeserializeObject(Json obj)
+        protected override Profile? DeserializeObject(JFile obj)
         {
             Profile newProfile = new(obj);
             return newProfile;

@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using StreamFeedstock;
-using StreamFeedstock.Controls;
+using StreamGlass;
+using StreamGlass.Controls;
 using StreamGlass.Connections;
 
 namespace StreamGlass.StreamAlert
 {
     public partial class AlertControl : UserControl
     {
-        public AlertControl(ConnectionManager connectionManager, BrushPaletteManager palette, TranslationManager translation, Alert alert, double contentFontSize)
+        public AlertControl(ConnectionManager connectionManager, BrushPaletteManager palette, Alert alert, double contentFontSize)
         {
             InitializeComponent();
             BitmapImage bitmap = new();
@@ -20,7 +20,7 @@ namespace StreamGlass.StreamAlert
             AlertMessage.SetText(alert.Message);
             AlertMessage.SetFontSize(contentFontSize);
             MessagePanel.BrushPaletteKey = "chat_background";
-            Update(palette, translation);
+            Update(palette);
         }
 
         public double MessageFontSize { get => AlertMessage.FontSize; }

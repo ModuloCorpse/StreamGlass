@@ -1,4 +1,4 @@
-﻿using StreamFeedstock;
+﻿using StreamGlass;
 using StreamGlass.Events;
 using StreamGlass.StreamChat;
 using System.Globalization;
@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace StreamGlass.Moderation
 {
-    public partial class HeldMessage : StreamFeedstock.Controls.UserControl
+    public partial class HeldMessage : StreamGlass.Controls.UserControl
     {
         private readonly HeldMessageScrollPanel m_Parent;
         private readonly UserMessage m_HeldMessage;
@@ -70,13 +70,13 @@ namespace StreamGlass.Moderation
 
         private void AllowButton_Click(object sender, RoutedEventArgs e)
         {
-            CanalManager.Emit(StreamGlassCanals.ALLOW_MESSAGE, new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, true));
+            StreamGlassCanals.ALLOW_MESSAGE.Emit(new(m_HeldMessage.Sender, m_HeldMessage.ID, true));
             m_Parent.Remove(this);
         }
 
         private void DenyButton_Click(object sender, RoutedEventArgs e)
         {
-            CanalManager.Emit(StreamGlassCanals.ALLOW_MESSAGE, new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, false));
+            StreamGlassCanals.ALLOW_MESSAGE.Emit(new(m_HeldMessage.Sender, m_HeldMessage.ID, false));
             m_Parent.Remove(this);
         }
     }

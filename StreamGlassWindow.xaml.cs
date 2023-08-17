@@ -2,19 +2,18 @@
 using StreamGlass.Profile;
 using StreamGlass.StreamAlert;
 using StreamGlass.StreamChat;
-using StreamFeedstock;
-using StreamFeedstock.Controls;
+using StreamGlass.Controls;
 using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Threading;
 using StreamGlass.Connections;
-using StreamGlass.Events;
+using CorpseLib.Translation;
 
 namespace StreamGlass
 {
-    public partial class StreamGlassWindow : StreamFeedstock.Controls.Window
+    public partial class StreamGlassWindow : Controls.Window
     {
         private readonly Stopwatch m_Watch = new();
         private readonly Settings.Data m_Settings = new();
@@ -23,30 +22,6 @@ namespace StreamGlass
         private readonly ConnectionManager m_ConnectionManager = new();
         private readonly DispatcherTimer m_DispatcherTimer = new();
         private bool m_ChatPanelOnRight = false;
-
-        private static void InitializeCanals()
-        {
-            CanalManager.NewCanal<UserMessage>(StreamGlassCanals.CHAT_MESSAGE);
-            CanalManager.NewCanal(StreamGlassCanals.CHAT_CONNECTED);
-            CanalManager.NewCanal<string>(StreamGlassCanals.CHAT_JOINED);
-            CanalManager.NewCanal<User>(StreamGlassCanals.USER_JOINED);
-            CanalManager.NewCanal<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO);
-            CanalManager.NewCanal(StreamGlassCanals.STREAM_START);
-            CanalManager.NewCanal(StreamGlassCanals.STREAM_STOP);
-            CanalManager.NewCanal<DonationEventArgs>(StreamGlassCanals.DONATION);
-            CanalManager.NewCanal<FollowEventArgs>(StreamGlassCanals.FOLLOW);
-            CanalManager.NewCanal<RaidEventArgs>(StreamGlassCanals.RAID);
-            CanalManager.NewCanal<RewardEventArgs>(StreamGlassCanals.REWARD);
-            CanalManager.NewCanal<CommandEventArgs>(StreamGlassCanals.COMMANDS);
-            CanalManager.NewCanal<string>(StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM);
-            CanalManager.NewCanal<BanEventArgs>(StreamGlassCanals.BAN);
-            CanalManager.NewCanal<UserMessage>(StreamGlassCanals.HELD_MESSAGE);
-            CanalManager.NewCanal<string>(StreamGlassCanals.HELD_MESSAGE_MODERATED);
-            CanalManager.NewCanal<MessageAllowedEventArgs>(StreamGlassCanals.ALLOW_MESSAGE);
-            CanalManager.NewCanal(StreamGlassCanals.CHAT_CLEAR);
-            CanalManager.NewCanal<string>(StreamGlassCanals.CHAT_CLEAR_USER);
-            CanalManager.NewCanal<string>(StreamGlassCanals.CHAT_CLEAR_MESSAGE);
-        }
 
         private static void AddDefaultPalette(ref BrushPalette palette,
             string background,
@@ -96,92 +71,93 @@ namespace StreamGlass
 
         private void InitializeTranslation()
         {
-            TranslationManager translationManager = GetTranslations();
-            Translation translation = translationManager.NewDefaultTranslation(new CultureInfo("en"));
-            translation.AddTranslation("menu_file", "File");
-            translation.AddTranslation("menu_settings", "Settings");
-            translation.AddTranslation("menu_profile", "Profiles");
-            translation.AddTranslation("menu_edit_profile", "Edit profiles...");
-            translation.AddTranslation("menu_help", "Help");
-            translation.AddTranslation("menu_logs", "Logs");
-            translation.AddTranslation("menu_about", "About");
-            translation.AddTranslation("app_name", "Stream Glass");
-            translation.AddTranslation("tab_stream_events", "Events");
-            translation.AddTranslation("tab_stream_overlay", "Overlay");
-            translation.AddTranslation("settings_general_color", "Color Theme:");
-            translation.AddTranslation("settings_general_language", "Language:");
-            translation.AddTranslation("save_button", "Save");
-            translation.AddTranslation("close_button", "Close");
-            translation.AddTranslation("section_profiles", "Profiles");
-            translation.AddTranslation("section_stream_info", "Stream Info");
-            translation.AddTranslation("section_commands", "Commands");
-            translation.AddTranslation("section_aliases", "Aliases");
-            translation.AddTranslation("section_sub_commands", "Sub Commands");
-            translation.AddTranslation("section_auto_trigger", "Auto Trigger");
-            translation.AddTranslation("section_default_arguments", "Default Arguments");
-            translation.AddTranslation("profile_editor_name", "Name:");
-            translation.AddTranslation("profile_editor_parent", "Parent:");
-            translation.AddTranslation("profile_editor_is_selectable", "Is Selectable:");
-            translation.AddTranslation("profile_editor_title", "Title:");
-            translation.AddTranslation("profile_editor_category", "Category:");
-            translation.AddTranslation("profile_editor_description", "Description:");
-            translation.AddTranslation("profile_editor_language", "Language:");
-            translation.AddTranslation("profile_editor_content", "Content:");
-            translation.AddTranslation("profile_editor_time", "Time:");
-            translation.AddTranslation("profile_editor_messages", "Messages Number:");
-            translation.AddTranslation("profile_editor_arguments", "Arguments Number:");
-            translation.AddTranslation("profile_editor_user", "User:");
-            translation.AddTranslation("profile_editor_enable", "Enable:");
-            translation.AddTranslation("profile_editor_time_delta", "Time Delta:");
-            translation.AddTranslation("settings_chat_mode", "Chat Mode:");
-            translation.AddTranslation("settings_chat_name_font", "Name Font Size:");
-            translation.AddTranslation("settings_chat_name_width", "Chat Name Width:");
-            translation.AddTranslation("settings_chat_font", "Chat Font Size:");
-            translation.AddTranslation("settings_chat_right", "Chat Panel On Right:");
-            translation.AddTranslation("settings_chat_do_welcome", "Do Welcome:");
-            translation.AddTranslation("settings_chat_welcome_message", "Welcome Message:");
-            translation.AddTranslation("settings_twitch_autoconnect", "Auto-Connect:");
-            translation.AddTranslation("settings_twitch_connect", "Connect");
-            translation.AddTranslation("settings_twitch_browser", "Browser:");
-            translation.AddTranslation("settings_twitch_channel", "Twitch channel:");
-            translation.AddTranslation("settings_twitch_bot_public", "Bot Public Key:");
-            translation.AddTranslation("settings_twitch_bot_private", "Bot Secret Key:");
-            translation.AddTranslation("settings_twitch_sub_mode", "Sub Mode:");
-            translation.AddTranslation("settings_twitch_search", "Search:");
-            translation.AddTranslation("user_type_none", "Viewer");
-            translation.AddTranslation("user_type_mod", "Moderator");
-            translation.AddTranslation("user_type_global_mod", "Platform Moderator");
-            translation.AddTranslation("user_type_admin", "Platform Administrator");
-            translation.AddTranslation("user_type_staff", "Platform Staff");
-            translation.AddTranslation("user_type_broadcaster", "Streamer");
-            translation.AddTranslation("user_type_self", "Bot");
-            translation.AddTranslation("chat_display_type_ttb", "To bottom");
-            translation.AddTranslation("chat_display_type_rttb", "Reversed to bottom");
-            translation.AddTranslation("chat_display_type_btt", "To top");
-            translation.AddTranslation("chat_display_type_rbtt", "Reversed to top");
-            translation.AddTranslation("sub_mode_claimed", "Claimed");
-            translation.AddTranslation("sub_mode_all", "All");
-            translation.AddTranslation("alert_editor_enable", "Enable:");
-            translation.AddTranslation("alert_editor_image", "Image:");
-            translation.AddTranslation("alert_editor_prefix", "Prefix:");
-            translation.AddTranslation("settings_alert_alerts", "Alerts");
-            translation.AddTranslation("alert_name_inc_raid", "Incomming raid");
-            translation.AddTranslation("alert_name_out_raid", "Outgoing raid");
-            translation.AddTranslation("alert_name_donation", "Donation");
-            translation.AddTranslation("alert_name_reward", "Reward");
-            translation.AddTranslation("alert_name_follow", "Follow");
-            translation.AddTranslation("alert_name_tier1", "Tier 1");
-            translation.AddTranslation("alert_name_tier2", "Tier 2");
-            translation.AddTranslation("alert_name_tier3", "Tier 3");
-            translation.AddTranslation("alert_name_tier4", "Prime/Tier 4");
-            translation.AddTranslation("ban_button", "Ban");
-            translation.AddTranslation("ban_time", "Time (s):");
-            translation.AddTranslation("ban_reason", "Reason:");
-            translation.AddTranslation("message_menu_highlight", "Toggle Highlight");
-            translation.AddTranslation("message_menu_ban", "Ban User");
-            translationManager.Load();
-            StreamChatPanel.SetTranslations(translationManager);
-            StreamAlertPanel.SetTranslations(translationManager);
+            Translation translation = new(new CultureInfo("en-US"), true)
+            {
+                { "menu_file", "File" },
+                { "menu_settings", "Settings" },
+                { "menu_profile", "Profiles" },
+                { "menu_edit_profile", "Edit profiles..." },
+                { "menu_help", "Help" },
+                { "menu_logs", "Logs" },
+                { "menu_about", "About" },
+                { "app_name", "Stream Glass" },
+                { "tab_stream_events", "Events" },
+                { "tab_stream_overlay", "Overlay" },
+                { "settings_general_color", "Color Theme:" },
+                { "settings_general_language", "Language:" },
+                { "save_button", "Save" },
+                { "close_button", "Close" },
+                { "section_profiles", "Profiles" },
+                { "section_stream_info", "Stream Info" },
+                { "section_commands", "Commands" },
+                { "section_aliases", "Aliases" },
+                { "section_sub_commands", "Sub Commands" },
+                { "section_auto_trigger", "Auto Trigger" },
+                { "section_default_arguments", "Default Arguments" },
+                { "profile_editor_name", "Name:" },
+                { "profile_editor_parent", "Parent:" },
+                { "profile_editor_is_selectable", "Is Selectable:" },
+                { "profile_editor_title", "Title:" },
+                { "profile_editor_category", "Category:" },
+                { "profile_editor_description", "Description:" },
+                { "profile_editor_language", "Language:" },
+                { "profile_editor_content", "Content:" },
+                { "profile_editor_time", "Time:" },
+                { "profile_editor_messages", "Messages Number:" },
+                { "profile_editor_arguments", "Arguments Number:" },
+                { "profile_editor_user", "User:" },
+                { "profile_editor_enable", "Enable:" },
+                { "profile_editor_time_delta", "Time Delta:" },
+                { "settings_chat_mode", "Chat Mode:" },
+                { "settings_chat_name_font", "Name Font Size:" },
+                { "settings_chat_name_width", "Chat Name Width:" },
+                { "settings_chat_font", "Chat Font Size:" },
+                { "settings_chat_right", "Chat Panel On Right:" },
+                { "settings_chat_do_welcome", "Do Welcome:" },
+                { "settings_chat_welcome_message", "Welcome Message:" },
+                { "settings_twitch_autoconnect", "Auto-Connect:" },
+                { "settings_twitch_connect", "Connect" },
+                { "settings_twitch_browser", "Browser:" },
+                { "settings_twitch_channel", "Twitch channel:" },
+                { "settings_twitch_bot_public", "Bot Public Key:" },
+                { "settings_twitch_bot_private", "Bot Secret Key:" },
+                { "settings_twitch_sub_mode", "Sub Mode:" },
+                { "settings_twitch_search", "Search:" },
+                { "user_type_none", "Viewer" },
+                { "user_type_mod", "Moderator" },
+                { "user_type_global_mod", "Platform Moderator" },
+                { "user_type_admin", "Platform Administrator" },
+                { "user_type_staff", "Platform Staff" },
+                { "user_type_broadcaster", "Streamer" },
+                { "user_type_self", "Bot" },
+                { "chat_display_type_ttb", "To bottom" },
+                { "chat_display_type_rttb", "Reversed to bottom" },
+                { "chat_display_type_btt", "To top" },
+                { "chat_display_type_rbtt", "Reversed to top" },
+                { "sub_mode_claimed", "Claimed" },
+                { "sub_mode_all", "All" },
+                { "alert_editor_enable", "Enable:" },
+                { "alert_editor_image", "Image:" },
+                { "alert_editor_prefix", "Prefix:" },
+                { "settings_alert_alerts", "Alerts" },
+                { "alert_name_inc_raid", "Incomming raid" },
+                { "alert_name_out_raid", "Outgoing raid" },
+                { "alert_name_donation", "Donation" },
+                { "alert_name_reward", "Reward" },
+                { "alert_name_follow", "Follow" },
+                { "alert_name_tier1", "Tier 1" },
+                { "alert_name_tier2", "Tier 2" },
+                { "alert_name_tier3", "Tier 3" },
+                { "alert_name_tier4", "Prime/Tier 4" },
+                { "ban_button", "Ban" },
+                { "ban_time", "Time (s):" },
+                { "ban_reason", "Reason:" },
+                { "message_menu_highlight", "Toggle Highlight" },
+                { "message_menu_ban", "Ban User" }
+            };
+            Translator.AddTranslation(translation);
+            Translator.LoadDirectory("./locals");
+            Translator.CurrentLanguageChanged += () => m_Settings.Set("settings", "language", Translator.CurrentLanguage.Name);
         }
 
         private void InitializeAlertSetting(AlertScrollPanel.AlertType alertType, string imgPath, string prefix, bool isEnabled)
@@ -193,6 +169,14 @@ namespace StreamGlass
             string loadedPrefix = m_Settings.Get("alert", string.Format("{0}_prefix", alertType));
             bool loadedIsEnabled = m_Settings.Get("alert", string.Format("{0}_enabled", alertType)) == "true";
             StreamAlertPanel.SetAlertInfo(alertType, loadedImgPath, loadedPrefix, loadedIsEnabled);
+
+            m_Settings.Create("alert", string.Format("{0}_gift_path", alertType), imgPath);
+            m_Settings.Create("alert", string.Format("{0}_gift_prefix", alertType), prefix);
+            m_Settings.Create("alert", string.Format("{0}_gift_enabled", alertType), (isEnabled) ? "true" : "false");
+            string giftLoadedImgPath = m_Settings.Get("alert", string.Format("{0}_gift_path", alertType));
+            string giftLoadedPrefix = m_Settings.Get("alert", string.Format("{0}_gift_prefix", alertType));
+            bool giftLoadedIsEnabled = m_Settings.Get("alert", string.Format("{0}_gift_enabled", alertType)) == "true";
+            StreamAlertPanel.SetGiftAlertInfo(alertType, giftLoadedImgPath, giftLoadedPrefix, giftLoadedIsEnabled);
         }
 
         private void InitializeSettings()
@@ -236,11 +220,14 @@ namespace StreamGlass
             HeldMessagePanel.SetSenderWidth(double.Parse(m_Settings.Get("moderation", "sender_size")));
             m_Settings.Create("moderation", "message_font_size", "14");
             HeldMessagePanel.SetContentFontSize(double.Parse(m_Settings.Get("moderation", "message_font_size")));
+
+            //Settings
+            m_Settings.Create("settings", "language", "en-US");
+            Translator.SetLanguage(CultureInfo.GetCultureInfo(m_Settings.Get("settings", "language")));
         }
 
-        public StreamGlassWindow(): base(new(), new())
+        public StreamGlassWindow(): base(new())
         {
-            InitializeCanals();
             InitializeComponent();
             m_Settings.Load();
             InitializeSettings();
@@ -262,6 +249,9 @@ namespace StreamGlass
 
             StreamChatPanel.SetConnectionManager(m_ConnectionManager);
             StreamAlertPanel.SetConnectionManager(m_ConnectionManager);
+
+            //TODO Fix translation still on en-US on bootup
+            Update();
         }
 
         private void UpdateProfilesMenuList()
@@ -270,7 +260,7 @@ namespace StreamGlass
             ProfilesMenu.Items.Add(ProfileMenuEdit);
             ProfilesMenu.Items.Add(ProfilesMenuSeparator);
 
-            CanalManager.Clear(StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM);
+            StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM.Clear();
             var profiles = m_Manager.Objects;
             foreach (var profile in profiles)
             {
@@ -280,7 +270,7 @@ namespace StreamGlass
                     ProfilesMenu.Items.Add(item);
                 }
             }
-            ProfilesMenu.Update(GetBrushPalette(), GetTranslations());
+            ProfilesMenu.Update(GetBrushPalette());
         }
 
         public bool IsChatPanelOnRight => m_ChatPanelOnRight;
@@ -309,14 +299,13 @@ namespace StreamGlass
         {
             base.OnClosed(e);
             GetBrushPalette().Save();
-            GetTranslations().Save();
+            Translator.SaveToDir("./locals");
             m_Settings.Save();
             m_Manager.Save();
             m_ConnectionManager.Disconnect();
             m_Watch.Stop();
             m_DispatcherTimer.Stop();
             m_WebServer.Stop();
-            Log.Stop();
             Application.Current.Shutdown();
         }
 
@@ -330,17 +319,11 @@ namespace StreamGlass
         private void SettingsToolStripMenuItem_Click(object sender, RoutedEventArgs e)
         {
             Settings.Dialog dialog = new(this);
-            dialog.AddTabItem(new GeneralSettingsItem(m_Settings, GetBrushPalette(), GetTranslations()));
+            dialog.AddTabItem(new GeneralSettingsItem(m_Settings, GetBrushPalette()));
             dialog.AddTabItem(new StreamChatSettingsItem(m_Settings, StreamChatPanel, this));
             dialog.AddTabItem(new StreamAlertSettingsItem(m_Settings, StreamAlertPanel));
             m_ConnectionManager.FillSettings(dialog);
             dialog.ShowDialog();
-        }
-
-        private void LogsToolStripMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            LogWindow logWindow = new(this, "Twitch IRC");
-            logWindow.ShowDialog();
         }
 
         private void StreamGlassForm_Tick(object? sender, EventArgs e)
@@ -383,14 +366,15 @@ namespace StreamGlass
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             m_ConnectionManager.Test();
-            CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 0, false, 69, 42, -1));
-            CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 1, false, 69, 42, -1));
-            CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 2, false, 69, 42, -1));
-            CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 3, false, 69, 42, -1));
-            CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 4, false, 69, 42, -1));
-            CanalManager.Emit(StreamGlassCanals.DONATION, new DonationEventArgs("Jean-Michel Jarre", 666, "bits", new("J'aime le Pop-Corn")));
-            CanalManager.Emit(StreamGlassCanals.RAID, new RaidEventArgs("", "Jean-Michel Jarre", "", "Capterge", 40, true));
-            CanalManager.Emit(StreamGlassCanals.REWARD, new RewardEventArgs("", "Jean-Michel Jarre", "Chante", "J'aime le Pop-Corn"));
+            StreamGlassCanals.FOLLOW.Emit(new("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 0, 69, 42));
+            StreamGlassCanals.FOLLOW.Emit(new("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 1, 69, 42));
+            StreamGlassCanals.FOLLOW.Emit(new("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 2, 69, 42));
+            StreamGlassCanals.FOLLOW.Emit(new("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 3, 69, 42));
+            StreamGlassCanals.FOLLOW.Emit(new("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 4, 69, 42));
+            StreamGlassCanals.GIFT_FOLLOW.Emit(new("Capterge", "Jean-Michel Jarre", new("Il aime le Pop-Corn"), 1, 69, 42, -1));
+            StreamGlassCanals.DONATION.Emit(new("Jean-Michel Jarre", 666, "bits", new("J'aime le Pop-Corn")));
+            StreamGlassCanals.RAID.Emit(new("", "Jean-Michel Jarre", "", "Capterge", 40, true));
+            StreamGlassCanals.REWARD.Emit(new("", "Jean-Michel Jarre", "Chante", "J'aime le Pop-Corn"));
         }
     }
 }

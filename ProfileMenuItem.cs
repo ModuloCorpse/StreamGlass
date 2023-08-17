@@ -1,5 +1,5 @@
-﻿using StreamFeedstock;
-using StreamFeedstock.Controls;
+﻿using StreamGlass;
+using StreamGlass.Controls;
 using StreamGlass.Profile;
 using System;
 using System.Windows;
@@ -19,7 +19,7 @@ namespace StreamGlass
             Click += ProfileMenuItem_Click;
             if (m_Manager.CurrentObjectID == m_ProfileID)
                 IsChecked = true;
-            CanalManager.Register<string>(StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM, (int _, object? obj) => Dispatcher.Invoke((Delegate)(() => IsChecked = ((string)obj! == m_ProfileID))));
+            StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM.Register((string? obj) => Dispatcher.Invoke((Delegate)(() => IsChecked = (obj == m_ProfileID))));
         }
 
         private void ProfileMenuItem_Click(object sender, RoutedEventArgs e)

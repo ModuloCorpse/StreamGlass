@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using TabItem = StreamFeedstock.Controls.TabItem;
+using TabItem = StreamGlass.Controls.TabItem;
 
 namespace StreamGlass.Settings
 {
-    public partial class Dialog : StreamFeedstock.Controls.Dialog
+    public partial class Dialog : StreamGlass.Controls.Dialog
     {
         private readonly List<TabItemContent> m_TabItems = new();
 
@@ -19,7 +19,7 @@ namespace StreamGlass.Settings
         public void AddTabItem(TabItemContent item)
         {
             item.SetSettingDialog(this);
-            item.UpdateTabItemColorPalette(GetBrushPalette(), GetTranslations());
+            item.UpdateTabItemColorPalette(GetBrushPalette());
             TabItem tabItem = new()
             {
                 Header = new Image()

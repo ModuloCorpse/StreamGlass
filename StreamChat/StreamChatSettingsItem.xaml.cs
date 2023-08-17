@@ -1,8 +1,8 @@
 ﻿using StreamGlass.Settings;
-using StreamFeedstock.Controls;
+using StreamGlass.Controls;
 using System.Windows;
 using System.Windows.Controls;
-using StreamFeedstock;
+using CorpseLib.Translation;
 
 namespace StreamGlass.StreamChat
 {
@@ -38,29 +38,21 @@ namespace StreamGlass.StreamChat
             AddControlLink("welcome_message", new TextBoxUserControlLink(WelcomeMessageTextBox));
         }
 
-        private void AddUserType(TranslationManager translation, string key, string defaultVal)
-        {
-            if (translation.TryGetTranslation(key, out var ret))
-                ChatModeComboBox.Items.Add(ret);
-            else
-                ChatModeComboBox.Items.Add(defaultVal);
-        }
-
-        private void TranslateComboBox(TranslationManager translation)
+        private void TranslateComboBox()
         {
             int selectedIndex = ChatModeComboBox.SelectedIndex;
             ChatModeComboBox.Items.Clear();
-            AddUserType(translation, "chat_display_type_ttb", "To bottom");
-            AddUserType(translation, "chat_display_type_rttb", "Reversed to bottom");
-            AddUserType(translation, "chat_display_type_btt", "To top");
-            AddUserType(translation, "chat_display_type_rbtt", "Reversed to top");
+            ChatModeComboBox.Items.Add(Translator.Translate("${chat_display_type_ttb}"));
+            ChatModeComboBox.Items.Add(Translator.Translate("${chat_display_type_rttb}"));
+            ChatModeComboBox.Items.Add(Translator.Translate("${chat_display_type_btt}"));
+            ChatModeComboBox.Items.Add(Translator.Translate("${chat_display_type_rbtt}"));
             ChatModeComboBox.SelectedIndex = selectedIndex;
         }
 
-        protected override void OnUpdate(BrushPaletteManager palette, TranslationManager translation)
+        protected override void OnUpdate(BrushPaletteManager palette)
         {
-            base.OnUpdate(palette, translation);
-            TranslateComboBox(translation);
+            base.OnUpdate(palette);
+            TranslateComboBox();
         }
 
         private void ChatModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

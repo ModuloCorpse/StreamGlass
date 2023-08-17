@@ -1,6 +1,5 @@
-﻿using StreamFeedstock.StructuredText;
+﻿using CorpseLib.StructuredText;
 using System;
-using System.Collections.Generic;
 
 namespace StreamGlass.StreamChat
 {

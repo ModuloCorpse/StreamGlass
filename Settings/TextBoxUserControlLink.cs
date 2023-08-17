@@ -1,4 +1,4 @@
-﻿using StreamFeedstock.Controls;
+﻿using StreamGlass.Controls;
 
 namespace StreamGlass.Settings
 {

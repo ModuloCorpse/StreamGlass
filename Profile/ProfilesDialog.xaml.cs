@@ -1,4 +1,4 @@
-﻿using StreamFeedstock.Controls;
+﻿using StreamGlass.Controls;
 using System;
 using System.Windows;
 using StreamGlass.Connections;
@@ -10,7 +10,7 @@ namespace StreamGlass.Profile
         private readonly ProfileManager m_ProfileManager;
         private readonly ConnectionManager m_ConnectionManager;
 
-        public ProfilesDialog(StreamFeedstock.Controls.Window parent, ProfileManager manager, ConnectionManager connectionManager): base(parent)
+        public ProfilesDialog(StreamGlass.Controls.Window parent, ProfileManager manager, ConnectionManager connectionManager): base(parent)
         {
             m_ProfileManager = manager;
             m_ConnectionManager = connectionManager;

@@ -2,14 +2,14 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using StreamFeedstock;
-using StreamFeedstock.Controls;
+using StreamGlass;
+using StreamGlass.Controls;
 using StreamGlass.Connections;
 using StreamGlass.Events;
 
 namespace StreamGlass.StreamChat
 {
-    public partial class Message : StreamFeedstock.Controls.UserControl
+    public partial class Message : StreamGlass.Controls.UserControl
     {
         private readonly UserMessageScrollPanel m_StreamChat;
         private readonly UserMessage m_Message;
@@ -33,7 +33,7 @@ namespace StreamGlass.StreamChat
             return fontSize;
         }
 
-        public Message(UserMessageScrollPanel streamChatPanel, ConnectionManager connectionManager, BrushPaletteManager palette, TranslationManager translation, UserMessage message, bool isHighligted, double senderWidth, double senderFontSize, double contentFontSize)
+        public Message(UserMessageScrollPanel streamChatPanel, ConnectionManager connectionManager, BrushPaletteManager palette, UserMessage message, bool isHighligted, double senderWidth, double senderFontSize, double contentFontSize)
         {
             InitializeComponent();
             m_StreamChat = streamChatPanel;
@@ -59,7 +59,7 @@ namespace StreamGlass.StreamChat
             }
             else
                 MessagePanel.BrushPaletteKey = "chat_background";
-            Update(palette, translation);
+            Update(palette);
         }
 
         public string UserID => m_Message.UserID;
@@ -98,7 +98,7 @@ namespace StreamGlass.StreamChat
             dialog.ShowDialog();
             BanEventArgs? args = dialog.Event;
             if (args != null)
-                CanalManager.Emit(StreamGlassCanals.BAN, args);
+                StreamGlassCanals.BAN.Emit(args);
         }
     }
 }

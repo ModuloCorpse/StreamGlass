@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using CorpseLib.ManagedObject;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using StreamFeedstock;
-using StreamFeedstock.ManagedObject;
+using StreamGlass;
 using StreamGlass.Connections;
 using StreamGlass.StreamChat;
+using CorpseLib.Json;
 
 namespace StreamGlass.Profile
 {
@@ -17,7 +18,7 @@ namespace StreamGlass.Profile
 
         public Profile(string name) : base(name) {}
         public Profile(string id, string name) : base(id, name) {}
-        internal Profile(Json json) : base(json) {}
+        internal Profile(JFile json) : base(json) {}
 
         public ReadOnlyCollection<ChatCommand> Commands => m_Commands.AsReadOnly();
         public bool IsSelectable => m_IsSelectable;
@@ -138,11 +139,11 @@ namespace StreamGlass.Profile
         public string GetStreamLanguage() => m_StreamInfo.GetStreamLanguage();
         public void SaveStreamInfo(string title, string description, CategoryInfo category, string language) => m_StreamInfo.SaveStreamInfo(title, description, category, language);
 
-        internal void UpdateStreamInfo() => CanalManager.Emit(StreamGlassCanals.UPDATE_STREAM_INFO, new UpdateStreamInfoArgs(GetStreamTitleOrParent(), GetStreamDescriptionOrParent(), GetStreamCategoryOrParent(), GetStreamLanguageOrParent()));
+        internal void UpdateStreamInfo() => StreamGlassCanals.UPDATE_STREAM_INFO.Emit(new(GetStreamTitleOrParent(), GetStreamDescriptionOrParent(), GetStreamCategoryOrParent(), GetStreamLanguageOrParent()));
 
-        protected override void Save(ref Json json)
+        protected override void Save(ref JFile json)
         {
-            List<Json> chatCommandArray = new();
+            List<JObject> chatCommandArray = new();
             foreach (var command in m_Commands)
                 chatCommandArray.Add(command.Serialize());
             json.Set("chat_commands", chatCommandArray);
@@ -150,10 +151,10 @@ namespace StreamGlass.Profile
             m_StreamInfo.Save(ref json);
         }
 
-        protected override void Load(Json json)
+        protected override void Load(JFile json)
         {
             m_IsSelectable = json.GetOrDefault("is_selectable", true);
-            foreach (Json obj in json.GetList<Json>("chat_commands"))
+            foreach (JObject obj in json.GetList<JObject>("chat_commands"))
                 AddCommand(new(obj));
             m_StreamInfo.Load(json);
         }

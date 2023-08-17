@@ -1,4 +1,5 @@
-﻿using StreamFeedstock;
+﻿using CorpseLib.Json;
+using StreamGlass;
 using System.Collections.Generic;
 using System.IO;
 
@@ -12,12 +13,15 @@ namespace StreamGlass.Settings
         {
             if (File.Exists("settings.json"))
             {
-                Json response = Json.LoadFromFile("settings.json");
-                foreach (var item in response.ToDictionary<Json>())
+                JFile response = JFile.LoadFromFile("settings.json");
+                foreach (var item in response)
                 {
                     string key = item.Key;
-                    Json value = item.Value;
-                    m_Settings[key] = value.ToDictionary<string>();
+                    JObject value = item.Value.Cast<JObject>()!;
+                    Dictionary<string, string> setting = new();
+                    foreach (var item2 in value)
+                        setting[item2.Key] = item2.Value.Cast<string>()!;
+                    m_Settings[key] = setting;
                 }
             }
         }
@@ -49,11 +53,12 @@ namespace StreamGlass.Settings
 
         public void Save()
         {
-            Json json = new();
+            JFile json = new();
             foreach (var setting in m_Settings)
             {
-                Json section = new();
-                section.Set(setting.Value);
+                JObject section = new();
+                foreach(var item in setting.Value)
+                    section.Set(item.Key, item.Value);
                 json.Set(setting.Key, section);
             }
             json.WriteToFile("settings.json");

@@ -1,7 +1,7 @@
-﻿using StreamFeedstock;
-using StreamFeedstock.Placeholder;
+﻿using CorpseLib.Json;
+using CorpseLib.Placeholder;
+using StreamGlass;
 using StreamGlass.Connections;
-using StreamGlass.StreamChat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,9 +10,9 @@ namespace StreamGlass.Profile
 {
     public class ChatCommand
     {
-        private static readonly Dictionary<string, Context.Function> ms_Functions = new();
+        private static readonly Dictionary<string, AFunctionalContext.Function> ms_Functions = new();
 
-        public static void AddFunction(string functionName, Context.Function fct) => ms_Functions[functionName] = fct;
+        public static void AddFunction(string functionName, AFunctionalContext.Function fct) => ms_Functions[functionName] = fct;
         public static void RemoveFunction(string functionName) => ms_Functions.Remove(functionName);
 
         private readonly string m_Name = "";
@@ -44,13 +44,13 @@ namespace StreamGlass.Profile
         public int AutoTriggerDeltaTime => m_AutoTriggerDeltaTime;
         public string[] AutoTriggerArguments => m_AutoTriggerArguments;
 
-        internal ChatCommand(Json json)
+        internal ChatCommand(JObject json)
         {
-            m_Name = json.GetOrDefault("name", "");
+            m_Name = json.GetOrDefault("name", "")!;
             m_Aliases = json.GetList<string>("aliases").ToArray();
             m_AwaitTime = json.GetOrDefault("time", 0);
             m_NbMessage = json.GetOrDefault("messages", 0);
-            m_Content = json.GetOrDefault("content", "");
+            m_Content = json.GetOrDefault("content", "")!;
             m_UserType = json.GetOrDefault("user", User.Type.SELF);
             m_Commands = json.GetList<string>("commands");
             //AutoTrigger
@@ -86,9 +86,9 @@ namespace StreamGlass.Profile
             Reset();
         }
 
-        internal Json Serialize()
+        internal JObject Serialize()
         {
-            Json json = new();
+            JObject json = new();
             if (!string.IsNullOrWhiteSpace(m_Name))
                 json.Set("name", m_Name);
             if (m_Aliases.Length > 0)
@@ -151,7 +151,7 @@ namespace StreamGlass.Profile
                     context.AddVariable(string.Format("${0}", i), arguments[i]);
                 string contentToSend = Converter.Convert(m_Content, context);
                 connectionManager.SendMessage(channel, contentToSend);
-                CanalManager.Emit(StreamGlassCanals.COMMANDS, new CommandEventArgs(m_Name, arguments));
+                StreamGlassCanals.COMMANDS.Emit(new(m_Name, arguments));
                 Reset();
             }
         }

@@ -1,8 +1,7 @@
 ﻿using Quicksand.Web;
 using StreamGlass.Profile;
-using StreamFeedstock.Controls;
+using StreamGlass.Controls;
 using ChatClient = StreamGlass.Twitch.IRC.ChatClient;
-using StreamFeedstock;
 using StreamGlass.Http;
 using StreamGlass.Connections;
 using StreamGlass.Settings;
@@ -42,12 +41,12 @@ namespace StreamGlass.Twitch
 
         protected override void BeforeConnect()
         {
-            CanalManager.Register(StreamGlassCanals.CHAT_CONNECTED, OnConnected);
-            CanalManager.Register<string>(StreamGlassCanals.CHAT_JOINED, OnJoinedChannel);
-            CanalManager.Register<User>(StreamGlassCanals.USER_JOINED, OnUserJoinedChannel);
-            CanalManager.Register<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
-            CanalManager.Register<BanEventArgs>(StreamGlassCanals.BAN, BanUser);
-            CanalManager.Register<MessageAllowedEventArgs>(StreamGlassCanals.ALLOW_MESSAGE, AllowMessage);
+            StreamGlassCanals.CHAT_CONNECTED.Register(OnConnected);
+            StreamGlassCanals.CHAT_JOINED.Register(OnJoinedChannel);
+            StreamGlassCanals.USER_JOINED.Register(OnUserJoinedChannel);
+            StreamGlassCanals.UPDATE_STREAM_INFO.Register(SetStreamInfo);
+            StreamGlassCanals.BAN.Register(BanUser);
+            StreamGlassCanals.ALLOW_MESSAGE.Register(AllowMessage);
 
             ChatCommand.AddFunction("Game", (string[] variables) => {
                 var channelInfo = m_API.GetChannelInfo(variables[0]);
@@ -126,12 +125,12 @@ namespace StreamGlass.Twitch
 
         protected override void AfterDisconnect()
         {
-            CanalManager.Unregister(StreamGlassCanals.CHAT_CONNECTED, OnConnected);
-            CanalManager.Unregister<string>(StreamGlassCanals.CHAT_JOINED, OnJoinedChannel);
-            CanalManager.Unregister<User>(StreamGlassCanals.USER_JOINED, OnUserJoinedChannel);
-            CanalManager.Unregister<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
-            CanalManager.Unregister<BanEventArgs>(StreamGlassCanals.BAN, BanUser);
-            CanalManager.Unregister<MessageAllowedEventArgs>(StreamGlassCanals.ALLOW_MESSAGE, AllowMessage);
+            StreamGlassCanals.CHAT_CONNECTED.Unregister(OnConnected);
+            StreamGlassCanals.CHAT_JOINED.Unregister(OnJoinedChannel);
+            StreamGlassCanals.USER_JOINED.Unregister(OnUserJoinedChannel);
+            StreamGlassCanals.UPDATE_STREAM_INFO.Unregister(SetStreamInfo);
+            StreamGlassCanals.BAN.Unregister(BanUser);
+            StreamGlassCanals.ALLOW_MESSAGE.Unregister(AllowMessage);
             ChatCommand.RemoveFunction("Game");
             ChatCommand.RemoveFunction("DisplayName");
             ChatCommand.RemoveFunction("Channel");
@@ -139,18 +138,17 @@ namespace StreamGlass.Twitch
 
         public override TabItemContent[] GetSettings() => new TabItemContent[] { new TwitchSettingsItem(Settings, this) };
 
-        private void OnConnected(int _)
+        private void OnConnected()
         {
             User selfUserInfo = m_API.GetSelfUserInfo();
             if (!string.IsNullOrEmpty(selfUserInfo.Name))
                 m_Client.Join(selfUserInfo.Name);
         }
 
-        private void OnJoinedChannel(int _, object? arg)
+        private void OnJoinedChannel(string? channel)
         {
-            if (arg == null)
+            if (channel == null)
                 return;
-            string channel = (string)arg!;
             if (m_Channel != channel)
             {
                 m_Channel = channel;
@@ -170,11 +168,10 @@ namespace StreamGlass.Twitch
             m_PubSub.Update(deltaTime);
         }
 
-        private void OnUserJoinedChannel(int _, object? arg)
+        private void OnUserJoinedChannel(User? user)
         {
-            if (arg == null)
+            if (user == null)
                 return;
-            User user = (User)arg!;
             m_API.LoadEmoteSetFromFollowedChannel(user);
         }
 
@@ -191,16 +188,15 @@ namespace StreamGlass.Twitch
                 m_API.SetChannelInfo(m_OriginalBroadcasterChannelInfo.Broadcaster, m_OriginalBroadcasterChannelInfo.Title, m_OriginalBroadcasterChannelInfo.GameID, m_OriginalBroadcasterChannelInfo.BroadcasterLanguage);
         }
 
-        private void SetStreamInfo(int _, object? arg)
+        private void SetStreamInfo(UpdateStreamInfoArgs? arg)
         {
             if (arg == null)
                 return;
-            UpdateStreamInfoArgs args = (UpdateStreamInfoArgs)arg!;
             if (m_OriginalBroadcasterChannelInfo != null)
             {
-                string title = (string.IsNullOrWhiteSpace(args.Title)) ? m_OriginalBroadcasterChannelInfo.Title : args.Title;
-                string category = (string.IsNullOrWhiteSpace(args.Category.ID)) ? m_OriginalBroadcasterChannelInfo.GameID : args.Category.ID;
-                string language = (string.IsNullOrWhiteSpace(args.Language)) ? m_OriginalBroadcasterChannelInfo.BroadcasterLanguage : args.Language;
+                string title = (string.IsNullOrWhiteSpace(arg.Title)) ? m_OriginalBroadcasterChannelInfo.Title : arg.Title;
+                string category = (string.IsNullOrWhiteSpace(arg.Category.ID)) ? m_OriginalBroadcasterChannelInfo.GameID : arg.Category.ID;
+                string language = (string.IsNullOrWhiteSpace(arg.Language)) ? m_OriginalBroadcasterChannelInfo.BroadcasterLanguage : arg.Language;
                 m_API.SetChannelInfo(m_OriginalBroadcasterChannelInfo.Broadcaster, title, category, language);
             }
         }
@@ -221,20 +217,18 @@ namespace StreamGlass.Twitch
             m_PubSub.OnWebSocketMessage(0, heldMessage);
         }
 
-        private void BanUser(int _, object? arg)
+        private void BanUser(BanEventArgs? arg)
         {
             if (arg == null)
                 return;
-            BanEventArgs args = (BanEventArgs)arg!;
-            m_API.BanUser(args.User, args.Reason, args.Delay);
+            m_API.BanUser(arg.User, arg.Reason, arg.Delay);
         }
 
-        private void AllowMessage(int _, object? arg)
+        private void AllowMessage(MessageAllowedEventArgs? arg)
         {
             if (arg == null)
                 return;
-            MessageAllowedEventArgs args = (MessageAllowedEventArgs)arg!;
-            m_API.ManageHeldMessage(args.Sender.ID, args.MessageID, args.IsAllowed);
+            m_API.ManageHeldMessage(arg.MessageID, arg.IsAllowed);
         }
     }
 }

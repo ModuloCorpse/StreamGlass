@@ -1,21 +1,20 @@
-﻿using Quicksand.Web;
-using Quicksand.Web.WebSocket;
-using StreamFeedstock;
-using StreamFeedstock.StructuredText;
-using StreamGlass.Events;
+﻿using CorpseLib.Logging;
+using CorpseLib.StructuredText;
+using Quicksand.Web;
+using StreamGlass;
 using StreamGlass.Http;
-using StreamGlass.StreamChat;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using static StreamGlass.StreamChat.UserMessage;
 
 namespace StreamGlass.Twitch.IRC
 {
     public class ChatClient: AClientListener
     {
+        public static readonly Logger TWITCH_IRC = new("[${d}-${M}-${y} ${h}:${m}:${s}.${ms}] ${log}") { new LogInFile("./log/${y}${M}${d}${h}-Twitch IRC.log") };
+
         private static readonly List<string> ms_Colors = new()
         {
             "#ff0000",
@@ -47,6 +46,7 @@ namespace StreamGlass.Twitch.IRC
 
         public ChatClient(API api, Settings.Data settings)
         {
+            TWITCH_IRC.Start();
             m_API = api;
             m_Settings = settings;
             m_Client = new(this, "wss://irc-ws.chat.twitch.tv:443");
@@ -100,13 +100,13 @@ namespace StreamGlass.Twitch.IRC
             User.Type userType = m_API.GetUserType(self, message.GetTag("mod") == "1", message.GetTag("user-type"), userID);
             User user = new(userID, message.Nick, displayName, userType);
             Text displayableMessage = Helper.Convert(m_API, message.Parameters, message.Emotes);
-            CanalManager.Emit(StreamGlassCanals.CHAT_MESSAGE, new UserMessage(user, highlight, message.GetTag("id"),
+            StreamGlassCanals.CHAT_MESSAGE.Emit(new(user, highlight, message.GetTag("id"),
                 GetUserMessageColor(displayName, (self) ? m_ChatColor : message.GetTag("color")),
                 message.GetCommand().Channel, displayableMessage));
             if (message.HaveTag("bits"))
             {
                 int bits = int.Parse(message.GetTag("bits"));
-                CanalManager.Emit(StreamGlassCanals.DONATION, new DonationEventArgs(displayName, bits!, "Bits", displayableMessage));
+                StreamGlassCanals.DONATION.Emit(new(displayName, bits!, "Bits", displayableMessage));
             }
         }
 
@@ -140,7 +140,36 @@ namespace StreamGlass.Twitch.IRC
                         bool shareStreakMonth = message.GetTag("msg-param-cumulative-months") == "1";
                         int streakMonth = (message.HaveTag("msg-param-streak-months")) ? int.Parse(message.GetTag("msg-param-streak-months")) : -1;
                         Text displayableMessage = Helper.Convert(m_API, message.Parameters, message.Emotes);
-                        CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs(username, displayableMessage, followTier, false, cumulativeMonth, (shareStreakMonth) ? streakMonth : -1, -1));
+                        StreamGlassCanals.FOLLOW.Emit(new(username, displayableMessage, followTier, cumulativeMonth, (shareStreakMonth) ? streakMonth : -1));
+                    }
+                }
+                else if (noticeType == "subgift")
+                {
+                    if (message.HaveTag("msg-param-sub-plan") &&
+                        message.HaveTag("msg-param-gift-months") &&
+                        message.HaveTag("msg-param-months") &&
+                        message.HaveTag("msg-param-recipient-display-name") &&
+                        message.HaveTag("msg-param-recipient-user-name"))
+                    {
+                        string username = message.GetTag("display-name");
+                        if (string.IsNullOrEmpty(username))
+                            username = message.Nick;
+                        int followTier;
+                        switch (message.GetTag("msg-param-sub-plan"))
+                        {
+                            case "1000": followTier = 1; break;
+                            case "2000": followTier = 2; break;
+                            case "3000": followTier = 3; break;
+                            case "Prime": followTier = 4; break;
+                            default: return;
+                        }
+                        string recipientName = message.GetTag("msg-param-recipient-display-name");
+                        if (string.IsNullOrEmpty(recipientName))
+                            recipientName = message.GetTag("msg-param-recipient-user-name");
+                        int monthGifted = int.Parse(message.GetTag("msg-param-gift-months"));
+                        int cumulativeMonth = int.Parse(message.GetTag("msg-param-months"));
+                        Text displayableMessage = Helper.Convert(m_API, message.Parameters, message.Emotes);
+                        StreamGlassCanals.GIFT_FOLLOW.Emit(new(recipientName, username, displayableMessage, followTier, monthGifted, cumulativeMonth, 1));
                     }
                 }
             }
@@ -179,26 +208,26 @@ namespace StreamGlass.Twitch.IRC
                                 }
                             case "USERSTATE":
                                 {
-                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
+                                    TWITCH_IRC.Log(string.Format("<= {0}", data));
                                     LoadEmoteSets(message);
                                     m_Channel = message.GetCommand().Channel;
-                                    CanalManager.Emit(StreamGlassCanals.CHAT_JOINED, m_Channel);
+                                    StreamGlassCanals.CHAT_JOINED.Emit(m_Channel);
                                     break;
                                 }
                             case "JOIN":
                                 {
-                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
+                                    TWITCH_IRC.Log(string.Format("<= {0}", data));
                                     if (m_SelfUserInfo?.Name != message.Nick)
                                     {
                                         User? user = m_API.GetUserInfoFromLogin(message.Nick);
                                         if (user != null)
-                                            CanalManager.Emit(StreamGlassCanals.USER_JOINED, user);
+                                            StreamGlassCanals.USER_JOINED.Emit(user);
                                     }
                                     break;
                                 }
                             case "USERLIST":
                                 {
-                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
+                                    TWITCH_IRC.Log(string.Format("<= {0}", data));
                                     string[] users = message.Parameters.Split(' ');
                                     foreach (string userLogin in users)
                                     {
@@ -206,41 +235,41 @@ namespace StreamGlass.Twitch.IRC
                                         {
                                             User? user = m_API.GetUserInfoFromLogin(userLogin);
                                             if (user != null)
-                                                CanalManager.Emit(StreamGlassCanals.USER_JOINED, user);
+                                                StreamGlassCanals.USER_JOINED.Emit(user);
                                         }
                                     }
                                     break;
                                 }
                             case "PRIVMSG":
                                 {
-                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
+                                    TWITCH_IRC.Log(string.Format("<= {0}", data));
                                     CreateUserMessage(message, false, false);
                                     break;
                                 }
                             case "USERNOTICE":
                                 {
-                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
+                                    TWITCH_IRC.Log(string.Format("<= {0}", data));
                                     TreatUserNotice(message);
                                     break;
                                 }
                             case "LOGGED":
                                 {
-                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
-                                    CanalManager.Emit(StreamGlassCanals.CHAT_CONNECTED);
+                                    TWITCH_IRC.Log(string.Format("<= {0}", data));
+                                    StreamGlassCanals.CHAT_CONNECTED.Trigger();
                                     if (!string.IsNullOrEmpty(m_Channel))
                                         SendMessage(new("JOIN", parameters: m_Channel));
                                     break;
                                 }
                             case "GLOBALUSERSTATE":
                                 {
-                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
+                                    TWITCH_IRC.Log(string.Format("<= {0}", data));
                                     LoadEmoteSets(message);
                                     m_ChatColor = message.GetTag("color");
                                     break;
                                 }
                             default:
                                 {
-                                    Log.Str("Twitch IRC", string.Format("<= {0}", data));
+                                    TWITCH_IRC.Log(string.Format("<= {0}", data));
                                     break;
                                 }
                         }
@@ -264,24 +293,24 @@ namespace StreamGlass.Twitch.IRC
             {
                 string messageData = message.ToString();
                 if (!messageData.StartsWith("PONG"))
-                    Log.Str("Twitch IRC", string.Format("=> {0}", Regex.Replace(messageData.Trim(), "(oauth:).+", "oauth:*****")));
+                    TWITCH_IRC.Log(string.Format("=> {0}", Regex.Replace(messageData.Trim(), "(oauth:).+", "oauth:*****")));
                 m_Client.Send(messageData);
             }
             catch (Exception e)
             {
-                Log.Str("Twitch IRC", string.Format("On send exception: {0}", e));
+                TWITCH_IRC.Log(string.Format("On send exception: {0}", e));
             }
         }
 
         private async Task TryReconnect()
         {
-            Log.Str("Twitch IRC", "Trying to reconnect");
+            TWITCH_IRC.Log("Trying to reconnect");
             var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(15));
             while (await periodicTimer.WaitForNextTickAsync())
             {
                 if (m_Client.Connect())
                 {
-                    Log.Str("Twitch IRC", "Reconnected");
+                    TWITCH_IRC.Log("Reconnected");
                     return;
                 }
             }
@@ -289,7 +318,7 @@ namespace StreamGlass.Twitch.IRC
 
         public override void OnClientDisconnect(int clientID)
         {
-            Log.Str("Twitch IRC", "Disconnecting");
+            TWITCH_IRC.Log("Disconnecting");
             if (m_CanReconnect && m_Settings.Get("twitch", "auto_connect") == "true")
                 _ = TryReconnect();
         }
@@ -306,12 +335,12 @@ namespace StreamGlass.Twitch.IRC
 
         public override void OnWebSocketClose(int clientID, short code, string closeMessage)
         {
-            Log.Str("Twitch IRC", string.Format("<=[Error] WebSocket closed ({0}): {1}", code, closeMessage));
+            TWITCH_IRC.Log(string.Format("<=[Error] WebSocket closed ({0}): {1}", code, closeMessage));
         }
 
         public override void OnWebSocketError(int clientID, string error)
         {
-            Log.Str("Twitch IRC", string.Format("<=[Error] WebSocket error: {0}", error));
+            TWITCH_IRC.Log(string.Format("<=[Error] WebSocket error: {0}", error));
         }
 
         internal void Disconnect()

@@ -1,9 +1,10 @@
 ﻿using StreamGlass.Settings;
-using StreamFeedstock.Controls;
+using StreamGlass.Controls;
 using System.Windows.Controls;
-using StreamFeedstock;
+using StreamGlass;
 using static StreamGlass.StreamAlert.AlertScrollPanel;
 using System;
+using CorpseLib.Translation;
 
 namespace StreamGlass.StreamAlert
 {
@@ -21,6 +22,7 @@ namespace StreamGlass.StreamAlert
             "Tier 3",
             "Prime/Tier 4"
         };
+        private readonly AlertInfo[] m_GiftAlertInfo = new AlertInfo[Enum.GetNames(typeof(AlertType)).Length];
         private readonly AlertInfo[] m_AlertInfo = new AlertInfo[Enum.GetNames(typeof(AlertType)).Length];
         private readonly AlertScrollPanel m_StreamAlert;
         private readonly double m_OriginalContentFontSize;
@@ -42,6 +44,13 @@ namespace StreamGlass.StreamAlert
                 m_AlertInfo[(int)type] = m_StreamAlert.GetAlertInfo(type);
             }
 
+            GiftAlertInfosList.SetConversionDelegate(ConvertAlertType);
+            foreach (AlertType type in Enum.GetValues<AlertType>())
+            {
+                GiftAlertInfosList.AddObject(type);
+                m_GiftAlertInfo[(int)type] = m_StreamAlert.GetGiftAlertInfo(type);
+            }
+
             AddControlLink("message_font_size", new NumericUpDownUserControlLink(ChatMessageFont));
         }
 
@@ -52,55 +61,41 @@ namespace StreamGlass.StreamAlert
             return "ERROR";
         }
 
-        private void AddUserType(TranslationManager translation, string key, string defaultVal)
-        {
-            if (translation.TryGetTranslation(key, out var ret))
-                ChatModeComboBox.Items.Add(ret);
-            else
-                ChatModeComboBox.Items.Add(defaultVal);
-        }
-
-        private void TranslateComboBox(TranslationManager translation)
+        private void TranslateComboBox()
         {
             int selectedIndex = ChatModeComboBox.SelectedIndex;
             ChatModeComboBox.Items.Clear();
-            AddUserType(translation, "chat_display_type_ttb", "To bottom");
-            AddUserType(translation, "chat_display_type_rttb", "Reversed to bottom");
-            AddUserType(translation, "chat_display_type_btt", "To top");
-            AddUserType(translation, "chat_display_type_rbtt", "Reversed to top");
+            ChatModeComboBox.Items.Add(Translator.Translate("${chat_display_type_ttb}"));
+            ChatModeComboBox.Items.Add(Translator.Translate("${chat_display_type_rttb}"));
+            ChatModeComboBox.Items.Add(Translator.Translate("${chat_display_type_btt}"));
+            ChatModeComboBox.Items.Add(Translator.Translate("${chat_display_type_rbtt}"));
             ChatModeComboBox.SelectedIndex = selectedIndex;
         }
 
-        private void TranslateAlertName(TranslationManager translation)
+        private void TranslateAlertName()
         {
-            if (translation.TryGetTranslation("alert_name_inc_raid", out var incRaid))
-                m_AlertTypeNames[(int)AlertType.INCOMMING_RAID] = incRaid;
-            if (translation.TryGetTranslation("alert_name_out_raid", out var outRaid))
-                m_AlertTypeNames[(int)AlertType.OUTGOING_RAID] = outRaid;
-            if (translation.TryGetTranslation("alert_name_donation", out var donation))
-                m_AlertTypeNames[(int)AlertType.DONATION] = donation;
-            if (translation.TryGetTranslation("alert_name_reward", out var reward))
-                m_AlertTypeNames[(int)AlertType.REWARD] = reward;
-            if (translation.TryGetTranslation("alert_name_follow", out var follow))
-                m_AlertTypeNames[(int)AlertType.FOLLOW] = follow;
-            if (translation.TryGetTranslation("alert_name_tier1", out var tier1))
-                m_AlertTypeNames[(int)AlertType.TIER1] = tier1;
-            if (translation.TryGetTranslation("alert_name_tier2", out var tier2))
-                m_AlertTypeNames[(int)AlertType.TIER2] = tier2;
-            if (translation.TryGetTranslation("alert_name_tier3", out var tier3))
-                m_AlertTypeNames[(int)AlertType.TIER3] = tier3;
-            if (translation.TryGetTranslation("alert_name_tier4", out var tier4))
-                m_AlertTypeNames[(int)AlertType.TIER4] = tier4;
+            m_AlertTypeNames[(int)AlertType.INCOMMING_RAID] = Translator.Translate("${alert_name_inc_raid}");
+            m_AlertTypeNames[(int)AlertType.OUTGOING_RAID] = Translator.Translate("${alert_name_out_raid}");
+            m_AlertTypeNames[(int)AlertType.DONATION] = Translator.Translate("${alert_name_donation}");
+            m_AlertTypeNames[(int)AlertType.REWARD] = Translator.Translate("${alert_name_reward}");
+            m_AlertTypeNames[(int)AlertType.FOLLOW] = Translator.Translate("${alert_name_follow}");
+            m_AlertTypeNames[(int)AlertType.TIER1] = Translator.Translate("${alert_name_tier1}");
+            m_AlertTypeNames[(int)AlertType.TIER2] = Translator.Translate("${alert_name_tier2}");
+            m_AlertTypeNames[(int)AlertType.TIER3] = Translator.Translate("${alert_name_tier3}");
+            m_AlertTypeNames[(int)AlertType.TIER4] = Translator.Translate("${alert_name_tier4}");
         }
 
-        protected override void OnUpdate(BrushPaletteManager palette, TranslationManager translation)
+        protected override void OnUpdate(BrushPaletteManager palette)
         {
-            base.OnUpdate(palette, translation);
-            TranslateComboBox(translation);
-            TranslateAlertName(translation);
+            base.OnUpdate(palette);
+            TranslateComboBox();
+            TranslateAlertName();
             AlertInfosList.Clear();
             foreach (AlertType type in Enum.GetValues<AlertType>())
                 AlertInfosList.AddObject(type);
+            GiftAlertInfosList.Clear();
+            foreach (AlertType type in Enum.GetValues<AlertType>())
+                GiftAlertInfosList.AddObject(type);
         }
 
         private void ChatModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -124,6 +119,11 @@ namespace StreamGlass.StreamAlert
                 SetSetting(string.Format("{0}_prefix", type), alertInfo.Prefix);
                 SetSetting(string.Format("{0}_enabled", type), (alertInfo.IsEnabled) ? "true" : "false");
                 m_StreamAlert.SetAlertInfo(type, alertInfo);
+                AlertInfo giftAlertInfo = m_GiftAlertInfo[(int)type];
+                SetSetting(string.Format("{0}_gift_path", type), giftAlertInfo.ImgPath);
+                SetSetting(string.Format("{0}_gift_prefix", type), giftAlertInfo.Prefix);
+                SetSetting(string.Format("{0}_gift_enabled", type), (giftAlertInfo.IsEnabled) ? "true" : "false");
+                m_StreamAlert.SetGiftAlertInfo(type, alertInfo);
             }
         }
 
@@ -141,6 +141,16 @@ namespace StreamGlass.StreamAlert
             AlertInfo? newInfo = dialog.AlertInfo;
             if (newInfo != null)
                 m_AlertInfo[(int)e] = newInfo;
+        }
+
+        private void GiftAlertInfosList_ItemEdited(object _, object e)
+        {
+            AlertInfo alertInfo = m_GiftAlertInfo[(int)e];
+            AlertEditor dialog = new(GetWindow(), alertInfo);
+            dialog.ShowDialog();
+            AlertInfo? newInfo = dialog.AlertInfo;
+            if (newInfo != null)
+                m_GiftAlertInfo[(int)e] = newInfo;
         }
     }
 }

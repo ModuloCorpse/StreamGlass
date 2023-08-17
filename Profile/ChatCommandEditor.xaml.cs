@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using StreamFeedstock;
-using StreamFeedstock.Controls;
+using CorpseLib.Translation;
+using StreamGlass;
+using StreamGlass.Controls;
 using static StreamGlass.StreamChat.UserMessage;
 
 namespace StreamGlass.Profile
@@ -12,7 +13,7 @@ namespace StreamGlass.Profile
     {
         private ChatCommand? m_CreatedCommand = null;
 
-        public ChatCommandEditor(StreamFeedstock.Controls.Window parent): base(parent)
+        public ChatCommandEditor(StreamGlass.Controls.Window parent): base(parent)
         {
             InitializeComponent();
             UserComboBox.Items.Add("Viewer");
@@ -31,7 +32,7 @@ namespace StreamGlass.Profile
             AutoTriggerArguments.ItemEdited += EditableList_EditString;
         }
 
-        public ChatCommandEditor(StreamFeedstock.Controls.Window parent, ChatCommand command): this(parent)
+        public ChatCommandEditor(StreamGlass.Controls.Window parent, ChatCommand command): this(parent)
         {
             NameTextBox.Text = command.Name;
             AliasesList.AddObjects(command.Aliases);
@@ -49,32 +50,24 @@ namespace StreamGlass.Profile
             UpdateAutoTriggerVisibility();
         }
 
-        private void AddUserType(TranslationManager translation, string key, string defaultVal)
-        {
-            if (translation.TryGetTranslation(key, out var ret))
-                UserComboBox.Items.Add(ret);
-            else
-                UserComboBox.Items.Add(defaultVal);
-        }
-
-        private void TranslateComboBox(TranslationManager translation)
+        private void TranslateComboBox()
         {
             int selectedIndex = UserComboBox.SelectedIndex;
             UserComboBox.Items.Clear();
-            AddUserType(translation, "user_type_none", "Viewer");
-            AddUserType(translation, "user_type_mod", "Moderator");
-            AddUserType(translation, "user_type_global_mod", "Platform Moderator");
-            AddUserType(translation, "user_type_admin", "Platform Administrator");
-            AddUserType(translation, "user_type_staff", "Platform Staff");
-            AddUserType(translation, "user_type_broadcaster", "Streamer");
-            AddUserType(translation, "user_type_self", "Bot");
+            UserComboBox.Items.Add(Translator.Translate("${user_type_none}"));
+            UserComboBox.Items.Add(Translator.Translate("${user_type_mod}"));
+            UserComboBox.Items.Add(Translator.Translate("${user_type_global_mod}"));
+            UserComboBox.Items.Add(Translator.Translate("${user_type_admin}"));
+            UserComboBox.Items.Add(Translator.Translate("${user_type_staff}"));
+            UserComboBox.Items.Add(Translator.Translate("${user_type_broadcaster}"));
+            UserComboBox.Items.Add(Translator.Translate("${user_type_self}"));
             UserComboBox.SelectedIndex = selectedIndex;
         }
 
-        protected override void OnUpdate(BrushPaletteManager palette, TranslationManager translation)
+        protected override void OnUpdate(BrushPaletteManager palette)
         {
-            base.OnUpdate(palette, translation);
-            TranslateComboBox(translation);
+            base.OnUpdate(palette);
+            TranslateComboBox();
         }
 
         internal ChatCommand? Command => m_CreatedCommand;

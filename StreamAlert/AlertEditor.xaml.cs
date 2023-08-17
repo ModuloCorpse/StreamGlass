@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
-using StreamFeedstock.Controls;
+using StreamGlass.Controls;
 
 namespace StreamGlass.StreamAlert
 {
@@ -10,7 +10,7 @@ namespace StreamGlass.StreamAlert
     {
         private AlertScrollPanel.AlertInfo? m_CreatedAlertInfo = null;
 
-        internal AlertEditor(StreamFeedstock.Controls.Window parent, AlertScrollPanel.AlertInfo alertInfo) : base(parent)
+        internal AlertEditor(StreamGlass.Controls.Window parent, AlertScrollPanel.AlertInfo alertInfo) : base(parent)
         {
             InitializeComponent();
             AlertEnableCheckBox.IsChecked = alertInfo.IsEnabled;

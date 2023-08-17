@@ -1,26 +1,32 @@
-﻿namespace StreamGlass
+﻿using CorpseLib;
+using StreamGlass.Events;
+using StreamGlass.Profile;
+using StreamGlass.StreamChat;
+
+namespace StreamGlass
 {
-    enum StreamGlassCanals
+    public static class StreamGlassCanals
     {
-        CHAT_MESSAGE,
-        CHAT_CONNECTED,
-        CHAT_JOINED,
-        USER_JOINED,
-        UPDATE_STREAM_INFO,
-        STREAM_START,
-        STREAM_STOP,
-        DONATION,
-        FOLLOW,
-        RAID,
-        REWARD,
-        COMMANDS,
-        PROFILE_CHANGED_MENU_ITEM,
-        BAN,
-        HELD_MESSAGE,
-        ALLOW_MESSAGE,
-        HELD_MESSAGE_MODERATED,
-        CHAT_CLEAR,
-        CHAT_CLEAR_USER,
-        CHAT_CLEAR_MESSAGE
+        public static Canal<UserMessage> CHAT_MESSAGE = new();
+        public static Canal CHAT_CONNECTED = new();
+        public static Canal<string> CHAT_JOINED = new();
+        public static Canal<User> USER_JOINED = new();
+        public static Canal<UpdateStreamInfoArgs> UPDATE_STREAM_INFO = new();
+        public static Canal STREAM_START = new();
+        public static Canal STREAM_STOP = new();
+        public static Canal<DonationEventArgs> DONATION = new();
+        public static Canal<FollowEventArgs> FOLLOW = new();
+        public static Canal<GiftFollowEventArgs> GIFT_FOLLOW = new();
+        public static Canal<RaidEventArgs> RAID = new();
+        public static Canal<RewardEventArgs> REWARD = new();
+        public static Canal<CommandEventArgs> COMMANDS = new();
+        public static Canal<string> PROFILE_CHANGED_MENU_ITEM = new();
+        public static Canal<BanEventArgs> BAN = new();
+        public static Canal<UserMessage> HELD_MESSAGE = new();
+        public static Canal<MessageAllowedEventArgs> ALLOW_MESSAGE = new();
+        public static Canal<string> HELD_MESSAGE_MODERATED = new();
+        public static Canal CHAT_CLEAR = new();
+        public static Canal<string> CHAT_CLEAR_USER = new();
+        public static Canal<string> CHAT_CLEAR_MESSAGE = new();
     }
 }

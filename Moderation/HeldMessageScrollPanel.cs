@@ -1,5 +1,5 @@
-﻿using StreamFeedstock;
-using StreamFeedstock.Controls;
+﻿using StreamGlass;
+using StreamGlass.Controls;
 using StreamGlass.StreamChat;
 using System;
 
@@ -13,8 +13,8 @@ namespace StreamGlass.Moderation
 
         public HeldMessageScrollPanel() : base()
         {
-            CanalManager.Register<UserMessage>(StreamGlassCanals.HELD_MESSAGE, (int _, object? message) => OnHeldMessage((UserMessage?)message));
-            CanalManager.Register<string>(StreamGlassCanals.HELD_MESSAGE_MODERATED, (int _, object? id) => RemoveHeldMessage((string?)id));
+            StreamGlassCanals.HELD_MESSAGE.Register(OnHeldMessage);
+            StreamGlassCanals.HELD_MESSAGE_MODERATED.Register(RemoveHeldMessage);
         }
 
         internal double MessageSenderFontSize => m_MessageSenderFontSize;

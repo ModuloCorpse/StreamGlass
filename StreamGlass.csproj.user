@@ -13,9 +13,6 @@
     <Compile Update="Profile\ProfileEditor.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="LogWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="StreamChat\Message.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -43,9 +40,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Profile\ProfileEditor.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="LogWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="GeneralSettingsItem.xaml">

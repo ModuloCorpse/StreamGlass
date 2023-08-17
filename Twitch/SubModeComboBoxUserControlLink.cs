@@ -1,4 +1,5 @@
-﻿using StreamFeedstock;
+﻿using CorpseLib.Translation;
+using StreamGlass;
 using StreamGlass.Settings;
 using System.Windows.Controls;
 
@@ -21,18 +22,12 @@ namespace StreamGlass.Twitch
                 m_ComboBox.SelectedIndex = 1;
         }
 
-        internal void TranslateComboBox(TranslationManager translation)
+        internal void TranslateComboBox()
         {
             int selectedIndex = m_ComboBox.SelectedIndex;
             m_ComboBox.Items.Clear();
-            if (translation.TryGetTranslation("sub_mode_claimed", out var claimedRet))
-                m_ComboBox.Items.Add(claimedRet);
-            else
-                m_ComboBox.Items.Add("Claimed");
-            if (translation.TryGetTranslation("sub_mode_all", out var allRet))
-                m_ComboBox.Items.Add(allRet);
-            else
-                m_ComboBox.Items.Add("All");
+            m_ComboBox.Items.Add(Translator.Translate("${sub_mode_claimed}"));
+            m_ComboBox.Items.Add(Translator.Translate("${sub_mode_all}"));
             m_ComboBox.SelectedIndex = selectedIndex;
         }
 

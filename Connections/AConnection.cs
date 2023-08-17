@@ -73,7 +73,7 @@ namespace StreamGlass.Connections
         {
             if (m_IsConnected)
             {
-                BeforeConnect();
+                BeforeDisconnect();
                 Clean();
                 Unauthenticate();
                 m_IsConnected = false;

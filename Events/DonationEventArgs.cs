@@ -1,4 +1,4 @@
-﻿using StreamFeedstock.StructuredText;
+﻿using CorpseLib.StructuredText;
 
 namespace StreamGlass.Events
 {

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Win32;
 using StreamGlass.Settings;
-using StreamFeedstock.Controls;
+using StreamGlass.Controls;
 using System.Windows;
-using StreamFeedstock;
+using StreamGlass;
 
 namespace StreamGlass.Twitch
 {
@@ -43,10 +43,10 @@ namespace StreamGlass.Twitch
             m_Connection.Connect();
         }
 
-        protected override void OnUpdate(BrushPaletteManager palette, TranslationManager translation)
+        protected override void OnUpdate(BrushPaletteManager palette)
         {
-            base.OnUpdate(palette, translation);
-            m_SubModeComboBoxUserControlLink.TranslateComboBox(translation);
+            base.OnUpdate(palette);
+            m_SubModeComboBoxUserControlLink.TranslateComboBox();
         }
     }
 }

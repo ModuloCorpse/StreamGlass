@@ -1,17 +1,13 @@
-﻿using StreamFeedstock;
-using StreamFeedstock.Controls;
+﻿using StreamGlass.Controls;
 using StreamGlass.Connections;
-using StreamGlass.Twitch.IRC;
 using System;
 using System.Collections.Generic;
-using static StreamGlass.Twitch.EventSub.EventData;
 
 namespace StreamGlass.StreamChat
 {
     public class UserMessageScrollPanel : ScrollPanel<Message>
     {
         private BrushPaletteManager m_ChatPalette = new();
-        private TranslationManager m_Translations = new();
         private readonly HashSet<string> m_ChatHighlightedUsers = new();
         private ConnectionManager? m_ConnectionManager = null;
         private double m_MessageSenderFontSize = 14;
@@ -20,15 +16,13 @@ namespace StreamGlass.StreamChat
 
         public UserMessageScrollPanel() : base()
         {
-            CanalManager.Register<UserMessage>(StreamGlassCanals.CHAT_MESSAGE, (int _, object? message) => OnMessage((UserMessage?)message));
-            CanalManager.Register(StreamGlassCanals.CHAT_CLEAR, (int _) => ClearMessages());
-            CanalManager.Register<string>(StreamGlassCanals.CHAT_CLEAR_USER, (int _, object? message) => RemoveAllMessagesFrom((string?)message));
-            CanalManager.Register<string>(StreamGlassCanals.CHAT_CLEAR_MESSAGE, (int _, object? message) => RemoveMessage((string?)message));
+            StreamGlassCanals.CHAT_MESSAGE.Register(OnMessage);
+            StreamGlassCanals.CHAT_CLEAR.Register(ClearMessages);
+            StreamGlassCanals.CHAT_CLEAR_USER.Register(RemoveAllMessagesFrom);
+            StreamGlassCanals.CHAT_CLEAR_MESSAGE.Register(RemoveMessage);
         }
 
         internal void SetBrushPalette(BrushPaletteManager colorPalette) => m_ChatPalette = colorPalette;
-
-        internal void SetTranslations(TranslationManager translations) => m_Translations = translations;
 
         public void SetConnectionManager(ConnectionManager connectionManager) => m_ConnectionManager = connectionManager;
 
@@ -78,7 +72,6 @@ namespace StreamGlass.StreamChat
                 Message chatMessage = new(this,
                 m_ConnectionManager!,
                 m_ChatPalette,
-                m_Translations,
                 message,
                 m_ChatHighlightedUsers.Contains(message.UserID),
                 m_MessageSenderWidth,

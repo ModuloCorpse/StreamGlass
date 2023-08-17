@@ -1,5 +1,6 @@
-﻿using Quicksand.Web;
-using StreamFeedstock;
+﻿using CorpseLib.Json;
+using Quicksand.Web;
+using StreamGlass;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -45,7 +46,6 @@ namespace StreamGlass.Http
             SyncSend();
             if (m_Token != null && (int)m_Response!.StatusCode == 401)
             {
-                Log.Str("HTTP", "<= Refreshing OAuth token");
                 m_Token.Refresh();
                 m_Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", m_Token.Token);
                 m_Client.DefaultRequestHeaders.Add("Client-Id", m_Token.ClientID);
@@ -94,8 +94,8 @@ namespace StreamGlass.Http
         public PostRequest(string url, string contentToSend, OAuthToken? token = null) : base(new(url), new StringContent(contentToSend, Encoding.UTF8, "text/plain"), token) { }
         public PostRequest(URL url, string contentToSend, string mimeType, OAuthToken? token = null) : base(url, new StringContent(contentToSend, Encoding.UTF8, mimeType), token) { }
         public PostRequest(string url, string contentToSend, string mimeType, OAuthToken? token = null) : base(new(url), new StringContent(contentToSend, Encoding.UTF8, mimeType), token) { }
-        public PostRequest(URL url, Json contentToSend, OAuthToken? token = null) : base(url, new StringContent(contentToSend.ToNetworkString(), Encoding.UTF8, "application/json"), token) { }
-        public PostRequest(string url, Json contentToSend, OAuthToken? token = null) : base(new(url), new StringContent(contentToSend.ToNetworkString(), Encoding.UTF8, "application/json"), token) { }
+        public PostRequest(URL url, JObject contentToSend, OAuthToken? token = null) : base(url, new StringContent(contentToSend.ToNetworkString(), Encoding.UTF8, "application/json"), token) { }
+        public PostRequest(string url, JObject contentToSend, OAuthToken? token = null) : base(new(url), new StringContent(contentToSend.ToNetworkString(), Encoding.UTF8, "application/json"), token) { }
 
         protected override Task<HttpResponseMessage> SendRequest() => m_Client.PostAsync(m_URL.ToString(), m_ContentToSend);
     }
@@ -108,8 +108,8 @@ namespace StreamGlass.Http
         public PatchRequest(string url, string contentToSend, OAuthToken? token = null) : base(new(url), new StringContent(contentToSend, Encoding.UTF8, "text/plain"), token) { }
         public PatchRequest(URL url, string contentToSend, string mimeType, OAuthToken? token = null) : base(url, new StringContent(contentToSend, Encoding.UTF8, mimeType), token) { }
         public PatchRequest(string url, string contentToSend, string mimeType, OAuthToken? token = null) : base(new(url), new StringContent(contentToSend, Encoding.UTF8, mimeType), token) { }
-        public PatchRequest(URL url, Json contentToSend, OAuthToken? token = null) : base(url, new StringContent(contentToSend.ToNetworkString(), Encoding.UTF8, "application/json"), token) { }
-        public PatchRequest(string url, Json contentToSend, OAuthToken? token = null) : base(new(url), new StringContent(contentToSend.ToNetworkString(), Encoding.UTF8, "application/json"), token) { }
+        public PatchRequest(URL url, JObject contentToSend, OAuthToken? token = null) : base(url, new StringContent(contentToSend.ToNetworkString(), Encoding.UTF8, "application/json"), token) { }
+        public PatchRequest(string url, JObject contentToSend, OAuthToken? token = null) : base(new(url), new StringContent(contentToSend.ToNetworkString(), Encoding.UTF8, "application/json"), token) { }
 
         protected override Task<HttpResponseMessage> SendRequest() => m_Client.PatchAsync(m_URL.ToString(), m_ContentToSend);
     }

@@ -1,12 +1,10 @@
-﻿using StreamFeedstock;
-using StreamFeedstock.Controls;
-using StreamFeedstock.Placeholder;
-using StreamFeedstock.StructuredText;
+﻿using CorpseLib.Placeholder;
+using CorpseLib.StructuredText;
+using StreamGlass;
+using StreamGlass.Controls;
 using StreamGlass.Connections;
 using StreamGlass.Events;
-using StreamGlass.StreamChat;
 using System;
-using System.Windows.Controls;
 
 namespace StreamGlass.StreamAlert
 {
@@ -43,23 +41,22 @@ namespace StreamGlass.StreamAlert
             }
         }
 
+        private readonly AlertInfo[] m_GiftAlertInfo = new AlertInfo[Enum.GetNames(typeof(AlertType)).Length];
         private readonly AlertInfo[] m_AlertInfo = new AlertInfo[Enum.GetNames(typeof(AlertType)).Length];
         private BrushPaletteManager m_ChatPalette = new();
-        private TranslationManager m_Translations = new();
         private ConnectionManager? m_ConnectionManager = null;
         private double m_MessageContentFontSize = 20;
 
         public AlertScrollPanel() : base()
         {
-            CanalManager.Register<FollowEventArgs>(StreamGlassCanals.FOLLOW, OnNewFollow);
-            CanalManager.Register<DonationEventArgs>(StreamGlassCanals.DONATION, OnDonation);
-            CanalManager.Register<RaidEventArgs>(StreamGlassCanals.RAID, OnRaid);
-            CanalManager.Register<RewardEventArgs>(StreamGlassCanals.REWARD, OnReward);
+            StreamGlassCanals.FOLLOW.Register(OnNewFollow);
+            StreamGlassCanals.GIFT_FOLLOW.Register(OnNewGiftFollow);
+            StreamGlassCanals.DONATION.Register(OnDonation);
+            StreamGlassCanals.RAID.Register(OnRaid);
+            StreamGlassCanals.REWARD.Register(OnReward);
         }
 
         internal void SetBrushPalette(BrushPaletteManager colorPalette) => m_ChatPalette = colorPalette;
-
-        internal void SetTranslations(TranslationManager translations) => m_Translations = translations;
 
         public void SetConnectionManager(ConnectionManager connectionManager) => m_ConnectionManager = connectionManager;
 
@@ -73,16 +70,19 @@ namespace StreamGlass.StreamAlert
             UpdateControlsPosition();
         }
 
+        internal void SetGiftAlertInfo(AlertType alertType, string imgPath, string prefix, bool isEnabled) => m_GiftAlertInfo[(int)alertType] = new(imgPath, prefix, isEnabled);
+        internal void SetGiftAlertInfo(AlertType alertType, AlertInfo alertInfo) => m_GiftAlertInfo[(int)alertType] = new(alertInfo.ImgPath, alertInfo.Prefix, alertInfo.IsEnabled);
+        internal AlertInfo GetGiftAlertInfo(AlertType alertType) => m_GiftAlertInfo[(int)alertType];
+
         internal void SetAlertInfo(AlertType alertType, string imgPath, string prefix, bool isEnabled) => m_AlertInfo[(int)alertType] = new(imgPath, prefix, isEnabled);
         internal void SetAlertInfo(AlertType alertType, AlertInfo alertInfo) => m_AlertInfo[(int)alertType] = new(alertInfo.ImgPath, alertInfo.Prefix, alertInfo.IsEnabled);
         internal AlertInfo GetAlertInfo(AlertType alertType) => m_AlertInfo[(int)alertType];
 
 
-        private void NewAlert(AlertType alertType, object e, Text? message = null)
+        private void NewAlert(AlertInfo alertInfo, object e, Text? message = null)
         {
             Dispatcher.Invoke((Delegate)(() =>
             {
-                AlertInfo alertInfo = m_AlertInfo[(int)alertType];
                 if (alertInfo.IsEnabled)
                 {
                     Context context = new();
@@ -92,30 +92,43 @@ namespace StreamGlass.StreamAlert
                     if (message != null)
                         alertMessage.Append(message);
                     Alert alert = new(alertInfo.ImgPath, alertMessage);
-                    AlertControl alertControl = new(m_ConnectionManager!, m_ChatPalette, m_Translations, alert, m_MessageContentFontSize);
+                    AlertControl alertControl = new(m_ConnectionManager!, m_ChatPalette, alert, m_MessageContentFontSize);
                     alertControl.AlertMessage.Loaded += (sender, e) => { UpdateControlsPosition(); };
                     AddControl(alertControl);
                 }
             }));
         }
 
-        private void OnNewFollow(int _, object? obj)
+        private void OnNewFollow(FollowEventArgs? obj)
         {
-            FollowEventArgs e = (FollowEventArgs)obj!;
+            FollowEventArgs e = obj!;
             switch (e.Tier)
             {
-                case 0: NewAlert(AlertType.FOLLOW, obj!, e.Message); break;
-                case 1: NewAlert(AlertType.TIER1, obj!, e.Message); break;
-                case 2: NewAlert(AlertType.TIER2, obj!, e.Message); break;
-                case 3: NewAlert(AlertType.TIER3, obj!, e.Message); break;
-                case 4: NewAlert(AlertType.TIER4, obj!, e.Message); break;
+                case 0: NewAlert(m_AlertInfo[(int)AlertType.FOLLOW], e, e.Message); break;
+                case 1: NewAlert(m_AlertInfo[(int)AlertType.TIER1], e, e.Message); break;
+                case 2: NewAlert(m_AlertInfo[(int)AlertType.TIER2], e, e.Message); break;
+                case 3: NewAlert(m_AlertInfo[(int)AlertType.TIER3], e, e.Message); break;
+                case 4: NewAlert(m_AlertInfo[(int)AlertType.TIER4], e, e.Message); break;
             }
         }
 
-        private void OnDonation(int _, object? obj) => NewAlert(AlertType.DONATION, obj!, ((DonationEventArgs)obj!).Message);
+        private void OnNewGiftFollow(GiftFollowEventArgs? obj)
+        {
+            GiftFollowEventArgs e = obj!;
+            switch (e.Tier)
+            {
+                case 0: NewAlert(m_GiftAlertInfo[(int)AlertType.FOLLOW], e, e.Message); break;
+                case 1: NewAlert(m_GiftAlertInfo[(int)AlertType.TIER1], e, e.Message); break;
+                case 2: NewAlert(m_GiftAlertInfo[(int)AlertType.TIER2], e, e.Message); break;
+                case 3: NewAlert(m_GiftAlertInfo[(int)AlertType.TIER3], e, e.Message); break;
+                case 4: NewAlert(m_GiftAlertInfo[(int)AlertType.TIER4], e, e.Message); break;
+            }
+        }
 
-        private void OnRaid(int _, object? obj) => NewAlert((((RaidEventArgs)obj!).IsIncomming) ? AlertType.INCOMMING_RAID : AlertType.OUTGOING_RAID, obj!);
+        private void OnDonation(DonationEventArgs? obj) => NewAlert(m_AlertInfo[(int)AlertType.DONATION], obj!, (obj!).Message);
 
-        private void OnReward(int _, object? obj) => NewAlert(AlertType.REWARD, obj!);
+        private void OnRaid(RaidEventArgs? obj) => NewAlert(m_AlertInfo[(int)((obj!).IsIncomming ? AlertType.INCOMMING_RAID : AlertType.OUTGOING_RAID)], obj!);
+
+        private void OnReward(RewardEventArgs? obj) => NewAlert(m_AlertInfo[(int)AlertType.REWARD], obj!);
     }
 }

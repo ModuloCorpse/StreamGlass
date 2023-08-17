@@ -1,5 +1,6 @@
-﻿using Quicksand.Web;
-using StreamFeedstock;
+﻿using CorpseLib.Json;
+using CorpseLib.Logging;
+using Quicksand.Web;
 using StreamGlass.Events;
 using StreamGlass.Http;
 using System;
@@ -9,6 +10,8 @@ namespace StreamGlass.Twitch
 {
     public class EventSub : AClientListener
     {
+        public static readonly Logger EVENTSUB = new("[${d}-${M}-${y} ${h}:${m}:${s}.${ms}] ${log}") { new LogInFile("./log/${y}${M}${d}${h}-EventSub.log") };
+
         public class Metadata
         {
             private readonly string m_ID;
@@ -23,13 +26,13 @@ namespace StreamGlass.Twitch
             public string Subscription => m_Subscription;
             public string Version => m_Version;
 
-            public Metadata(Json obj)
+            public Metadata(JObject obj)
             {
                 m_ID = obj.Get<string>("message_id")!;
                 m_Type = obj.Get<string>("message_type")!;
                 m_Timestamp = obj.Get<string>("message_timestamp")!;
-                m_Subscription = obj.GetOrDefault("subscription_type", "");
-                m_Version = obj.GetOrDefault("subscription_version", "");
+                m_Subscription = obj.GetOrDefault("subscription_type", "")!;
+                m_Version = obj.GetOrDefault("subscription_version", "")!;
             }
         }
 
@@ -45,7 +48,7 @@ namespace StreamGlass.Twitch
             public string Callback => m_Callback;
             public string Secret => m_Secret;
 
-            public Transport(Json obj)
+            public Transport(JObject obj)
             {
                 m_Method = obj.Get<string>("method")!;
                 if (m_Method == "websocket")
@@ -58,7 +61,7 @@ namespace StreamGlass.Twitch
                 {
                     m_SessionID = "";
                     m_Callback = obj.Get<string>("callback")!;
-                    m_Secret = obj.GetOrDefault("secret", "");
+                    m_Secret = obj.GetOrDefault("secret", "")!;
                 }
             }
         }
@@ -82,7 +85,7 @@ namespace StreamGlass.Twitch
             public string CreatedAt => m_CreatedAt;
             public int Cost => m_Cost;
 
-            public Subscription(Json obj)
+            public Subscription(JObject obj)
             {
                 m_ID = obj.Get<string>("id")!;
                 m_Type = obj.Get<string>("type")!;
@@ -90,10 +93,10 @@ namespace StreamGlass.Twitch
                 m_Status = obj.Get<string>("status")!;
                 m_Cost = obj.Get<int>("cost")!;
                 m_CreatedAt = obj.Get<string>("created_at")!;
-                m_Transport = new(obj.Get<Json>("transport")!);
-                Json conditionObject = obj.Get<Json>("condition")!;
-                foreach (var pair in conditionObject.ToDictionary<string>())
-                    m_Conditions[pair.Key] = pair.Value;
+                m_Transport = new(obj.Get<JObject>("transport")!);
+                JObject conditionObject = obj.Get<JObject>("condition")!;
+                foreach (var pair in conditionObject)
+                    m_Conditions[pair.Key] = pair.Value.Cast<string>()!;
             }
 
             public bool HaveCondition(string condition) => m_Conditions.ContainsKey(condition);
@@ -120,9 +123,9 @@ namespace StreamGlass.Twitch
                 }
             }
 
-            private readonly Json m_Data;
+            private readonly JObject m_Data;
 
-            public EventData(Json data) { m_Data = data; }
+            public EventData(JObject data) { m_Data = data; }
 
             public User? GetUser(string user = "")
             {
@@ -133,7 +136,7 @@ namespace StreamGlass.Twitch
                 return null;
             }
 
-            public T GetOrDefault<T>(string key, T defaultValue) => m_Data.GetOrDefault(key, defaultValue);
+            public T GetOrDefault<T>(string key, T defaultValue) => m_Data.GetOrDefault(key, defaultValue)!;
 
             public bool TryGet<T>(string key, out T? ret) => m_Data.TryGet(key, out ret);
         }
@@ -146,8 +149,9 @@ namespace StreamGlass.Twitch
 
         public EventSub(Settings.Data settings)
         {
+            EVENTSUB.Start();
             m_Settings = settings;
-            m_Websocket = new(this, "wss://eventsub-beta.wss.twitch.tv/ws");
+            m_Websocket = new(this, "wss://eventsub.wss.twitch.tv/ws");
         }
 
         public void SetToken(OAuthToken token)
@@ -172,31 +176,31 @@ namespace StreamGlass.Twitch
         internal void Reconnect()
         {
             m_Websocket.Disconnect();
-            Log.Str("EventSub", "<= Reconnecting");
+            EVENTSUB.Log("<= Reconnecting");
             ConnectToServer();
         }
 
         public override void OnWebSocketClose(int clientID, short code, string closeMessage)
         {
-            Log.Str("EventSub", string.Format("<=[Error] WebSocket closed ({0}): {1}", code, closeMessage));
+            EVENTSUB.Log(string.Format("<=[Error] WebSocket closed ({0}): {1}", code, closeMessage));
         }
 
         public override void OnWebSocketError(int clientID, string error)
         {
-            Log.Str("EventSub", string.Format("<=[Error] WebSocket error: {0}", error));
+            EVENTSUB.Log(string.Format("<=[Error] WebSocket error: {0}", error));
         }
 
         private bool RegisterSubscription(string sessionID, string subscriptionName, int subscriptionVersion, params string[] conditions)
         {
             if (m_Token == null)
                 return false;
-            Json transportJson = new();
+            JObject transportJson = new();
             transportJson.Set("method", "websocket");
             transportJson.Set("session_id", sessionID);
-            Json conditionJson = new();
+            JObject conditionJson = new();
             foreach (string condition in conditions)
                 conditionJson.Set(condition, m_ChannelID);
-            Json message = new();
+            JObject message = new();
             message.Set("type", subscriptionName);
             message.Set("version", subscriptionVersion);
             message.Set("condition", conditionJson);
@@ -205,20 +209,20 @@ namespace StreamGlass.Twitch
             subscriptionRequest.Send();
             if (subscriptionRequest.GetStatusCode() == 202)
             {
-                Log.Str("EventSub", string.Format("<= Listening to {0}", subscriptionName));
+                EVENTSUB.Log(string.Format("<= Listening to {0}", subscriptionName));
                 return true;
             }
             else
             {
-                Log.Str("EventSub", string.Format("<= Error when listening to {0}: {1}", subscriptionName, subscriptionRequest.GetResponse()));
+                EVENTSUB.Log(string.Format("<= Error when listening to {0}: {1}", subscriptionName, subscriptionRequest.GetResponse()));
                 return false;
             }
         }
 
-        private void HandleWelcome(Json payload)
+        private void HandleWelcome(JObject payload)
         {
-            Log.Str("EventSub", "<= Welcome");
-            if (payload.TryGet("session", out Json? sessionObj))
+            EVENTSUB.Log("<= Welcome");
+            if (payload.TryGet("session", out JObject? sessionObj))
             {
                 if (sessionObj!.TryGet("id", out string? sessionID))
                 {
@@ -245,7 +249,7 @@ namespace StreamGlass.Twitch
         {
             EventData.User? follower = data.GetUser();
             if (follower != null)
-                CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs(follower.Name, new(""), 0, false, -1, -1, -1));
+                StreamGlassCanals.FOLLOW.Emit(new(follower.Name, new(""), 0, -1, -1));
         }
 
         private void HandleSub(EventData data)
@@ -264,12 +268,17 @@ namespace StreamGlass.Twitch
                     case "3000": followTier = 3; break;
                     default: return;
                 }
-                CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs(follower.Name, new(""), followTier, isGift, -1, -1, -1));
+                if (isGift)
+                    StreamGlassCanals.GIFT_FOLLOW.Emit(new(string.Empty, follower.Name, new(""), followTier, -1, -1, -1));
+                else
+                    StreamGlassCanals.FOLLOW.Emit(new(follower.Name, new(""), followTier, -1, -1));
             }
         }
 
-        private static void HandleSubGift(EventData data)
+        private void HandleSubGift(EventData data)
         {
+            if (m_Settings.Get("twitch", "sub_mode") == "claimed")
+                return;
             int followTier;
             if (data.TryGet("is_anonymous", out bool? isAnonymous))
             {
@@ -283,8 +292,7 @@ namespace StreamGlass.Twitch
                         case "3000": followTier = 3; break;
                         default: return;
                     }
-                    CanalManager.Emit(StreamGlassCanals.FOLLOW, new FollowEventArgs((follower != null) ? follower.Name : "",
-                        new(""), followTier, true, -1, -1, (int)nbGift!));
+                    StreamGlassCanals.GIFT_FOLLOW.Emit(new(string.Empty, (follower != null) ? follower.Name : "", new(""), followTier, -1, -1, (int)nbGift!));
                 }
             }
         }
@@ -292,11 +300,11 @@ namespace StreamGlass.Twitch
         private static void HandleReward(EventData data)
         {
             EventData.User? viewer = data.GetUser();
-            if (viewer != null && data.TryGet("reward", out Json? rewardInfo))
+            if (viewer != null && data.TryGet("reward", out JObject? rewardInfo))
             {
                 data.TryGet("user_input", out string? input);
                 if (rewardInfo!.TryGet("title", out string? title))
-                    CanalManager.Emit(StreamGlassCanals.REWARD, new RewardEventArgs(viewer.ID, viewer.Name, title!, input ?? ""));
+                    StreamGlassCanals.REWARD.Emit(new(viewer.ID, viewer.Name, title!, input ?? ""));
             }
         }
 
@@ -305,26 +313,20 @@ namespace StreamGlass.Twitch
             EventData.User? from = data.GetUser("from_broadcaster_");
             EventData.User? to = data.GetUser("to_broadcaster_");
             if (from != null && to != null && data.TryGet("viewers", out int? viewers))
-                CanalManager.Emit(StreamGlassCanals.RAID, new RaidEventArgs(from.ID, from.Name, to.ID, to.Name, (int)viewers!, incomming));
+                StreamGlassCanals.RAID.Emit(new RaidEventArgs(from.ID, from.Name, to.ID, to.Name, (int)viewers!, incomming));
         }
 
-        private static void HandleStreamStart()
-        {
-            CanalManager.Emit(StreamGlassCanals.STREAM_START);
-        }
+        private static void HandleStreamStart() => StreamGlassCanals.STREAM_START.Trigger();
 
-        private static void HandleStreamStop()
-        {
-            CanalManager.Emit(StreamGlassCanals.STREAM_STOP);
-        }
+        private static void HandleStreamStop() => StreamGlassCanals.STREAM_STOP.Trigger();
 
-        private bool IsIncommingRaid(Subscription subscription) => !(subscription.HaveCondition("from_broadcaster_user_id") && !string.IsNullOrEmpty(subscription.GetCondition("from_broadcaster_user_id")));
+        private static bool IsIncommingRaid(Subscription subscription) => !(subscription.HaveCondition("from_broadcaster_user_id") && !string.IsNullOrEmpty(subscription.GetCondition("from_broadcaster_user_id")));
 
-        private void HandleNotification(Metadata metadata, Json payload, string message)
+        private void HandleNotification(Metadata metadata, JObject payload, string message)
         {
-            Log.Str("EventSub", string.Format("<= {0}", metadata.Subscription));
-            if (payload.TryGet("subscription", out Json? subscriptionObj) &&
-                payload.TryGet("event", out Json? eventObj))
+            EVENTSUB.Log(string.Format("<= {0}", metadata.Subscription));
+            if (payload.TryGet("subscription", out JObject? subscriptionObj) &&
+                payload.TryGet("event", out JObject? eventObj))
             {
                 try
                 {
@@ -339,12 +341,12 @@ namespace StreamGlass.Twitch
                         case "channel.channel_points_custom_reward_redemption.add": HandleReward(eventData); break;
                         case "stream.online": HandleStreamStart(); break;
                         case "stream.offline": HandleStreamStop(); break;
-                        default: Log.Str("EventSub", string.Format("<= {0}", message)); break;
+                        default: EVENTSUB.Log(string.Format("<= {0}", message)); break;
                     }
                 }
                 catch (Exception e)
                 {
-                    Log.Str("EventSub", string.Format("<= Exception when treating received message: {0}", e.Message));
+                    EVENTSUB.Log(string.Format("<= Exception when treating received message: {0}", e.Message));
                 }
             }
         }
@@ -355,9 +357,9 @@ namespace StreamGlass.Twitch
                 return;
             try
             {
-                Json eventMessage = new(message);
-                if (eventMessage.TryGet("metadata", out Json? metadataObj) &&
-                    eventMessage.TryGet("payload", out Json? payload))
+                JFile eventMessage = new(message);
+                if (eventMessage.TryGet("metadata", out JObject? metadataObj) &&
+                    eventMessage.TryGet("payload", out JObject? payload))
                 {
                     try
                     {
@@ -372,25 +374,30 @@ namespace StreamGlass.Twitch
                                 case "notification": HandleNotification(metadata, payload!, message.Trim()); break;
                                 case "session_reconnect": Reconnect(); break;
                                 case "revocation": break;
-                                default: Log.Str("EventSub", string.Format("<= {0}", message.Trim())); break;
+                                default: EVENTSUB.Log(string.Format("<= {0}", message.Trim())); break;
                             }
                         }
                     } catch (Exception e)
                     {
-                        Log.Str("EventSub", string.Format("[Error]=> Treatment Exception: {0}", e.Message));
+                        EVENTSUB.Log(string.Format("[Error]=> Treatment Exception: {0}", e.Message));
                     }
                 }
             }
             catch (Exception e)
             {
-                Log.Str("EventSub", string.Format("[Error]=> Json Exception: {0}", e));
+                EVENTSUB.Log(string.Format("[Error]=> Json Exception: {0}", e));
                 return;
             }
         }
 
         public override void OnClientDisconnect(int clientID)
         {
-            Log.Str("EventSub", "<= Disconnected");
+            EVENTSUB.Log("<= Disconnected");
+        }
+
+        public override void OnWebSocketOpen(int clientID, Quicksand.Web.Http.Response response)
+        {
+            EVENTSUB.Log("<= Connected");
         }
     }
 }

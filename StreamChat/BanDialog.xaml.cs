@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using StreamFeedstock.Controls;
+using StreamGlass.Controls;
 using StreamGlass.Events;
 
 namespace StreamGlass.StreamChat
@@ -9,7 +9,7 @@ namespace StreamGlass.StreamChat
         private readonly User m_UserToBan; 
         private BanEventArgs? m_Event = null;
 
-        public BanDialog(StreamFeedstock.Controls.Window parent, User userToBan) : base(parent)
+        public BanDialog(StreamGlass.Controls.Window parent, User userToBan) : base(parent)
         {
             InitializeComponent();
             m_UserToBan = userToBan;

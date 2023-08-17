@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using StreamFeedstock.Controls;
+using StreamGlass.Controls;
 
 namespace StreamGlass.Profile
 {
@@ -7,12 +7,12 @@ namespace StreamGlass.Profile
     {
         private string? m_CreatedString = null;
 
-        public StringEditor(StreamFeedstock.Controls.Window parent): base(parent)
+        public StringEditor(StreamGlass.Controls.Window parent): base(parent)
         {
             InitializeComponent();
         }
 
-        public StringEditor(StreamFeedstock.Controls.Window parent, string str): this(parent)
+        public StringEditor(StreamGlass.Controls.Window parent, string str): this(parent)
         {
             NameTextBox.Text = str;
         }

@@ -1,30 +1,45 @@
 ﻿using StreamGlass.Settings;
-using StreamFeedstock.Controls;
+using StreamGlass.Controls;
 using System;
-using StreamFeedstock;
+using System.Globalization;
+using CorpseLib.Translation;
 
 namespace StreamGlass.StreamChat
 {
     public partial class GeneralSettingsItem : TabItemContent
     {
-        private readonly BrushPaletteManager m_BrushPalette;
-        private readonly TranslationManager m_Translation;
-        private readonly string m_OriginalBrushPaletteID;
-        private readonly string m_OriginalTranslationID;
+        private class LanguageInfo
+        {
+            private readonly CultureInfo m_CultureInfo;
+            public CultureInfo CultureInfo => m_CultureInfo;
+            public LanguageInfo(CultureInfo cultureInfo) => m_CultureInfo = cultureInfo;
+            public override string ToString() => m_CultureInfo.NativeName;
+        }
 
-        public GeneralSettingsItem(Data settings, BrushPaletteManager brushPalette, TranslationManager translation) : base("/Assets/tinker.png", "stream-chat", settings)
+        private readonly BrushPaletteManager m_BrushPalette;
+        private readonly CultureInfo m_OriginalLanguage;
+        private readonly string m_OriginalBrushPaletteID;
+
+        public GeneralSettingsItem(Data settings, BrushPaletteManager brushPalette) : base("/Assets/tinker.png", "stream-chat", settings)
         {
             m_BrushPalette = brushPalette;
-            m_Translation = translation;
             InitializeComponent();
             m_OriginalBrushPaletteID = brushPalette.CurrentObjectID;
-            m_OriginalTranslationID = translation.CurrentObjectID;
+            m_OriginalLanguage = Translator.CurrentLanguage;
         }
 
         protected override void OnInit()
         {
-            m_BrushPalette.FillComboBox(ref ColorModeComboBox, false);
-            m_Translation.FillComboBox(ref LanguageComboBox, false);
+            Helper.FillComboBox(m_BrushPalette, ref ColorModeComboBox, false);
+
+            LanguageComboBox.Items.Clear();
+            foreach (CultureInfo obj in Translator.AvailablesLanguages)
+            {
+                LanguageInfo languageInfo = new(obj);
+                LanguageComboBox.Items.Add(languageInfo);
+                if (obj == m_OriginalLanguage)
+                    LanguageComboBox.SelectedItem = languageInfo;
+            }
         }
 
         private void ColorModeComboBox_SelectionChanged(object sender, EventArgs e)
@@ -34,13 +49,13 @@ namespace StreamGlass.StreamChat
 
         private void LanguageComboBox_SelectionChanged(object sender, EventArgs e)
         {
-            m_SettingsDialog!.SetCurrentTranslation(((Translation.Info)LanguageComboBox.SelectedItem).ID);
+            m_SettingsDialog!.SetCurrentTranslation(((LanguageInfo)LanguageComboBox.SelectedItem).CultureInfo);
         }
 
         protected override void OnCancel()
         {
             m_SettingsDialog!.SetCurrentPalette(m_OriginalBrushPaletteID);
-            m_SettingsDialog!.SetCurrentTranslation(m_OriginalTranslationID);
+            m_SettingsDialog!.SetCurrentTranslation(m_OriginalLanguage);
         }
     }
 }

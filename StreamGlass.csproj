@@ -29,10 +29,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\CorpseLib\CorpseLib.Web\CorpseLib.Web.csproj" />
+    <ProjectReference Include="..\..\CorpseLib\CorpseLib\CorpseLib.csproj" />
+    <ProjectReference Include="..\..\CorpseLib\OBSCorpse\OBSCorpse.csproj" />
     <ProjectReference Include="..\..\Quicksand\Quicksand\Quicksand.csproj" />
     <ProjectReference Include="..\StreamChemistry\StreamChemistry.csproj" />
-    <ProjectReference Include="..\StreamFeedstock\StreamFeedstock.csproj" />
-    <ProjectReference Include="..\StreamWeld\StreamWeld.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -97,6 +98,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Controls\NumericUpDown.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="StreamAlert\AlertControl.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

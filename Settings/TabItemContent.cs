@@ -1,5 +1,5 @@
-﻿using StreamFeedstock;
-using StreamFeedstock.Controls;
+﻿using StreamGlass;
+using StreamGlass.Controls;
 using System.Collections.Generic;
 
 namespace StreamGlass.Settings
@@ -50,7 +50,7 @@ namespace StreamGlass.Settings
             OnCancel();
         }
 
-        internal void UpdateTabItemColorPalette(BrushPaletteManager manager, TranslationManager translation) => Update(manager, translation);
+        internal void UpdateTabItemColorPalette(BrushPaletteManager manager) => Update(manager);
 
         protected virtual void OnInit() {}
 

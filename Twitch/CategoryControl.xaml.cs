@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using StreamFeedstock.Controls;
+using StreamGlass.Controls;
 
 namespace StreamGlass.Twitch
 {

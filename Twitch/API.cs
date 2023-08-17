@@ -1,8 +1,8 @@
-﻿using StreamFeedstock;
-using StreamFeedstock.Controls;
+﻿using CorpseLib.Json;
+using StreamGlass;
+using StreamGlass.Controls;
 using StreamGlass.Http;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web;
 
 namespace StreamGlass.Twitch
@@ -30,11 +30,11 @@ namespace StreamGlass.Twitch
             }
         }
 
-        private Json LoadEmoteSetContent(string content)
+        private JObject LoadEmoteSetContent(string content)
         {
-            Json responseJson = new(content);
-            List<Json> datas = responseJson.GetList<Json>("data");
-            foreach (Json data in datas)
+            JFile responseJObject = new(content);
+            List<JObject> datas = responseJObject.GetList<JObject>("data");
+            foreach (JObject data in datas)
             {
                 List<string> format = data.GetList<string>("format");
                 List<string> scale = data.GetList<string>("scale");
@@ -45,15 +45,15 @@ namespace StreamGlass.Twitch
                     format.Count != 0 && scale.Count != 0 && themeMode.Count != 0)
                     ms_Cache.AddEmote(new(id!, name!, emoteType!, format, scale, themeMode));
             }
-            return responseJson;
+            return responseJObject;
         }
 
         public void LoadGlobalEmoteSet()
         {
             GetRequest request = new("https://api.twitch.tv/helix/chat/emotes/global", ms_AccessToken);
             request.Send();
-            Json responseJson = LoadEmoteSetContent(request.GetResponse());
-            if (responseJson.TryGet("template", out string? template))
+            JObject responseJObject = LoadEmoteSetContent(request.GetResponse());
+            if (responseJObject.TryGet("template", out string? template))
                 ms_EmoteURLTemplate = template!;
         }
 
@@ -134,19 +134,19 @@ namespace StreamGlass.Twitch
             {
                 GetRequest request = new(string.Format("https://api.twitch.tv/helix/moderation/moderators?broadcaster_id={0}&user_id={1}", ms_SelfUserInfo.ID, id), ms_AccessToken);
                 request.Send();
-                Json json = new(request.GetResponse());
-                isMod = json.GetList<Json>("data").Count != 0;
+                JFile json = new(request.GetResponse());
+                isMod = json.GetList<JObject>("data").Count != 0;
             }
             return GetUserType(self, isMod, type, id);
         }
 
         private User? GetUserInfo(string content, User.Type? userType)
         {
-            Json responseJson = new(content);
-            List<Json> datas = responseJson.GetList<Json>("data");
+            JFile responseJObject = new(content);
+            List<JObject> datas = responseJObject.GetList<JObject>("data");
             if (datas.Count > 0)
             {
-                Json data = datas[0];
+                JObject data = datas[0];
                 if (data.TryGet("id", out string? id) &&
                     data.TryGet("login", out string? login) &&
                     data.TryGet("display_name", out string? displayName) &&
@@ -190,11 +190,11 @@ namespace StreamGlass.Twitch
                 GetRequest request = new(string.Format("https://api.twitch.tv/helix/channels?broadcaster_id={0}", broadcasterInfo.ID), ms_AccessToken);
                 request.Send();
 
-                Json responseJson = new(request.GetResponse());
-                List<Json> datas = responseJson.GetList<Json>("data");
+                JFile responseJObject = new(request.GetResponse());
+                List<JObject> datas = responseJObject.GetList<JObject>("data");
                 if (datas.Count > 0)
                 {
-                    Json data = datas[0];
+                    JObject data = datas[0];
                     if (data.TryGet("game_id", out string? gameID) &&
                         data.TryGet("game_name", out string? gameName) &&
                         data.TryGet("title", out string? title) &&
@@ -209,7 +209,7 @@ namespace StreamGlass.Twitch
         {
             if (string.IsNullOrEmpty(title) && string.IsNullOrEmpty(gameID) && string.IsNullOrEmpty(language))
                 return false;
-            Json body = new();
+            JObject body = new();
             if (!string.IsNullOrEmpty(title))
                 body.Set("title", title);
             if (!string.IsNullOrEmpty(gameID))
@@ -226,8 +226,8 @@ namespace StreamGlass.Twitch
             List<User> ret = new();
             GetRequest request = new(string.Format("https://api.twitch.tv/helix/users/follows?from_id={0}", user.ID), ms_AccessToken);
             request.Send();
-            Json responseJson = new(request.GetResponse());
-            foreach (Json data in responseJson.GetList<Json>("data"))
+            JFile responseJObject = new(request.GetResponse());
+            foreach (JObject data in responseJObject.GetList<JObject>("data"))
             {
                 if (data.TryGet("to_id", out string? toID) &&
                     data.TryGet("to_login", out string? toLogin) &&
@@ -242,8 +242,8 @@ namespace StreamGlass.Twitch
             List<CategoryInfo> ret = new();
             GetRequest request = new(string.Format("https://api.twitch.tv/helix/search/categories?query={0}", HttpUtility.UrlEncode(query)), ms_AccessToken);
             request.Send();
-            Json responseJson = new(request.GetResponse());
-            foreach (Json data in responseJson.GetList<Json>("data"))
+            JFile responseJObject = new(request.GetResponse());
+            foreach (JObject data in responseJObject.GetList<JObject>("data"))
             {
                 if (data.TryGet("id", out string? id) &&
                     data.TryGet("name", out string? name) &&
@@ -253,11 +253,11 @@ namespace StreamGlass.Twitch
             return ret;
         }
 
-        public bool ManageHeldMessage(string senderID, string messageID, bool allow)
+        public bool ManageHeldMessage(string messageID, bool allow)
         {
             if (ms_SelfUserInfo == null)
                 return false;
-            Json json = new();
+            JObject json = new();
             json.Set("user_id", ms_SelfUserInfo.ID);
             json.Set("msg_id", messageID);
             json.Set("action", (allow) ? "ALLOW" : "DENY");
@@ -270,8 +270,8 @@ namespace StreamGlass.Twitch
         {
             if (ms_SelfUserInfo == null)
                 return false;
-            Json json = new();
-            Json data = new();
+            JObject json = new();
+            JObject data = new();
             data.Set("user_id", user.ID);
             if (duration > 0)
                 data.Set("duration", duration);

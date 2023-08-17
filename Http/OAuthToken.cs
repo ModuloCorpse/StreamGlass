@@ -1,4 +1,5 @@
-﻿using StreamFeedstock;
+﻿using CorpseLib.Json;
+using StreamGlass;
 using StreamGlass.Twitch;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +43,7 @@ namespace StreamGlass.Http
             string responseJsonStr = oauthRequest.GetResponse();
             if (string.IsNullOrWhiteSpace(responseJsonStr))
                 return;
-            Json responseJson = new(responseJsonStr);
+            JFile responseJson = new(responseJsonStr);
             List<string> scope = responseJson.GetList<string>("scope");
             if (responseJson.TryGet("access_token", out string? access_token) &&
                 responseJson.TryGet("refresh_token", out string? refresh_token) &&
@@ -57,9 +58,7 @@ namespace StreamGlass.Http
         public void Refresh()
         {
             GetAccessToken(string.Format("grant_type=refresh_token&refresh_token={0}&client_id={1}&client_secret={2}", m_RefreshToken, m_PublicKey, m_Secret));
-            var handler = Refreshed;
-            if (handler != null)
-                handler(this);
+            Refreshed?.Invoke(this);
         }
     }
 }

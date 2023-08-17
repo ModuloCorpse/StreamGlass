@@ -1,7 +1,5 @@
-﻿using StreamFeedstock.Controls;
-using StreamFeedstock.StructuredText;
-using StreamGlass.StreamChat;
-using System;
+﻿using CorpseLib.StructuredText;
+using StreamGlass.Controls;
 using System.Collections.Generic;
 using static StreamGlass.Twitch.IRC.Message;
 

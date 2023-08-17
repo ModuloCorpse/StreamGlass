@@ -1,4 +1,4 @@
-﻿using StreamFeedstock.Controls;
+﻿using StreamGlass.Controls;
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -14,7 +14,7 @@ namespace StreamGlass.Profile
         private readonly CategoryInfo m_CategoryInfo = new("");
         private readonly string m_ID = Guid.NewGuid().ToString();
 
-        public ProfileEditor(StreamFeedstock.Controls.Window parent, ProfileManager profileManager, ConnectionManager connectionManager): base(parent)
+        public ProfileEditor(StreamGlass.Controls.Window parent, ProfileManager profileManager, ConnectionManager connectionManager): base(parent)
         {
             m_ConnectionManager = connectionManager;
             InitializeComponent();
@@ -22,12 +22,12 @@ namespace StreamGlass.Profile
             ChatCommandsList.ItemAdded += ChatCommandsList_AddChatCommand;
             ChatCommandsList.ItemRemoved += ChatCommandsList_RemoveChatCommand;
             ChatCommandsList.ItemEdited += ChatCommandsList_EditChatCommand;
-            profileManager.FillComboBox(ref ParentComboBox);
+            Helper.FillComboBox(profileManager, ref ParentComboBox);
             ParentComboBox.SelectedIndex = 0;
             IsSelectableCheckBox.IsChecked = true;
         }
 
-        public ProfileEditor(StreamFeedstock.Controls.Window parent, ProfileManager profileManager, ConnectionManager connectionManager, Profile profile): this(parent, profileManager, connectionManager)
+        public ProfileEditor(StreamGlass.Controls.Window parent, ProfileManager profileManager, ConnectionManager connectionManager, Profile profile): this(parent, profileManager, connectionManager)
         {
             ParentComboBox.Items.Remove(profile.ObjectInfo);
             m_ID = profile.ID;

@@ -1,4 +1,4 @@
-﻿using StreamFeedstock;
+﻿using CorpseLib.Json;
 
 namespace StreamGlass.Profile
 {
@@ -25,7 +25,7 @@ namespace StreamGlass.Profile
             m_StreamLanguage = language;
         }
 
-        internal void Save(ref Json json)
+        internal void Save(ref JFile json)
         {
             if (HaveStreamTitle())
                 json.Set("stream_title", m_StreamTitle);
@@ -40,7 +40,7 @@ namespace StreamGlass.Profile
                 json.Set("stream_language", m_StreamLanguage);
         }
 
-        internal void Load(Json json)
+        internal void Load(JFile json)
         {
             m_StreamTitle = json.GetOrDefault("stream_title", "");
             m_StreamDescription = json.GetOrDefault("stream_description", "");
