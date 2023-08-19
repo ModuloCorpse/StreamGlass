@@ -5,6 +5,7 @@ using StreamGlass.Connections;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using TwitchCorpse;
 
 namespace StreamGlass.Profile
 {

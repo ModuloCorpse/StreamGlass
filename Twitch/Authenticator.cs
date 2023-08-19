@@ -1,6 +1,8 @@
-﻿using Quicksand.Web;
+﻿using CorpseLib.Ini;
+using CorpseLib.Network;
+using CorpseLib.Web.OAuth;
+using Quicksand.Web;
 using Quicksand.Web.Html;
-using StreamGlass.Http;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -72,7 +74,7 @@ namespace StreamGlass.Twitch
 
         internal readonly static string REDIRECT_URI = "http://localhost:80/twitch_authenticate/";
         private readonly static string TWITCH_AUTH_URI = "https://id.twitch.tv/oauth2/authorize?response_type=code";
-        private readonly Settings.Data m_Settings;
+        private readonly IniSection m_Settings;
         private readonly List<string> m_Scopes = new() {
             "bits:read",
             "channel:manage:broadcast",
@@ -98,7 +100,7 @@ namespace StreamGlass.Twitch
         private TaskCompletionSource<string> m_Task = new();
         private string m_State = "";
 
-        public Authenticator(Server webServer, Settings.Data settings)
+        public Authenticator(Server webServer, IniSection settings)
         {
             Div waitDiv = new();
             waitDiv.AddContent("Waiting for authentification");
@@ -111,12 +113,12 @@ namespace StreamGlass.Twitch
             m_Settings = settings;
         }
 
-        public OAuthToken? Authenticate(string browser = "")
+        public RefreshToken? Authenticate(string browser = "")
         {
             m_State = Guid.NewGuid().ToString();
             string scopeString = string.Join('+', m_Scopes).Replace(":", "%3A");
             string twitchAuthURI = string.Format("{0}&client_id={1}&redirect_uri={2}&scope={3}&state={4}",
-                TWITCH_AUTH_URI, m_Settings.Get("twitch", "public_key"), REDIRECT_URI, scopeString, m_State);
+                TWITCH_AUTH_URI, m_Settings.Get("public_key"), REDIRECT_URI, scopeString, m_State);
             Process myProcess = new();
             myProcess.StartInfo.UseShellExecute = true;
             if (string.IsNullOrWhiteSpace(browser))
@@ -129,7 +131,7 @@ namespace StreamGlass.Twitch
             myProcess.Start();
             m_Task = new TaskCompletionSource<string>();
             if (m_Task.Task.Wait(TimeSpan.FromSeconds(5)))
-                return new("https://id.twitch.tv/oauth2/token", m_Scopes, m_Settings.Get("twitch", "public_key"), m_Settings.Get("twitch", "secret_key"), m_Task.Task.Result);
+                return new(URI.Parse("https://id.twitch.tv/oauth2/token"), m_Scopes.ToArray(), m_Settings.Get("public_key"), m_Settings.Get("secret_key"), m_Task.Task.Result, REDIRECT_URI);
             return null;
         }
 

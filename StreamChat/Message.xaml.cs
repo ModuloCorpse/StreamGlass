@@ -6,6 +6,7 @@ using StreamGlass;
 using StreamGlass.Controls;
 using StreamGlass.Connections;
 using StreamGlass.Events;
+using TwitchCorpse;
 
 namespace StreamGlass.StreamChat
 {

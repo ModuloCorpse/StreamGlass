@@ -5,6 +5,7 @@ using StreamGlass;
 using static StreamGlass.StreamAlert.AlertScrollPanel;
 using System;
 using CorpseLib.Translation;
+using CorpseLib.Ini;
 
 namespace StreamGlass.StreamAlert
 {
@@ -28,7 +29,7 @@ namespace StreamGlass.StreamAlert
         private readonly double m_OriginalContentFontSize;
         private readonly ScrollPanelDisplayType m_OriginalDisplayType;
 
-        public StreamAlertSettingsItem(Data settings, AlertScrollPanel streamAlert) : base("/Assets/megaphone.png", "alert", settings)
+        public StreamAlertSettingsItem(IniSection settings, AlertScrollPanel streamAlert) : base("/Assets/megaphone.png", settings)
         {
             m_StreamAlert = streamAlert;
             InitializeComponent();

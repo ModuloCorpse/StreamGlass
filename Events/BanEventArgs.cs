@@ -1,4 +1,6 @@
-﻿namespace StreamGlass.Events
+﻿using TwitchCorpse;
+
+namespace StreamGlass.Events
 {
     public class BanEventArgs
     {

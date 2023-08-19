@@ -1,22 +1,25 @@
-﻿using Quicksand.Web;
+﻿using CorpseLib.Ini;
+using CorpseLib.Json;
+using CorpseLib.Translation;
+using Quicksand.Web;
+using StreamGlass.Connections;
+using StreamGlass.Controls;
 using StreamGlass.Profile;
 using StreamGlass.StreamAlert;
 using StreamGlass.StreamChat;
-using StreamGlass.Controls;
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Windows;
 using System.Windows.Threading;
-using StreamGlass.Connections;
-using CorpseLib.Translation;
 
 namespace StreamGlass
 {
     public partial class StreamGlassWindow : Controls.Window
     {
         private readonly Stopwatch m_Watch = new();
-        private readonly Settings.Data m_Settings = new();
+        private readonly IniFile m_Settings = new();
         private readonly Server m_WebServer = new();
         private readonly ProfileManager m_Manager;
         private readonly ConnectionManager m_ConnectionManager = new();
@@ -157,50 +160,40 @@ namespace StreamGlass
             };
             Translator.AddTranslation(translation);
             Translator.LoadDirectory("./locals");
-            Translator.CurrentLanguageChanged += () => m_Settings.Set("settings", "language", Translator.CurrentLanguage.Name);
+            Translator.CurrentLanguageChanged += () => m_Settings.GetOrAdd("settings").Set("language", Translator.CurrentLanguage.Name);
         }
 
         private void InitializeAlertSetting(AlertScrollPanel.AlertType alertType, string imgPath, string prefix, bool isEnabled)
         {
-            m_Settings.Create("alert", string.Format("{0}_path", alertType), imgPath);
-            m_Settings.Create("alert", string.Format("{0}_prefix", alertType), prefix);
-            m_Settings.Create("alert", string.Format("{0}_enabled", alertType), (isEnabled) ? "true" : "false");
-            string loadedImgPath = m_Settings.Get("alert", string.Format("{0}_path", alertType));
-            string loadedPrefix = m_Settings.Get("alert", string.Format("{0}_prefix", alertType));
-            bool loadedIsEnabled = m_Settings.Get("alert", string.Format("{0}_enabled", alertType)) == "true";
+            IniSection alertSection = m_Settings.GetOrAdd("alert");
+            string loadedImgPath = alertSection.GetOrAdd(string.Format("{0}_path", alertType), imgPath);
+            string loadedPrefix = alertSection.GetOrAdd(string.Format("{0}_prefix", alertType), prefix);
+            bool loadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_enabled", alertType), (isEnabled) ? "true" : "false") == "true";
             StreamAlertPanel.SetAlertInfo(alertType, loadedImgPath, loadedPrefix, loadedIsEnabled);
 
-            m_Settings.Create("alert", string.Format("{0}_gift_path", alertType), imgPath);
-            m_Settings.Create("alert", string.Format("{0}_gift_prefix", alertType), prefix);
-            m_Settings.Create("alert", string.Format("{0}_gift_enabled", alertType), (isEnabled) ? "true" : "false");
-            string giftLoadedImgPath = m_Settings.Get("alert", string.Format("{0}_gift_path", alertType));
-            string giftLoadedPrefix = m_Settings.Get("alert", string.Format("{0}_gift_prefix", alertType));
-            bool giftLoadedIsEnabled = m_Settings.Get("alert", string.Format("{0}_gift_enabled", alertType)) == "true";
+            string giftLoadedImgPath = alertSection.GetOrAdd(string.Format("{0}_gift_path", alertType), imgPath);
+            string giftLoadedPrefix = alertSection.GetOrAdd(string.Format("{0}_gift_prefix", alertType), prefix);
+            bool giftLoadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_enabled", alertType), (isEnabled) ? "true" : "false") == "true";
             StreamAlertPanel.SetGiftAlertInfo(alertType, giftLoadedImgPath, giftLoadedPrefix, giftLoadedIsEnabled);
         }
 
         private void InitializeSettings()
         {
             //Chat
-            m_Settings.Create("chat", "display_type", "0");
-            StreamChatPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(m_Settings.Get("chat", "display_type")));
-            m_Settings.Create("chat", "sender_font_size", "14");
-            StreamChatPanel.SetSenderFontSize(double.Parse(m_Settings.Get("chat", "sender_font_size")));
-            m_Settings.Create("chat", "sender_size", "100");
-            StreamChatPanel.SetSenderWidth(double.Parse(m_Settings.Get("chat", "sender_size")));
-            m_Settings.Create("chat", "message_font_size", "14");
-            StreamChatPanel.SetContentFontSize(double.Parse(m_Settings.Get("chat", "message_font_size")));
-            m_Settings.Create("chat", "panel_on_right", "false");
-            if (m_Settings.Get("chat", "panel_on_right") == "true")
+            IniSection chatSection = m_Settings.GetOrAdd("chat");
+            StreamChatPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(chatSection.GetOrAdd("display_type", "0")));
+            StreamChatPanel.SetSenderFontSize(double.Parse(chatSection.GetOrAdd("sender_font_size", "14")));
+            StreamChatPanel.SetSenderWidth(double.Parse(chatSection.GetOrAdd("sender_size", "100")));
+            StreamChatPanel.SetContentFontSize(double.Parse(chatSection.GetOrAdd("message_font_size", "14")));
+            if (chatSection.GetOrAdd("panel_on_right", "false") == "true")
                 SetChatPanelOnRight();
-            m_Settings.Create("chat", "do_welcome", "true");
-            m_Settings.Create("chat", "welcome_message", "Hello World! Je suis un bot connecté via StreamGlass!");
+            chatSection.Add("do_welcome", "true");
+            chatSection.Add("welcome_message", "Hello World! Je suis un bot connecté via StreamGlass!");
 
             //Alert
-            m_Settings.Create("alert", "display_type", "0");
-            StreamAlertPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(m_Settings.Get("alert", "display_type")));
-            m_Settings.Create("alert", "message_font_size", "20");
-            StreamAlertPanel.SetContentFontSize(double.Parse(m_Settings.Get("alert", "message_font_size")));
+            IniSection alertSection = m_Settings.GetOrAdd("alert");
+            StreamAlertPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(alertSection.GetOrAdd("display_type", "0")));
+            StreamAlertPanel.SetContentFontSize(double.Parse(alertSection.GetOrAdd("message_font_size", "20")));
             InitializeAlertSetting(AlertScrollPanel.AlertType.INCOMMING_RAID, "../Assets/parachute.png", "${e.From} is raiding you with ${e.NbViewers} viewers", true);
             InitializeAlertSetting(AlertScrollPanel.AlertType.OUTGOING_RAID, "../Assets/parachute.png", "You are raiding ${e.To} with ${e.NbViewers} viewers", true);
             InitializeAlertSetting(AlertScrollPanel.AlertType.DONATION, "../Assets/take-my-money.png", "${e.Name} as donated ${e.Amount} ${e.Currency}: ", true);
@@ -212,24 +205,45 @@ namespace StreamGlass
             InitializeAlertSetting(AlertScrollPanel.AlertType.TIER4, "../Assets/chess-queen.png", "${e.Name} as subscribed to you with a prime: ", true);
 
             //Held message
-            m_Settings.Create("moderation", "display_type", "0");
-            HeldMessagePanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(m_Settings.Get("moderation", "display_type")));
-            m_Settings.Create("moderation", "sender_font_size", "14");
-            HeldMessagePanel.SetSenderFontSize(double.Parse(m_Settings.Get("moderation", "sender_font_size")));
-            m_Settings.Create("moderation", "sender_size", "200");
-            HeldMessagePanel.SetSenderWidth(double.Parse(m_Settings.Get("moderation", "sender_size")));
-            m_Settings.Create("moderation", "message_font_size", "14");
-            HeldMessagePanel.SetContentFontSize(double.Parse(m_Settings.Get("moderation", "message_font_size")));
+            IniSection moderationSection = m_Settings.GetOrAdd("moderation");
+            HeldMessagePanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(moderationSection.GetOrAdd("display_type", "0")));
+            HeldMessagePanel.SetSenderFontSize(double.Parse(moderationSection.GetOrAdd("sender_font_size", "14")));
+            HeldMessagePanel.SetSenderWidth(double.Parse(moderationSection.GetOrAdd("sender_size", "200")));
+            HeldMessagePanel.SetContentFontSize(double.Parse(moderationSection.GetOrAdd("message_font_size", "14")));
 
             //Settings
-            m_Settings.Create("settings", "language", "en-US");
-            Translator.SetLanguage(CultureInfo.GetCultureInfo(m_Settings.Get("settings", "language")));
+            IniSection settingsSection = m_Settings.GetOrAdd("settings");
+            Translator.SetLanguage(CultureInfo.GetCultureInfo(settingsSection.GetOrAdd("language", "en-US")));
+        }
+
+        private void LoadIni()
+        {
+            if (File.Exists("settings.ini"))
+            {
+                IniFile iniFile = IniFile.ParseFile("settings.ini");
+                if (!iniFile.HaveEmptySection)
+                    m_Settings.Merge(iniFile);
+            }
+            else if (File.Exists("settings.json"))
+            {
+                JFile response = JFile.LoadFromFile("settings.json");
+                foreach (var item in response)
+                {
+                    string key = item.Key;
+                    JObject value = item.Value.Cast<JObject>()!;
+                    IniSection section = new(key);
+                    foreach (var item2 in value)
+                        section.Add(item2.Key, item2.Value.Cast<string>()!);
+                    m_Settings.AddSection(section);
+                }
+                File.Delete("settings.json");
+            }
         }
 
         public StreamGlassWindow(): base(new())
         {
             InitializeComponent();
-            m_Settings.Load();
+            LoadIni();
             InitializeSettings();
             InitializeBrushPalette();
             InitializeTranslation();
@@ -237,7 +251,7 @@ namespace StreamGlass
             m_WebServer.GetResourceManager().AddFramework();
             m_WebServer.Start();
 
-            m_ConnectionManager.RegisterConnection(new Twitch.Connection(m_WebServer, m_Settings, this));
+            m_ConnectionManager.RegisterConnection(new Twitch.Connection(m_WebServer, m_Settings.GetOrAdd("twitch"), this));
             m_Manager = new(m_ConnectionManager);
             m_Manager.Load();
             UpdateProfilesMenuList();
@@ -249,9 +263,6 @@ namespace StreamGlass
 
             StreamChatPanel.SetConnectionManager(m_ConnectionManager);
             StreamAlertPanel.SetConnectionManager(m_ConnectionManager);
-
-            //TODO Fix translation still on en-US on bootup
-            Update();
         }
 
         private void UpdateProfilesMenuList()
@@ -300,7 +311,7 @@ namespace StreamGlass
             base.OnClosed(e);
             GetBrushPalette().Save();
             Translator.SaveToDir("./locals");
-            m_Settings.Save();
+            m_Settings.WriteToFile("settings.ini");
             m_Manager.Save();
             m_ConnectionManager.Disconnect();
             m_Watch.Stop();
@@ -312,16 +323,17 @@ namespace StreamGlass
         internal void JoinChannel(string channel)
         {
             m_Manager.UpdateStreamInfo();
-            if (m_Settings.Get("chat", "do_welcome") == "true")
-                m_ConnectionManager.SendMessage(channel, m_Settings.Get("chat", "welcome_message"));
+            IniSection? chatSection = m_Settings.Get("chat");
+            if (chatSection != null && chatSection.Get("do_welcome") == "true")
+                m_ConnectionManager.SendMessage(channel, chatSection.Get("welcome_message"));
         }
 
         private void SettingsToolStripMenuItem_Click(object sender, RoutedEventArgs e)
         {
             Settings.Dialog dialog = new(this);
-            dialog.AddTabItem(new GeneralSettingsItem(m_Settings, GetBrushPalette()));
-            dialog.AddTabItem(new StreamChatSettingsItem(m_Settings, StreamChatPanel, this));
-            dialog.AddTabItem(new StreamAlertSettingsItem(m_Settings, StreamAlertPanel));
+            dialog.AddTabItem(new GeneralSettingsItem(m_Settings.GetOrAdd("stream-chat"), GetBrushPalette()));
+            dialog.AddTabItem(new StreamChatSettingsItem(m_Settings.GetOrAdd("chat"), StreamChatPanel, this));
+            dialog.AddTabItem(new StreamAlertSettingsItem(m_Settings.GetOrAdd("alert"), StreamAlertPanel));
             m_ConnectionManager.FillSettings(dialog);
             dialog.ShowDialog();
         }

@@ -2,7 +2,7 @@
 using StreamGlass.Settings;
 using StreamGlass.Controls;
 using System.Windows;
-using StreamGlass;
+using CorpseLib.Ini;
 
 namespace StreamGlass.Twitch
 {
@@ -11,7 +11,7 @@ namespace StreamGlass.Twitch
         private readonly Connection m_Connection;
         private readonly SubModeComboBoxUserControlLink m_SubModeComboBoxUserControlLink;
 
-        public TwitchSettingsItem(Data settings, Connection connection): base("/Assets/twitch-logo.png", "twitch", settings)
+        public TwitchSettingsItem(IniSection settings, Connection connection): base("/Assets/twitch-logo.png", settings)
         {
             InitializeComponent();
             m_Connection = connection;

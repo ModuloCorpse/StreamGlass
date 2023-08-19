@@ -1,12 +1,12 @@
 ﻿using CorpseLib.Json;
 using CorpseLib.Logging;
 using CorpseLib.StructuredText;
+using CorpseLib.Web.OAuth;
 using Quicksand.Web;
 using Quicksand.Web.Http;
-using StreamGlass;
-using StreamGlass.Http;
 using System;
 using System.Collections.Generic;
+using TwitchCorpse;
 
 namespace StreamGlass.Twitch
 {
@@ -14,31 +14,29 @@ namespace StreamGlass.Twitch
     {
         public static readonly Logger PUBSUB = new("[${d}-${M}-${y} ${h}:${m}:${s}.${ms}] ${log}") { new LogInFile("./log/${y}${M}${d}${h}-PubSub.log") };
 
-        private readonly API m_API;
-        private readonly Settings.Data m_Settings;
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+        private API m_API = null;
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
         private readonly Quicksand.Web.WebSocket.Client m_Websocket;
-        private OAuthToken? m_Token;
+        private RefreshToken? m_Token;
         private string m_ChannelID = "";
 
         private long m_TimeSinceLastPing = 0;
         private long m_TimeBeforeNextPing = (new Random().Next(-15, 15) + 135) * 1000;
 
-        public PubSub(API api, Settings.Data settings)
+        public PubSub()
         {
             PUBSUB.Start();
-            m_API = api;
-            m_Settings = settings;
             m_Websocket = new(this, "wss://pubsub-edge.twitch.tv");
         }
 
-        public void SetToken(OAuthToken token)
-        {
-            m_Token = token;
-        }
+        public void SetAPI(API api) => m_API = api;
+
+        public void SetToken(RefreshToken token) => m_Token = token;
 
         private void ConnectToServer()
         {
-            Dictionary<string, string> extensions = new() { { "Authorization", string.Format("Bearer {0}", m_Token!.Token) } };
+            Dictionary<string, string> extensions = new() { { "Authorization", string.Format("Bearer {0}", m_Token!.AccessToken) } };
             m_Websocket.Connect(extensions);
         }
 
@@ -62,14 +60,14 @@ namespace StreamGlass.Twitch
             json.Set("type", "LISTEN");
             JObject data = new();
             data.Set("topics", topics);
-            data.Set("auth_token", m_Token!.Token);
+            data.Set("auth_token", m_Token!.AccessToken);
             json.Set("data", data);
             m_Websocket.Send(json.ToNetworkString());
         }
 
         private static Text GetMessage(JObject messageData)
         {
-            string messageText = messageData.GetOrDefault("text", "");
+            string messageText = messageData.GetOrDefault("text", "")!;
             List<JObject> fragmentsObject = messageData.GetList<JObject>("fragments");
             List<string> fragments = new();
             foreach (JObject fragment in fragmentsObject)
@@ -94,7 +92,7 @@ namespace StreamGlass.Twitch
                     {
                         if (messageSender!.TryGet("login", out string? login))
                         {
-                            string color = messageSender.GetOrDefault("chat_color", "");
+                            string color = messageSender.GetOrDefault("chat_color", "")!;
                             User? sender = m_API.GetUserInfoFromLogin(login!);
                             if (sender != null)
                                 StreamGlassCanals.HELD_MESSAGE.Emit(new(sender, false, messageID!, color!, "", GetMessage(messageData!)));

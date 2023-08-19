@@ -2,10 +2,12 @@
 using StreamGlass.Profile;
 using StreamGlass.Controls;
 using ChatClient = StreamGlass.Twitch.IRC.ChatClient;
-using StreamGlass.Http;
 using StreamGlass.Connections;
 using StreamGlass.Settings;
 using StreamGlass.Events;
+using CorpseLib.Ini;
+using CorpseLib.Web.OAuth;
+using TwitchCorpse;
 
 namespace StreamGlass.Twitch
 {
@@ -16,17 +18,20 @@ namespace StreamGlass.Twitch
         private readonly PubSub m_PubSub;
         private ChannelInfo? m_OriginalBroadcasterChannelInfo = null;
         private readonly Authenticator m_Authenticator;
-        private readonly API m_API = new();
-        private OAuthToken? m_APIToken = null;
-        private OAuthToken? m_IRCToken = null;
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+        private API m_API = null;
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+        private RefreshToken? m_APIToken = null;
+        private RefreshToken? m_IRCToken = null;
         private string m_Channel = "";
 
-        public Connection(Server webServer, Data settings, StreamGlassWindow form): base(settings, form, "twitch")
+        public Connection(Server webServer, IniSection settings, StreamGlassWindow form): base(settings, form)
         {
+            API.StartLogging();
             m_Authenticator = new(webServer, settings);
-            m_Client = new(m_API, settings);
+            m_Client = new(settings);
             m_EventSub = new(settings);
-            m_PubSub = new(m_API, settings);
+            m_PubSub = new();
         }
 
         protected override void InitSettings()
@@ -85,9 +90,11 @@ namespace StreamGlass.Twitch
         {
             if (m_APIToken == null || m_IRCToken == null)
                 return false;
+            m_API = new(m_APIToken);
+            m_Client.SetAPI(m_API);
+            m_PubSub.SetAPI(m_API);
             m_EventSub.SetToken(m_APIToken);
             m_PubSub.SetToken(m_APIToken);
-            m_API.Authenticate(m_APIToken);
             m_API.LoadGlobalEmoteSet();
             User? creator = m_API.GetUserInfoFromLogin("chaporon_");
             if (creator != null)
@@ -176,11 +183,6 @@ namespace StreamGlass.Twitch
         }
 
         public override void SendMessage(string channel, string message) => m_Client.SendMessage(channel, message);
-
-        public override string GetEmoteURL(string emoteID, BrushPaletteManager palette)
-        {
-            return m_API.GetEmoteURL(emoteID, palette.GetPaletteType());
-        }
 
         private void ResetStreamInfo()
         {

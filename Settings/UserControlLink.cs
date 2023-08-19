@@ -1,21 +1,21 @@
-﻿namespace StreamGlass.Settings
+﻿using CorpseLib.Ini;
+
+namespace StreamGlass.Settings
 {
     public abstract class UserControlLink
     {
-        private Data? m_Settings = null;
-        private string m_Category = "";
+        private IniSection? m_Settings = null;
         private string m_Setting = "";
 
-        internal void Init(string category, string setting, Data settings)
+        internal void Init(string setting, IniSection settings)
         {
-            m_Category = category;
             m_Setting = setting;
             m_Settings = settings;
             Load();
         }
 
-        protected void SetSettings(string value) => m_Settings!.Set(m_Category, m_Setting, value);
-        protected string GetSettings() => m_Settings!.Get(m_Category, m_Setting);
+        protected void SetSettings(string value) => m_Settings!.Set(m_Setting, value);
+        protected string GetSettings() => m_Settings!.Get(m_Setting);
 
         internal void OnSave() => Save();
         internal void OnCancel() => Cancel();

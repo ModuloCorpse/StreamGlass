@@ -47,18 +47,6 @@ namespace StreamGlass.Connections
                 connection.SendMessage(channel, message);
         }
 
-        public string GetEmoteURL(string emoteID, BrushPaletteManager palette)
-        {
-            string url = "";
-            foreach (var connection in m_StreamChatConnections)
-            {
-                url = connection.GetEmoteURL(emoteID, palette);
-                if (!string.IsNullOrEmpty(url))
-                    return url;
-            }
-            return url;
-        }
-
         public CategoryInfo? SearchCategoryInfo(Window parent, CategoryInfo? info)
         {
             foreach (var connection in m_StreamChatConnections)

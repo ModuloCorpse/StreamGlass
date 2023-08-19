@@ -1,5 +1,6 @@
 ﻿using CorpseLib.StructuredText;
 using System;
+using TwitchCorpse;
 
 namespace StreamGlass.StreamChat
 {

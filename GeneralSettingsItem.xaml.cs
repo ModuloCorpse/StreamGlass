@@ -1,8 +1,9 @@
-﻿using StreamGlass.Settings;
+﻿using CorpseLib.Ini;
+using CorpseLib.Translation;
 using StreamGlass.Controls;
+using StreamGlass.Settings;
 using System;
 using System.Globalization;
-using CorpseLib.Translation;
 
 namespace StreamGlass.StreamChat
 {
@@ -20,7 +21,7 @@ namespace StreamGlass.StreamChat
         private readonly CultureInfo m_OriginalLanguage;
         private readonly string m_OriginalBrushPaletteID;
 
-        public GeneralSettingsItem(Data settings, BrushPaletteManager brushPalette) : base("/Assets/tinker.png", "stream-chat", settings)
+        public GeneralSettingsItem(IniSection settings, BrushPaletteManager brushPalette) : base("/Assets/tinker.png", settings)
         {
             m_BrushPalette = brushPalette;
             InitializeComponent();
@@ -37,7 +38,7 @@ namespace StreamGlass.StreamChat
             {
                 LanguageInfo languageInfo = new(obj);
                 LanguageComboBox.Items.Add(languageInfo);
-                if (obj == m_OriginalLanguage)
+                if (obj.Name == m_OriginalLanguage.Name)
                     LanguageComboBox.SelectedItem = languageInfo;
             }
         }

@@ -1,8 +1,12 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.Ini;
+using CorpseLib.Json;
 using CorpseLib.Logging;
+using CorpseLib.Network;
+using CorpseLib.Web;
+using CorpseLib.Web.Http;
+using CorpseLib.Web.OAuth;
 using Quicksand.Web;
 using StreamGlass.Events;
-using StreamGlass.Http;
 using System;
 using System.Collections.Generic;
 
@@ -141,27 +145,27 @@ namespace StreamGlass.Twitch
             public bool TryGet<T>(string key, out T? ret) => m_Data.TryGet(key, out ret);
         }
 
-        private readonly Settings.Data m_Settings;
+        private readonly IniSection m_Settings;
         private readonly Quicksand.Web.WebSocket.Client m_Websocket;
-        private OAuthToken? m_Token;
+        private RefreshToken? m_Token;
         private readonly HashSet<string> m_TreatedMessage = new();
         private string m_ChannelID = "";
 
-        public EventSub(Settings.Data settings)
+        public EventSub(IniSection settings)
         {
             EVENTSUB.Start();
             m_Settings = settings;
             m_Websocket = new(this, "wss://eventsub.wss.twitch.tv/ws");
         }
 
-        public void SetToken(OAuthToken token)
+        public void SetToken(RefreshToken token)
         {
             m_Token = token;
         }
 
         private void ConnectToServer()
         {
-            Dictionary<string, string> extensions = new() { { "Authorization", string.Format("Bearer {0}", m_Token!.Token) } };
+            Dictionary<string, string> extensions = new() { { "Authorization", string.Format("Bearer {0}", m_Token!.AccessToken) } };
             m_Websocket.Connect(extensions);
         }
 
@@ -205,23 +209,27 @@ namespace StreamGlass.Twitch
             message.Set("version", subscriptionVersion);
             message.Set("condition", conditionJson);
             message.Set("transport", transportJson);
-            PostRequest subscriptionRequest = new("https://api.twitch.tv/helix/eventsub/subscriptions", message, m_Token);
-            subscriptionRequest.Send();
-            if (subscriptionRequest.GetStatusCode() == 202)
+            URLRequest request = new(URI.Parse("https://api.twitch.tv/helix/eventsub/subscriptions"), Request.MethodType.POST, message.ToNetworkString());
+            request.AddContentType(MIME.APPLICATION.JSON);
+            request.AddRefreshToken(m_Token);
+            EVENTSUB.Log(string.Format("Sending: {0}", request.Request.ToString()));
+            Response response = request.Send();
+            EVENTSUB.Log(string.Format("Received: {0}", response.ToString()));
+            if (response.StatusCode == 202)
             {
                 EVENTSUB.Log(string.Format("<= Listening to {0}", subscriptionName));
                 return true;
             }
             else
             {
-                EVENTSUB.Log(string.Format("<= Error when listening to {0}: {1}", subscriptionName, subscriptionRequest.GetResponse()));
+                EVENTSUB.Log(string.Format("<= Error when listening to {0}: {1}", subscriptionName, response.Body));
                 return false;
             }
         }
 
         private void HandleWelcome(JObject payload)
         {
-            EVENTSUB.Log("<= Welcome");
+            EVENTSUB.Log(string.Format("<= Welcome: {0}", payload));
             if (payload.TryGet("session", out JObject? sessionObj))
             {
                 if (sessionObj!.TryGet("id", out string? sessionID))
@@ -254,7 +262,7 @@ namespace StreamGlass.Twitch
 
         private void HandleSub(EventData data)
         {
-            if (m_Settings.Get("twitch", "sub_mode") == "claimed")
+            if (m_Settings.Get("sub_mode") == "claimed")
                 return;
             int followTier;
             EventData.User? follower = data.GetUser();
@@ -277,7 +285,7 @@ namespace StreamGlass.Twitch
 
         private void HandleSubGift(EventData data)
         {
-            if (m_Settings.Get("twitch", "sub_mode") == "claimed")
+            if (m_Settings.Get("sub_mode") == "claimed")
                 return;
             int followTier;
             if (data.TryGet("is_anonymous", out bool? isAnonymous))

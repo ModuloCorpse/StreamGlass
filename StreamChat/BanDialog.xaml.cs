@@ -1,6 +1,7 @@
-﻿using System.Windows;
-using StreamGlass.Controls;
+﻿using StreamGlass.Controls;
 using StreamGlass.Events;
+using System.Windows;
+using TwitchCorpse;
 
 namespace StreamGlass.StreamChat
 {
@@ -9,7 +10,7 @@ namespace StreamGlass.StreamChat
         private readonly User m_UserToBan; 
         private BanEventArgs? m_Event = null;
 
-        public BanDialog(StreamGlass.Controls.Window parent, User userToBan) : base(parent)
+        public BanDialog(Controls.Window parent, User userToBan) : base(parent)
         {
             InitializeComponent();
             m_UserToBan = userToBan;

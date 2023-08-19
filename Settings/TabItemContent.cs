@@ -1,4 +1,4 @@
-﻿using StreamGlass;
+﻿using CorpseLib.Ini;
 using StreamGlass.Controls;
 using System.Collections.Generic;
 
@@ -7,15 +7,13 @@ namespace StreamGlass.Settings
     public abstract class TabItemContent : UserControl
     {
         protected Dialog? m_SettingsDialog = null;
-        private readonly Data m_Settings;
+        private readonly IniSection m_Settings;
         private readonly List<UserControlLink> m_Links = new();
         private readonly string m_HeaderSource;
-        private readonly string m_SettingCategory;
 
-        protected TabItemContent(string headerSource, string settingCategory, Data settings)
+        protected TabItemContent(string headerSource, IniSection settings)
         {
             m_HeaderSource = headerSource;
-            m_SettingCategory = settingCategory;
             m_Settings = settings;
         }
 
@@ -27,12 +25,12 @@ namespace StreamGlass.Settings
 
         protected void AddControlLink(string setting, UserControlLink link)
         {
-            link.Init(m_SettingCategory, setting, m_Settings);
+            link.Init(setting, m_Settings);
             m_Links.Add(link);
         }
 
-        protected string GetSetting(string setting) => m_Settings.Get(m_SettingCategory, setting);
-        protected void SetSetting(string setting, string value) => m_Settings.Set(m_SettingCategory, setting, value);
+        protected string GetSetting(string setting) => m_Settings.Get(setting);
+        protected void SetSetting(string setting, string value) => m_Settings.Set(setting, value);
 
         internal string GetHeaderSource() => m_HeaderSource;
 

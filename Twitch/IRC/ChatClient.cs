@@ -1,13 +1,14 @@
-﻿using CorpseLib.Logging;
+﻿using CorpseLib.Ini;
+using CorpseLib.Logging;
 using CorpseLib.StructuredText;
+using CorpseLib.Web.OAuth;
 using Quicksand.Web;
-using StreamGlass;
-using StreamGlass.Http;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using TwitchCorpse;
 
 namespace StreamGlass.Twitch.IRC
 {
@@ -34,27 +35,30 @@ namespace StreamGlass.Twitch.IRC
             "#00ff7f"
         };
 
-        private readonly API m_API;
-        private readonly Settings.Data m_Settings;
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+        private API m_API = null;
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+        private readonly IniSection m_Settings;
         private readonly Quicksand.Web.WebSocket.Client m_Client;
         private User? m_SelfUserInfo = null;
-        private OAuthToken? m_AccessToken = null;
+        private RefreshToken? m_AccessToken = null;
         private string m_ChatColor = "";
         private string m_Channel = "";
         private string m_UserName = "";
         private bool m_CanReconnect = true;
 
-        public ChatClient(API api, Settings.Data settings)
+        public ChatClient(IniSection settings)
         {
             TWITCH_IRC.Start();
-            m_API = api;
             m_Settings = settings;
             m_Client = new(this, "wss://irc-ws.chat.twitch.tv:443");
         }
 
+        public void SetAPI(API api) => m_API = api;
+
         public void SetSelfUserInfo(User? info) => m_SelfUserInfo = info;
 
-        public void Init(string username, OAuthToken token)
+        public void Init(string username, RefreshToken token)
         {
             m_UserName = username;
             m_AccessToken = token;
@@ -67,7 +71,7 @@ namespace StreamGlass.Twitch.IRC
             if (m_AccessToken == null)
                 return;
             SendMessage(new("CAP REQ", parameters: "twitch.tv/membership twitch.tv/tags twitch.tv/commands"));
-            SendMessage(new("PASS", channel: string.Format("oauth:{0}", m_AccessToken.Token)));
+            SendMessage(new("PASS", channel: string.Format("oauth:{0}", m_AccessToken.AccessToken)));
             SendMessage(new("NICK", channel: (m_SelfUserInfo != null) ? m_SelfUserInfo.DisplayName : m_UserName));
         }
 
@@ -112,7 +116,7 @@ namespace StreamGlass.Twitch.IRC
 
         private void TreatUserNotice(Message message)
         {
-            if (m_Settings.Get("twitch", "sub_mode") == "all")
+            if (m_Settings.Get("sub_mode") == "all")
                 return;
             CreateUserMessage(message, true, false);
             if (message.HaveTag("msg-id"))
@@ -319,7 +323,7 @@ namespace StreamGlass.Twitch.IRC
         public override void OnClientDisconnect(int clientID)
         {
             TWITCH_IRC.Log("Disconnecting");
-            if (m_CanReconnect && m_Settings.Get("twitch", "auto_connect") == "true")
+            if (m_CanReconnect && m_Settings.Get("auto_connect") == "true")
                 _ = TryReconnect();
         }
 

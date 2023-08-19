@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using StreamGlass.Controls;
+using System.Collections.Generic;
 using System.Windows;
-using StreamGlass.Controls;
+using TwitchCorpse;
 
 namespace StreamGlass.Twitch
 {
@@ -12,7 +13,7 @@ namespace StreamGlass.Twitch
         private string m_CategoryID = "";
         private string m_CategoryName = "";
 
-        public CategorySearchDialog(StreamGlass.Controls.Window parent, Profile.CategoryInfo? info, API api) : base(parent)
+        public CategorySearchDialog(Controls.Window parent, Profile.CategoryInfo? info, API api) : base(parent)
         {
             m_API = api;
             InitializeComponent();

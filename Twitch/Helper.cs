@@ -1,6 +1,7 @@
 ﻿using CorpseLib.StructuredText;
 using StreamGlass.Controls;
 using System.Collections.Generic;
+using TwitchCorpse;
 using static StreamGlass.Twitch.IRC.Message;
 
 namespace StreamGlass.Twitch
@@ -16,7 +17,7 @@ namespace StreamGlass.Twitch
                 ret.AddText(message[lastIndex..emote.Start]);
                 EmoteInfo? emoteInfo = api.GetEmoteFromID(emote.ID);
                 if (emoteInfo != null)
-                    ret.AddImage(api.GetEmoteURL(emote.ID, BrushPalette.Type.LIGHT));
+                    ret.AddImage(api.GetEmoteURL(emote.ID, false, 1, false));
                 lastIndex = emote.End + 1;
             }
             if (lastIndex < message.Length)

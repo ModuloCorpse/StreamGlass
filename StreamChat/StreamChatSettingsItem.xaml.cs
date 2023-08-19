@@ -3,6 +3,7 @@ using StreamGlass.Controls;
 using System.Windows;
 using System.Windows.Controls;
 using CorpseLib.Translation;
+using CorpseLib.Ini;
 
 namespace StreamGlass.StreamChat
 {
@@ -16,7 +17,7 @@ namespace StreamGlass.StreamChat
         private readonly ScrollPanelDisplayType m_OriginalDisplayType;
         private readonly bool m_OriginalIsPanelOnRight;
 
-        public StreamChatSettingsItem(Data settings, UserMessageScrollPanel streamChat, StreamGlassWindow window) : base("/Assets/chat-bubble.png", "chat", settings)
+        public StreamChatSettingsItem(IniSection settings, UserMessageScrollPanel streamChat, StreamGlassWindow window) : base("/Assets/chat-bubble.png", settings)
         {
             m_StreamChat = streamChat;
             m_Window = window;

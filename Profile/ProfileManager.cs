@@ -3,6 +3,7 @@ using CorpseLib.ManagedObject;
 using StreamGlass;
 using StreamGlass.Connections;
 using StreamGlass.StreamChat;
+using TwitchCorpse;
 
 namespace StreamGlass.Profile
 {

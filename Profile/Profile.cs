@@ -5,6 +5,7 @@ using StreamGlass;
 using StreamGlass.Connections;
 using StreamGlass.StreamChat;
 using CorpseLib.Json;
+using TwitchCorpse;
 
 namespace StreamGlass.Profile
 {
