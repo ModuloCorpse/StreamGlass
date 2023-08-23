@@ -142,7 +142,7 @@ namespace StreamGlass.Profile
             m_MessageSinceLastTrigger = 0;
         }
 
-        internal void Trigger(string[] arguments, ConnectionManager connectionManager, string channel)
+        internal void Trigger(string[] arguments, ConnectionManager connectionManager)
         {
             if (!string.IsNullOrWhiteSpace(m_Content))
             {
@@ -151,7 +151,7 @@ namespace StreamGlass.Profile
                 for (int i = 1; i < arguments.Length; ++i)
                     context.AddVariable(string.Format("${0}", i), arguments[i]);
                 string contentToSend = Converter.Convert(m_Content, context);
-                connectionManager.SendMessage(channel, contentToSend);
+                connectionManager.SendMessage(contentToSend);
                 StreamGlassCanals.COMMANDS.Emit(new(m_Name, arguments));
                 Reset();
             }

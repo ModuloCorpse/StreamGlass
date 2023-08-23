@@ -67,13 +67,13 @@ namespace StreamGlass.Profile
             if (message.SenderType != User.Type.SELF)
             {
                 ++m_NbMessage;
-                CurrentObject?.OnMessage(message, m_ConnectionManager, m_Channel);
+                CurrentObject?.OnMessage(message, m_ConnectionManager);
             }
         }
 
         internal void Update(long deltaTime)
         {
-            CurrentObject?.Update(deltaTime, m_NbMessage, m_ConnectionManager, m_Channel);
+            CurrentObject?.Update(deltaTime, m_NbMessage, m_ConnectionManager);
             m_NbMessage = 0;
         }
 

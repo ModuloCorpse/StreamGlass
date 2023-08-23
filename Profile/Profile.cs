@@ -36,56 +36,56 @@ namespace StreamGlass.Profile
             m_Commands.Add(command);
         }
 
-        private void TriggerCommand(ConnectionManager connectionManager, string channel, string command, User.Type userType, bool isForced)
+        private void TriggerCommand(ConnectionManager connectionManager, string command, User.Type userType, bool isForced)
         {
             string[] arguments = command.Split(' ');
             if (m_CommandLocation.TryGetValue(arguments[0], out var contentIdx))
             {
                 ChatCommand content = m_Commands[contentIdx];
                 if (isForced || content.CanTrigger(userType))
-                    content.Trigger(arguments, connectionManager, channel);
+                    content.Trigger(arguments, connectionManager);
                 foreach (string child in content.Commands)
-                    TriggerCommand(connectionManager, channel, child, userType, isForced);
+                    TriggerCommand(connectionManager, child, userType, isForced);
             }
             else
-                Parent?.TriggerCommand(connectionManager, channel, command, userType, isForced);
+                Parent?.TriggerCommand(connectionManager, command, userType, isForced);
         }
 
-        private void ForceOnMessage(UserMessage message, ConnectionManager connectionManager, string channel)
+        private void ForceOnMessage(UserMessage message, ConnectionManager connectionManager)
         {
             string messageContent = message.Message.ToString();
             if (messageContent.Length > 0 && messageContent[0] == '!')
-                TriggerCommand(connectionManager, channel, messageContent[1..], message.SenderType, false);
+                TriggerCommand(connectionManager, messageContent[1..], message.SenderType, false);
         }
 
-        internal void OnMessage(UserMessage message, ConnectionManager connectionManager, string channel)
+        internal void OnMessage(UserMessage message, ConnectionManager connectionManager)
         {
             lock (m_Lock)
             {
-                ForceOnMessage(message, connectionManager, channel);
+                ForceOnMessage(message, connectionManager);
             }
         }
 
-        private void ForceUpdate(long deltaTime, int nbMessage, ConnectionManager connectionManager, string channel)
+        private void ForceUpdate(long deltaTime, int nbMessage, ConnectionManager connectionManager)
         {
             foreach (ChatCommand command in m_Commands)
             {
                 command.Update(deltaTime, nbMessage);
                 if (command.CanAutoTrigger())
                 {
-                    command.Trigger(command.AutoTriggerArguments, connectionManager, channel);
+                    command.Trigger(command.AutoTriggerArguments, connectionManager);
                     foreach (string child in command.Commands)
-                        TriggerCommand(connectionManager, channel, child, User.Type.SELF, true);
+                        TriggerCommand(connectionManager, child, User.Type.SELF, true);
                 }
             }
-            Parent?.ForceUpdate(deltaTime, nbMessage, connectionManager, channel);
+            Parent?.ForceUpdate(deltaTime, nbMessage, connectionManager);
         }
 
-        internal void Update(long deltaTime, int nbMessage, ConnectionManager connectionManager, string channel)
+        internal void Update(long deltaTime, int nbMessage, ConnectionManager connectionManager)
         {
             lock (m_Lock)
             {
-                ForceUpdate(deltaTime, nbMessage, connectionManager, channel);
+                ForceUpdate(deltaTime, nbMessage, connectionManager);
             }
         }
 

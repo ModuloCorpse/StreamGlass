@@ -41,10 +41,10 @@ namespace StreamGlass.Connections
                 connection.Update(deltaTime);
         }
 
-        public void SendMessage(string channel, string message)
+        public void SendMessage(string message)
         {
             foreach (var connection in m_StreamChatConnections)
-                connection.SendMessage(channel, message);
+                connection.SendMessage(message);
         }
 
         public CategoryInfo? SearchCategoryInfo(Window parent, CategoryInfo? info)

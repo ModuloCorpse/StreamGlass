@@ -251,7 +251,7 @@ namespace StreamGlass
             m_WebServer.GetResourceManager().AddFramework();
             m_WebServer.Start();
 
-            m_ConnectionManager.RegisterConnection(new Twitch.Connection(m_WebServer, m_Settings.GetOrAdd("twitch"), this));
+            m_ConnectionManager.RegisterConnection(new Twitch.Connection(m_Settings.GetOrAdd("twitch"), this));
             m_Manager = new(m_ConnectionManager);
             m_Manager.Load();
             UpdateProfilesMenuList();
@@ -320,12 +320,12 @@ namespace StreamGlass
             Application.Current.Shutdown();
         }
 
-        internal void JoinChannel(string channel)
+        internal void JoinChannel()
         {
             m_Manager.UpdateStreamInfo();
             IniSection? chatSection = m_Settings.Get("chat");
             if (chatSection != null && chatSection.Get("do_welcome") == "true")
-                m_ConnectionManager.SendMessage(channel, chatSection.Get("welcome_message"));
+                m_ConnectionManager.SendMessage(chatSection.Get("welcome_message"));
         }
 
         private void SettingsToolStripMenuItem_Click(object sender, RoutedEventArgs e)
