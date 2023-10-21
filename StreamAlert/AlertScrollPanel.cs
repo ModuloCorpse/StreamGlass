@@ -1,10 +1,10 @@
 ﻿using CorpseLib.Placeholder;
 using CorpseLib.StructuredText;
-using StreamGlass;
 using StreamGlass.Controls;
 using StreamGlass.Connections;
 using StreamGlass.Events;
 using System;
+using StreamGlass.Stat;
 
 namespace StreamGlass.StreamAlert
 {
@@ -45,6 +45,7 @@ namespace StreamGlass.StreamAlert
         private readonly AlertInfo[] m_AlertInfo = new AlertInfo[Enum.GetNames(typeof(AlertType)).Length];
         private BrushPaletteManager m_ChatPalette = new();
         private ConnectionManager? m_ConnectionManager = null;
+        private StatisticManager? m_Statistics = null;
         private double m_MessageContentFontSize = 20;
 
         public AlertScrollPanel() : base()
@@ -58,7 +59,11 @@ namespace StreamGlass.StreamAlert
 
         internal void SetBrushPalette(BrushPaletteManager colorPalette) => m_ChatPalette = colorPalette;
 
-        public void SetConnectionManager(ConnectionManager connectionManager) => m_ConnectionManager = connectionManager;
+        public void Init(ConnectionManager connectionManager, StatisticManager statistics)
+        {
+            m_ConnectionManager = connectionManager;
+            m_Statistics = statistics;
+        }
 
         internal double MessageContentFontSize => m_MessageContentFontSize;
 
@@ -87,7 +92,7 @@ namespace StreamGlass.StreamAlert
                 {
                     Context context = new();
                     context.AddVariable("e", e);
-                    string alertPrefix = Converter.Convert(alertInfo.Prefix, context);
+                    string alertPrefix = (m_Statistics != null) ? Converter.Convert(alertInfo.Prefix, context, m_Statistics) : Converter.Convert(alertInfo.Prefix, context);
                     Text alertMessage = new(alertPrefix);
                     if (message != null)
                         alertMessage.Append(message);

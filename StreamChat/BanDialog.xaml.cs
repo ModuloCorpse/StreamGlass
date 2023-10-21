@@ -7,10 +7,10 @@ namespace StreamGlass.StreamChat
 {
     public partial class BanDialog : Dialog
     {
-        private readonly User m_UserToBan; 
+        private readonly TwitchUser m_UserToBan; 
         private BanEventArgs? m_Event = null;
 
-        public BanDialog(Controls.Window parent, User userToBan) : base(parent)
+        public BanDialog(Controls.Window parent, TwitchUser userToBan) : base(parent)
         {
             InitializeComponent();
             m_UserToBan = userToBan;

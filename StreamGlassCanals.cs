@@ -11,7 +11,7 @@ namespace StreamGlass
         public static readonly Canal<UserMessage> CHAT_MESSAGE = new();
         public static readonly Canal CHAT_CONNECTED = new();
         public static readonly Canal<string> CHAT_JOINED = new();
-        public static readonly Canal<User> USER_JOINED = new();
+        public static readonly Canal<TwitchUser> USER_JOINED = new();
         public static readonly Canal<UpdateStreamInfoArgs> UPDATE_STREAM_INFO = new();
         public static readonly Canal STREAM_START = new();
         public static readonly Canal STREAM_STOP = new();

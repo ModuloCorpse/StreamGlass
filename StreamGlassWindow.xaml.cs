@@ -5,6 +5,7 @@ using Quicksand.Web;
 using StreamGlass.Connections;
 using StreamGlass.Controls;
 using StreamGlass.Profile;
+using StreamGlass.Stat;
 using StreamGlass.StreamAlert;
 using StreamGlass.StreamChat;
 using System;
@@ -18,6 +19,7 @@ namespace StreamGlass
 {
     public partial class StreamGlassWindow : Controls.Window
     {
+        private readonly StatisticManager m_Statistics = new();
         private readonly Stopwatch m_Watch = new();
         private readonly IniFile m_Settings = new();
         private readonly Server m_WebServer = new();
@@ -242,6 +244,21 @@ namespace StreamGlass
 
         public StreamGlassWindow(): base(new())
         {
+            m_Statistics.Load();
+
+            m_Statistics.CreateStatistic("viewer_count");
+            m_Statistics.CreateStatistic("last_bits_donor");
+            m_Statistics.CreateStatistic("last_bits_donation");
+            m_Statistics.CreateStatistic("top_bits_donor");
+            m_Statistics.CreateStatistic("top_bits_donation");
+            m_Statistics.CreateStatistic("last_follow");
+            m_Statistics.CreateStatistic("last_raider");
+            m_Statistics.CreateStatistic("last_gifter");
+            m_Statistics.CreateStatistic("last_nb_gift");
+            m_Statistics.CreateStatistic("top_gifter");
+            m_Statistics.CreateStatistic("top_nb_gift");
+            m_Statistics.CreateStatistic("last_sub");
+
             InitializeComponent();
             LoadIni();
             InitializeSettings();
@@ -251,8 +268,8 @@ namespace StreamGlass
             m_WebServer.GetResourceManager().AddFramework();
             m_WebServer.Start();
 
-            m_ConnectionManager.RegisterConnection(new Twitch.Connection(m_Settings.GetOrAdd("twitch"), this));
-            m_Manager = new(m_ConnectionManager);
+            m_ConnectionManager.RegisterConnection(new Twitch.Connection(m_Statistics, m_Settings.GetOrAdd("twitch"), this));
+            m_Manager = new(m_ConnectionManager, m_Statistics);
             m_Manager.Load();
             UpdateProfilesMenuList();
 
@@ -262,7 +279,7 @@ namespace StreamGlass
             m_DispatcherTimer.Start();
 
             StreamChatPanel.SetConnectionManager(m_ConnectionManager);
-            StreamAlertPanel.SetConnectionManager(m_ConnectionManager);
+            StreamAlertPanel.Init(m_ConnectionManager, m_Statistics);
         }
 
         private void UpdateProfilesMenuList()
@@ -318,6 +335,8 @@ namespace StreamGlass
             m_DispatcherTimer.Stop();
             m_WebServer.Stop();
             Application.Current.Shutdown();
+
+            m_Statistics.Save();
         }
 
         internal void JoinChannel()

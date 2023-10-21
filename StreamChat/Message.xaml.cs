@@ -51,7 +51,7 @@ namespace StreamGlass.StreamChat
                 if (color != null)
                     MessageSender.Foreground = color;
             }
-            m_IsHighlighted = (isHighligted || message.IsHighlighted() || (message.SenderType > User.Type.MOD && message.SenderType < User.Type.BROADCASTER));
+            m_IsHighlighted = (isHighligted || message.IsHighlighted() || (message.SenderType > TwitchUser.Type.MOD && message.SenderType < TwitchUser.Type.BROADCASTER));
             if (m_IsHighlighted)
             {
                 MessagePanel.BrushPaletteKey = "chat_highlight_background";
@@ -92,8 +92,8 @@ namespace StreamGlass.StreamChat
 
         private void BanUser_Click(object _, RoutedEventArgs e)
         {
-            User sender = m_Message.Sender;
-            if (sender.UserType == User.Type.SELF)
+            TwitchUser sender = m_Message.Sender;
+            if (sender.UserType == TwitchUser.Type.SELF)
                 return;
             BanDialog dialog = new(GetWindow(), sender);
             dialog.ShowDialog();

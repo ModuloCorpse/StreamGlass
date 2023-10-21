@@ -9,13 +9,13 @@ namespace StreamGlass.Twitch
     public partial class CategoryControl : UserControl
     {
         private readonly CategorySearchDialog m_Dialog;
-        private readonly CategoryInfo m_Info;
+        private readonly TwitchCategoryInfo m_Info;
         private bool m_IsForced = false;
 
         public string CategoryID => m_Info.ID;
         public string CategoryName => m_Info.Name;
 
-        public CategoryControl(CategorySearchDialog dialog, CategoryInfo category)
+        public CategoryControl(CategorySearchDialog dialog, TwitchCategoryInfo category)
         {
             m_Dialog = dialog;
             m_Info = category;

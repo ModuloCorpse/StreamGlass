@@ -6,6 +6,7 @@ using StreamGlass.Connections;
 using StreamGlass.StreamChat;
 using CorpseLib.Json;
 using TwitchCorpse;
+using StreamGlass.Stat;
 
 namespace StreamGlass.Profile
 {
@@ -36,56 +37,56 @@ namespace StreamGlass.Profile
             m_Commands.Add(command);
         }
 
-        private void TriggerCommand(ConnectionManager connectionManager, string command, User.Type userType, bool isForced)
+        private void TriggerCommand(ConnectionManager connectionManager, StatisticManager statistics, string command, TwitchUser.Type userType, bool isForced)
         {
             string[] arguments = command.Split(' ');
             if (m_CommandLocation.TryGetValue(arguments[0], out var contentIdx))
             {
                 ChatCommand content = m_Commands[contentIdx];
                 if (isForced || content.CanTrigger(userType))
-                    content.Trigger(arguments, connectionManager);
+                    content.Trigger(arguments, connectionManager, statistics);
                 foreach (string child in content.Commands)
-                    TriggerCommand(connectionManager, child, userType, isForced);
+                    TriggerCommand(connectionManager, statistics, child, userType, isForced);
             }
             else
-                Parent?.TriggerCommand(connectionManager, command, userType, isForced);
+                Parent?.TriggerCommand(connectionManager, statistics, command, userType, isForced);
         }
 
-        private void ForceOnMessage(UserMessage message, ConnectionManager connectionManager)
+        private void ForceOnMessage(UserMessage message, ConnectionManager connectionManager, StatisticManager statistics)
         {
             string messageContent = message.Message.ToString();
             if (messageContent.Length > 0 && messageContent[0] == '!')
-                TriggerCommand(connectionManager, messageContent[1..], message.SenderType, false);
+                TriggerCommand(connectionManager, statistics, messageContent[1..], message.SenderType, false);
         }
 
-        internal void OnMessage(UserMessage message, ConnectionManager connectionManager)
+        internal void OnMessage(UserMessage message, ConnectionManager connectionManager, StatisticManager statistics)
         {
             lock (m_Lock)
             {
-                ForceOnMessage(message, connectionManager);
+                ForceOnMessage(message, connectionManager, statistics);
             }
         }
 
-        private void ForceUpdate(long deltaTime, int nbMessage, ConnectionManager connectionManager)
+        private void ForceUpdate(long deltaTime, int nbMessage, ConnectionManager connectionManager, StatisticManager statistics)
         {
             foreach (ChatCommand command in m_Commands)
             {
                 command.Update(deltaTime, nbMessage);
                 if (command.CanAutoTrigger())
                 {
-                    command.Trigger(command.AutoTriggerArguments, connectionManager);
+                    command.Trigger(command.AutoTriggerArguments, connectionManager, statistics);
                     foreach (string child in command.Commands)
-                        TriggerCommand(connectionManager, child, User.Type.SELF, true);
+                        TriggerCommand(connectionManager, statistics, child, TwitchUser.Type.SELF, true);
                 }
             }
-            Parent?.ForceUpdate(deltaTime, nbMessage, connectionManager);
+            Parent?.ForceUpdate(deltaTime, nbMessage, connectionManager, statistics);
         }
 
-        internal void Update(long deltaTime, int nbMessage, ConnectionManager connectionManager)
+        internal void Update(long deltaTime, int nbMessage, ConnectionManager connectionManager, StatisticManager statistics)
         {
             lock (m_Lock)
             {
-                ForceUpdate(deltaTime, nbMessage, connectionManager);
+                ForceUpdate(deltaTime, nbMessage, connectionManager, statistics);
             }
         }
 

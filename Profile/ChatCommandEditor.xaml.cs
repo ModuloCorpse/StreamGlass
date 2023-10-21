@@ -80,7 +80,7 @@ namespace StreamGlass.Profile
             int awaitTime = (int)TimeUpDown.Value;
             int nbMessage = (int)NbMessageUpDown.Value;
             string content = ContentTextBox.Text;
-            User.Type userType = (User.Type)UserComboBox.SelectedIndex;
+            TwitchUser.Type userType = (TwitchUser.Type)UserComboBox.SelectedIndex;
             List<string> commands = SubCommandList.GetItems().Cast<string>().ToList();
             bool autoTrigger = AutoTriggerEnableCheckBox.IsChecked ?? false;
             int autoTriggerTime = (int)AutoTriggerTimeUpDown.Value;
