@@ -7,7 +7,7 @@ using TabItem = StreamGlass.Controls.TabItem;
 
 namespace StreamGlass.Settings
 {
-    public partial class Dialog : StreamGlass.Controls.Dialog
+    public partial class Dialog : Controls.Dialog
     {
         private readonly List<TabItemContent> m_TabItems = new();
 

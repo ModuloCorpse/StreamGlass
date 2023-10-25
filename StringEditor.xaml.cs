@@ -1,18 +1,18 @@
 ﻿using System.Windows;
 using StreamGlass.Controls;
 
-namespace StreamGlass.Profile
+namespace StreamGlass
 {
     public partial class StringEditor : Dialog
     {
         private string? m_CreatedString = null;
 
-        public StringEditor(StreamGlass.Controls.Window parent): base(parent)
+        public StringEditor(Controls.Window parent) : base(parent)
         {
             InitializeComponent();
         }
 
-        public StringEditor(StreamGlass.Controls.Window parent, string str): this(parent)
+        public StringEditor(Controls.Window parent, string str) : this(parent)
         {
             NameTextBox.Text = str;
         }

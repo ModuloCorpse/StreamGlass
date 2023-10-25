@@ -11,11 +11,6 @@ namespace StreamGlass.Profile
 {
     public class ChatCommand
     {
-        private static readonly Dictionary<string, AFunctionalContext.Function> ms_Functions = new();
-
-        public static void AddFunction(string functionName, AFunctionalContext.Function fct) => ms_Functions[functionName] = fct;
-        public static void RemoveFunction(string functionName) => ms_Functions.Remove(functionName);
-
         private readonly string m_Name = "";
         private readonly string[] m_Aliases = Array.Empty<string>();
         private readonly int m_AwaitTime = 0;
@@ -91,28 +86,28 @@ namespace StreamGlass.Profile
         {
             JObject json = new();
             if (!string.IsNullOrWhiteSpace(m_Name))
-                json.Set("name", m_Name);
+                json.Add("name", m_Name);
             if (m_Aliases.Length > 0)
-                json.Set("aliases", m_Aliases);
+                json.Add("aliases", m_Aliases);
             if (m_AwaitTime != 0)
-                json.Set("time", m_AwaitTime);
+                json.Add("time", m_AwaitTime);
             if (m_NbMessage != 0)
-                json.Set("messages", m_NbMessage);
+                json.Add("messages", m_NbMessage);
             if (!string.IsNullOrWhiteSpace(m_Content))
-                json.Set("content", m_Content);
+                json.Add("content", m_Content);
             if (m_UserType != TwitchUser.Type.SELF)
-                json.Set("user", m_UserType);
+                json.Add("user", m_UserType);
             if (m_Commands.Count != 0)
-                json.Set("commands", m_Commands);
+                json.Add("commands", m_Commands);
             //AutoTrigger
             if (m_AutoTrigger)
-                json.Set("auto_trigger", m_AutoTrigger);
+                json.Add("auto_trigger", m_AutoTrigger);
             if (m_AutoTriggerTime != 0)
-                json.Set("auto_trigger_time", m_AutoTriggerTime);
+                json.Add("auto_trigger_time", m_AutoTriggerTime);
             if (m_AutoTriggerDeltaTime != 0)
-                json.Set("auto_trigger_delta_time", m_AutoTriggerDeltaTime);
+                json.Add("auto_trigger_delta_time", m_AutoTriggerDeltaTime);
             if (m_AutoTriggerArguments.Length != 0)
-                json.Set("auto_trigger_argv", m_AutoTriggerArguments);
+                json.Add("auto_trigger_argv", m_AutoTriggerArguments);
             return json;
         }
 
@@ -142,15 +137,14 @@ namespace StreamGlass.Profile
             m_MessageSinceLastTrigger = 0;
         }
 
-        internal void Trigger(string[] arguments, ConnectionManager connectionManager, StatisticManager statistics)
+        internal void Trigger(string[] arguments, ConnectionManager connectionManager)
         {
             if (!string.IsNullOrWhiteSpace(m_Content))
             {
-                Context context = new();
-                context.AddFunctions(ms_Functions);
+                StreamGlassContext context = new();
                 for (int i = 1; i < arguments.Length; ++i)
                     context.AddVariable("$" + i.ToString(), arguments[i]);
-                string contentToSend = Converter.Convert(m_Content, context, statistics);
+                string contentToSend = Converter.Convert(m_Content, context);
                 connectionManager.SendMessage(contentToSend);
                 StreamGlassCanals.COMMANDS.Emit(new(m_Name, arguments));
                 Reset();

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using CorpseLib.Translation;
-using StreamGlass;
 using StreamGlass.Controls;
 using TwitchCorpse;
 using static StreamGlass.StreamChat.UserMessage;

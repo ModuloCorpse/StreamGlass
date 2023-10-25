@@ -1,0 +1,70 @@
+﻿<ui:Dialog x:Class="StreamGlass.Stat.StatisticFileEditor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="clr-namespace:StreamGlass.Controls"
+        mc:Ignorable="d"
+        d:DesignHeight="341"
+        d:DesignWidth="454"
+        Height="341"
+        Width="454"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        ShowInAero="False">
+    <ui:Border BrushPaletteKey="dialog_border" BorderThickness="2">
+        <ui:DockPanel>
+            <ui:Grid BrushPaletteKey="top_bar_background" DockPanel.Dock="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ui:StackPanel HorizontalAlignment="Center" Grid.Column="1" Orientation="Horizontal">
+                    <Image Source="../Assets/stream-glass-logo.ico" Width="15" Height="15" />
+                    <ui:Label BrushPaletteKey="top_bar_text" Margin="2,2,0,0" Text="StreamGlass" />
+                </ui:StackPanel>
+                <ui:StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <ui:Button Margin="2,0,0,0" BrushPaletteKey="top_bar_button_close" Click="CloseButton_Click" Width="15" Height="15" BorderThickness="0">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="10"/>
+                            </Style>
+                        </Button.Resources>
+                    </ui:Button>
+                </ui:StackPanel>
+            </ui:Grid>
+            <ui:StackPanel Margin="0,5,0,0">
+                <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                    <ui:Label x:Name="PathTextBoxLabel" TranslationKey="statistic_editor_path" VerticalAlignment="Center" TextAlignment="Right" Text="Path:" Width="150"/>
+                    <ui:TextBox Margin="5,0,0,0" x:Name="PathTextBox" Height="26" Width="213"/>
+                    <ui:Button x:Name="PathClipboardButton" Margin="3,0,0,0" Width="34" HorizontalAlignment="Left" VerticalAlignment="Top" Click="PathClipboardButton_Click">
+                        <Image Height="20" Width="20" Source="/Assets/notebook.png" />
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="8"/>
+                            </Style>
+                        </Button.Resources>
+                    </ui:Button>
+                </ui:StackPanel>
+                <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                    <ui:Label x:Name="ContentTextBoxLabel" TranslationKey="statistic_editor_content" VerticalAlignment="Center" TextAlignment="Right" Text="Content:" Width="150"/>
+                    <ui:TextBox Margin="5,0,0,0" x:Name="ContentTextBox" Height="26" Width="250"/>
+                </ui:StackPanel>
+                <ui:GroupBox x:Name="StatisticGroupBox" TranslationKey="section_statistics" Header="Statistics">
+                    <ui:EditableList x:Name="StatisticsList" Height="197" EditImageSource="../Assets/pencil.png" SearchImageSource="../Assets/magnifying-glass.png"/>
+                </ui:GroupBox>
+                <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35">
+                    <ui:Button TranslationKey="save_button" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="10"/>
+                            </Style>
+                        </Button.Resources>
+                    </ui:Button>
+                </ui:StackPanel>
+            </ui:StackPanel>
+        </ui:DockPanel>
+    </ui:Border>
+</ui:Dialog>

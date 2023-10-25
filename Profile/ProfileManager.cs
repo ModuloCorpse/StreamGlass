@@ -10,14 +10,12 @@ namespace StreamGlass.Profile
 {
     public class ProfileManager: Manager<Profile>
     {
-        private readonly StatisticManager m_Statistics;
         private readonly ConnectionManager m_ConnectionManager;
         private string m_Channel = "";
         private int m_NbMessage = 0;
 
-        public ProfileManager(ConnectionManager client, StatisticManager statistics) : base("./profiles")
+        public ProfileManager(ConnectionManager client) : base("./profiles")
         {
-            m_Statistics = statistics;
             m_ConnectionManager = client;
             StreamGlassCanals.CHAT_MESSAGE.Register(OnChatMessage);
             StreamGlassCanals.CHAT_JOINED.Register(OnJoinedChannel);
@@ -70,20 +68,16 @@ namespace StreamGlass.Profile
             if (message.SenderType != TwitchUser.Type.SELF)
             {
                 ++m_NbMessage;
-                CurrentObject?.OnMessage(message, m_ConnectionManager, m_Statistics);
+                CurrentObject?.OnMessage(message, m_ConnectionManager);
             }
         }
 
         internal void Update(long deltaTime)
         {
-            CurrentObject?.Update(deltaTime, m_NbMessage, m_ConnectionManager, m_Statistics);
+            CurrentObject?.Update(deltaTime, m_NbMessage, m_ConnectionManager);
             m_NbMessage = 0;
         }
 
-        protected override Profile? DeserializeObject(JFile obj)
-        {
-            Profile newProfile = new(obj);
-            return newProfile;
-        }
+        protected override Profile? DeserializeObject(JFile obj) => new(obj);
     }
 }

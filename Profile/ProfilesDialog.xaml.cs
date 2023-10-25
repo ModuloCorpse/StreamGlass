@@ -41,7 +41,7 @@ namespace StreamGlass.Profile
 
         private void ProfileList_AddProfile(object? sender, EventArgs _)
         {
-            ProfileEditor dialog = new(this, m_ProfileManager, m_ConnectionManager);
+            StatisticFileEditor dialog = new(this, m_ProfileManager, m_ConnectionManager);
             dialog.ShowDialog();
             Profile? newProfile = dialog.Profile;
             if (newProfile != null)
@@ -56,7 +56,7 @@ namespace StreamGlass.Profile
         
         private void ProfileList_EditProfile(object? sender, object args)
         {
-            ProfileEditor dialog = new(this, m_ProfileManager, m_ConnectionManager, (Profile)args);
+            StatisticFileEditor dialog = new(this, m_ProfileManager, m_ConnectionManager, (Profile)args);
             dialog.ShowDialog();
             Profile? editedProfile = dialog.Profile;
             if (editedProfile != null)

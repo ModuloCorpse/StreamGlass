@@ -1,7 +1,7 @@
 ﻿using CorpseLib.Ini;
 using CorpseLib.Json;
 using CorpseLib.Translation;
-using Quicksand.Web;
+using StreamGlass.API;
 using StreamGlass.Connections;
 using StreamGlass.Controls;
 using StreamGlass.Profile;
@@ -19,10 +19,9 @@ namespace StreamGlass
 {
     public partial class StreamGlassWindow : Controls.Window
     {
-        private readonly StatisticManager m_Statistics = new();
+        private readonly CorpseLib.Web.API.API m_API = new(15007);
         private readonly Stopwatch m_Watch = new();
         private readonly IniFile m_Settings = new();
-        private readonly Server m_WebServer = new();
         private readonly ProfileManager m_Manager;
         private readonly ConnectionManager m_ConnectionManager = new();
         private readonly DispatcherTimer m_DispatcherTimer = new();
@@ -81,6 +80,7 @@ namespace StreamGlass
                 { "menu_file", "File" },
                 { "menu_settings", "Settings" },
                 { "menu_profile", "Profiles" },
+                { "menu_edit_statistics", "Edit statistics..." },
                 { "menu_edit_profile", "Edit profiles..." },
                 { "menu_help", "Help" },
                 { "menu_logs", "Logs" },
@@ -158,7 +158,10 @@ namespace StreamGlass
                 { "ban_time", "Time (s):" },
                 { "ban_reason", "Reason:" },
                 { "message_menu_highlight", "Toggle Highlight" },
-                { "message_menu_ban", "Ban User" }
+                { "message_menu_ban", "Ban User" },
+                { "section_statistics", "Statistics" },
+                { "statistic_editor_path", "Path:" },
+                { "statistic_editor_content", "Content:" }
             };
             Translator.AddTranslation(translation);
             Translator.LoadDirectory("./locals");
@@ -242,22 +245,19 @@ namespace StreamGlass
             }
         }
 
+        private void InitAPI()
+        {
+            CorpseLib.Web.API.Event.EventManager eventManager = StreamGlassCanals.CreateAPIEventManager();
+            eventManager.RegisterToAPI(m_API, "/event", "/event/subscribe", "/event/unsubscribe");
+            m_API.AddEndpoint(new TimerEndpoint());
+        }
+
         public StreamGlassWindow(): base(new())
         {
-            m_Statistics.Load();
+            StreamGlassContext.Init();
 
-            m_Statistics.CreateStatistic("viewer_count");
-            m_Statistics.CreateStatistic("last_bits_donor");
-            m_Statistics.CreateStatistic("last_bits_donation");
-            m_Statistics.CreateStatistic("top_bits_donor");
-            m_Statistics.CreateStatistic("top_bits_donation");
-            m_Statistics.CreateStatistic("last_follow");
-            m_Statistics.CreateStatistic("last_raider");
-            m_Statistics.CreateStatistic("last_gifter");
-            m_Statistics.CreateStatistic("last_nb_gift");
-            m_Statistics.CreateStatistic("top_gifter");
-            m_Statistics.CreateStatistic("top_nb_gift");
-            m_Statistics.CreateStatistic("last_sub");
+            InitAPI();
+            m_API.Start();
 
             InitializeComponent();
             LoadIni();
@@ -265,11 +265,8 @@ namespace StreamGlass
             InitializeBrushPalette();
             InitializeTranslation();
 
-            m_WebServer.GetResourceManager().AddFramework();
-            m_WebServer.Start();
-
-            m_ConnectionManager.RegisterConnection(new Twitch.Connection(m_Statistics, m_Settings.GetOrAdd("twitch"), this));
-            m_Manager = new(m_ConnectionManager, m_Statistics);
+            m_ConnectionManager.RegisterConnection(new Twitch.Connection(m_Settings.GetOrAdd("twitch"), this));
+            m_Manager = new(m_ConnectionManager);
             m_Manager.Load();
             UpdateProfilesMenuList();
 
@@ -279,12 +276,13 @@ namespace StreamGlass
             m_DispatcherTimer.Start();
 
             StreamChatPanel.SetConnectionManager(m_ConnectionManager);
-            StreamAlertPanel.Init(m_ConnectionManager, m_Statistics);
+            StreamAlertPanel.Init(m_ConnectionManager);
         }
 
         private void UpdateProfilesMenuList()
         {
             ProfilesMenu.Items.Clear();
+            ProfilesMenu.Items.Add(StatisticsMenuEdit);
             ProfilesMenu.Items.Add(ProfileMenuEdit);
             ProfilesMenu.Items.Add(ProfilesMenuSeparator);
 
@@ -333,10 +331,9 @@ namespace StreamGlass
             m_ConnectionManager.Disconnect();
             m_Watch.Stop();
             m_DispatcherTimer.Stop();
-            m_WebServer.Stop();
+            m_API.Stop();
             Application.Current.Shutdown();
-
-            m_Statistics.Save();
+            StreamGlassContext.Delete();
         }
 
         internal void JoinChannel()
@@ -385,6 +382,12 @@ namespace StreamGlass
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             SystemCommands.CloseWindow(this);
+        }
+
+        private void EditStatisticsButton_Click(object sender, RoutedEventArgs e)
+        {
+            StatisticFileDialog dialog = new(this);
+            dialog.ShowDialog();
         }
 
         private void EditProfilesButton_Click(object sender, RoutedEventArgs e)

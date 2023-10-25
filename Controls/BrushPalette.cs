@@ -22,7 +22,7 @@ namespace StreamGlass.Controls
 
         public BrushPalette(string id, string name, Type type) : base(id, name, false) => m_Type = type;
         public BrushPalette(string name, Type type) : base(name) => m_Type = type;
-        internal BrushPalette(JFile json) : base(json) { }
+        internal BrushPalette(JObject json) : base(json) { }
 
         public void AddHexColor(string name, string hex)
         {
@@ -48,16 +48,16 @@ namespace StreamGlass.Controls
             return false;
         }
 
-        protected override void Save(ref JFile json)
+        protected override void Save(ref JObject json)
         {
             JObject obj = new();
             foreach (var color in m_Palette)
-                obj.Set(color.Key, m_Converter.ConvertToString(color.Value));
-            json.Set("colors", obj);
-            json.Set("type", (int)m_Type);
+                obj.Add(color.Key, m_Converter.ConvertToString(color.Value));
+            json.Add("colors", obj);
+            json.Add("type", (int)m_Type);
         }
 
-        protected override void Load(JFile json)
+        protected override void Load(JObject json)
         {
             m_Type = json.GetOrDefault("type", Type.NONE);
             if (json.TryGet("colors", out JObject? colors))

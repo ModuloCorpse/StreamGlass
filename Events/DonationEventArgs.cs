@@ -1,9 +1,33 @@
-﻿using CorpseLib.StructuredText;
+﻿using CorpseLib.Json;
+using CorpseLib;
+using CorpseLib.StructuredText;
+using TwitchCorpse;
 
 namespace StreamGlass.Events
 {
     public class DonationEventArgs
     {
+        public class JSerializer : AJSerializer<DonationEventArgs>
+        {
+            protected override OperationResult<DonationEventArgs> Deserialize(JObject reader)
+            {
+                if (reader.TryGet("message", out Text? message) &&
+                    reader.TryGet("name", out string? name) &&
+                    reader.TryGet("currency", out string? currency) &&
+                    reader.TryGet("amount", out float? amount))
+                    return new(new(name!, (float)amount!, currency!, message!));
+                return new("Bad json", string.Empty);
+            }
+
+            protected override void Serialize(DonationEventArgs obj, JObject writer)
+            {
+                writer["message"] = obj.m_Message;
+                writer["name"] = obj.m_Name;
+                writer["currency"] = obj.m_Currency;
+                writer["amount"] = obj.m_Amount;
+            }
+        }
+
         private readonly Text m_Message;
         private readonly string m_Name;
         private readonly string m_Currency;

@@ -16,6 +16,7 @@
     <None Remove="Assets\confirmed.png" />
     <None Remove="Assets\hearts.png" />
     <None Remove="Assets\megaphone.png" />
+    <None Remove="Assets\notebook.png" />
     <None Remove="Assets\parachute.png" />
     <None Remove="Assets\pencil.png" />
     <None Remove="Assets\stars-stack-1.png" />
@@ -59,6 +60,9 @@
     <Resource Include="Assets\megaphone.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Assets\notebook.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Assets\parachute.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
@@ -100,6 +104,12 @@
 
   <ItemGroup>
     <Compile Update="Controls\NumericUpDown.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Stat\StatisticFileDialog.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Stat\StatisticFileEditor.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="StreamAlert\AlertControl.xaml.cs">

@@ -1,7 +1,26 @@
-﻿namespace StreamGlass.Profile
+﻿using CorpseLib.Json;
+using CorpseLib;
+
+namespace StreamGlass.Profile
 {
     public class CategoryInfo
     {
+        public class JSerializer : AJSerializer<CategoryInfo>
+        {
+            protected override OperationResult<CategoryInfo> Deserialize(JObject reader)
+            {
+                if (reader.TryGet("id", out string? id) &&
+                    reader.TryGet("name", out string? name))
+                    return new(new(id!, name!));
+                return new("Bad json", string.Empty);
+            }
+
+            protected override void Serialize(CategoryInfo obj, JObject writer)
+            {
+                writer["id"] = obj.m_ID;
+                writer["name"] = obj.m_Name;
+            }
+        }
         private string m_ID;
         private string m_Name;
 

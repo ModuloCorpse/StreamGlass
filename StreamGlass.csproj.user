@@ -27,10 +27,16 @@
     <Page Update="Moderation\HeldMessage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Stat\StatisticFileDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Stat\StatisticFileEditor.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="StreamAlert\AlertControl.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Profile\StringEditor.xaml">
+    <Page Update="StringEditor.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Profile\ChatCommandEditor.xaml">

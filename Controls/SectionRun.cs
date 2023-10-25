@@ -17,7 +17,7 @@ namespace StreamGlass.Controls
         }
         #endregion BrushPaletteKey
 
-        private readonly Dictionary<string, object> m_Style = new();
+        private readonly Dictionary<string, object?> m_Style = new();
 
         public bool IsStyleOverriden => m_Style != null;
 
@@ -27,7 +27,7 @@ namespace StreamGlass.Controls
             m_Style = section.Properties;
 
             if (m_Style.TryGetValue("FontSize", out object? fontSize))
-                FontSize = (double)fontSize;
+                FontSize = (double)fontSize!;
         }
 
         public void SetFontSize(double fontSize)
@@ -40,13 +40,13 @@ namespace StreamGlass.Controls
         {
             if (m_Style.TryGetValue("ForegroundPaletteKey", out object? foregroundPaletteKey))
             {
-                if (palette.TryGetColor((string)foregroundPaletteKey, out var foreground))
+                if (palette.TryGetColor((string)foregroundPaletteKey!, out var foreground))
                     Foreground = foreground;
             }
             else if (palette.TryGetColor(BrushPaletteKey, out var foreground))
                 Foreground = foreground;
 
-            if (m_Style.TryGetValue("BackgroundPaletteKey", out object? backgroundPaletteKey) && palette.TryGetColor((string)backgroundPaletteKey, out var background))
+            if (m_Style.TryGetValue("BackgroundPaletteKey", out object? backgroundPaletteKey) && palette.TryGetColor((string)backgroundPaletteKey!, out var background))
                 Background = background;
         }
     }

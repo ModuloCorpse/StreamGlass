@@ -9,14 +9,12 @@ namespace StreamGlass.Twitch
 {
     public class TwitchHandler : ITwitchHandler
     {
-        private readonly StatisticManager m_Statistics;
         private readonly IniSection m_Settings;
         private readonly TwitchAPI m_API;
         private string m_IRCChannel = string.Empty;
 
-        public TwitchHandler(StatisticManager statistics, IniSection settings, TwitchAPI api)
+        public TwitchHandler(IniSection settings, TwitchAPI api)
         {
-            m_Statistics = statistics;
             m_Settings = settings;
             m_API = api;
         }
@@ -25,19 +23,19 @@ namespace StreamGlass.Twitch
         {
             List<TwitchStreamInfo> streamInfos = m_API.GetStreamInfoByID(user);
             if (streamInfos.Count == 1)
-                m_Statistics.UpdateStatistic("viewer_count", streamInfos[0].ViewerCount);
+                StreamGlassContext.UpdateStatistic("viewer_count", streamInfos[0].ViewerCount);
         }
 
         public void SetIRCChannel(string channel) => m_IRCChannel = channel;
 
         public void OnBits(TwitchUser user, int bits, Text message)
         {
-            m_Statistics.UpdateStatistic("last_bits_donor", user.DisplayName);
-            m_Statistics.UpdateStatistic("last_bits_donation", bits);
-            if (bits >= m_Statistics.GetOr("top_bits_donation", 0))
+            StreamGlassContext.UpdateStatistic("last_bits_donor", user.DisplayName);
+            StreamGlassContext.UpdateStatistic("last_bits_donation", bits);
+            if (bits >= StreamGlassContext.GetStatistic("top_bits_donation", 0))
             {
-                m_Statistics.UpdateStatistic("top_bits_donor", user.DisplayName);
-                m_Statistics.UpdateStatistic("top_bits_donation", bits);
+                StreamGlassContext.UpdateStatistic("top_bits_donor", user.DisplayName);
+                StreamGlassContext.UpdateStatistic("top_bits_donation", bits);
             }
             StreamGlassCanals.DONATION.Emit(new(user.DisplayName, bits, "Bits", message));
         }
@@ -51,14 +49,14 @@ namespace StreamGlass.Twitch
 
         public void OnFollow(TwitchUser user)
         {
-            m_Statistics.UpdateStatistic("last_follow", user.DisplayName);
+            StreamGlassContext.UpdateStatistic("last_follow", user.DisplayName);
             StreamGlassCanals.FOLLOW.Emit(new(user.DisplayName, new(""), 0, -1, -1));
         }
 
         public void OnRaided(TwitchUser user, int nbViewer)
         {
             TwitchUser self = m_API.GetSelfUserInfo();
-            m_Statistics.UpdateStatistic("last_raider", user.DisplayName);
+            StreamGlassContext.UpdateStatistic("last_raider", user.DisplayName);
             StreamGlassCanals.RAID.Emit(new RaidEventArgs(user.ID, user.DisplayName, self.ID, self.DisplayName, nbViewer, true));
         }
 
@@ -80,12 +78,12 @@ namespace StreamGlass.Twitch
                 return;
             if (user != null)
             {
-                m_Statistics.UpdateStatistic("last_gifter", user.DisplayName);
-                m_Statistics.UpdateStatistic("last_nb_gift", nbGift);
-                if (nbGift >= m_Statistics.GetOr("top_nb_gift", 0))
+                StreamGlassContext.UpdateStatistic("last_gifter", user.DisplayName);
+                StreamGlassContext.UpdateStatistic("last_nb_gift", nbGift);
+                if (nbGift >= StreamGlassContext.GetStatistic("top_nb_gift", 0))
                 {
-                    m_Statistics.UpdateStatistic("top_gifter", user.DisplayName);
-                    m_Statistics.UpdateStatistic("top_nb_gift", nbGift);
+                    StreamGlassContext.UpdateStatistic("top_gifter", user.DisplayName);
+                    StreamGlassContext.UpdateStatistic("top_nb_gift", nbGift);
                 }
             }
             StreamGlassCanals.GIFT_FOLLOW.Emit(new(string.Empty, (user != null) ? user.DisplayName : "", new(""), tier, -1, -1, nbGift!));
@@ -102,7 +100,7 @@ namespace StreamGlass.Twitch
         {
             if (m_Settings.Get("sub_mode") == "claimed")
                 return;
-            m_Statistics.UpdateStatistic("last_sub", user.DisplayName);
+            StreamGlassContext.UpdateStatistic("last_sub", user.DisplayName);
             if (isGift)
                 StreamGlassCanals.GIFT_FOLLOW.Emit(new(string.Empty, user.DisplayName, new(""), tier, -1, -1, -1));
             else
@@ -113,7 +111,7 @@ namespace StreamGlass.Twitch
         {
             if (m_Settings.Get("sub_mode") == "all")
                 return;
-            m_Statistics.UpdateStatistic("last_sub", user.DisplayName);
+            StreamGlassContext.UpdateStatistic("last_sub", user.DisplayName);
             StreamGlassCanals.FOLLOW.Emit(new(user.DisplayName, message, tier, monthTotal, monthStreak));
         }
 

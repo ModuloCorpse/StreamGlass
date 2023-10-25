@@ -25,22 +25,22 @@ namespace StreamGlass.Profile
             m_StreamLanguage = language;
         }
 
-        internal void Save(ref JFile json)
+        internal void Save(ref JObject json)
         {
             if (HaveStreamTitle())
-                json.Set("stream_title", m_StreamTitle);
+                json.Add("stream_title", m_StreamTitle);
             if (HaveStreamDescription())
-                json.Set("stream_description", m_StreamDescription);
+                json.Add("stream_description", m_StreamDescription);
             if (HaveStreamCategory())
             {
-                json.Set("stream_category_id", m_StreamCategory.ID);
-                json.Set("stream_category_name", m_StreamCategory.Name);
+                json.Add("stream_category_id", m_StreamCategory.ID);
+                json.Add("stream_category_name", m_StreamCategory.Name);
             }
             if (HaveStreamLanguage())
-                json.Set("stream_language", m_StreamLanguage);
+                json.Add("stream_language", m_StreamLanguage);
         }
 
-        internal void Load(JFile json)
+        internal void Load(JObject json)
         {
             m_StreamTitle = json.GetOrDefault("stream_title", "");
             m_StreamDescription = json.GetOrDefault("stream_description", "");

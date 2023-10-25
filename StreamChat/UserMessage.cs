@@ -1,4 +1,6 @@
-﻿using CorpseLib.StructuredText;
+﻿using CorpseLib;
+using CorpseLib.Json;
+using CorpseLib.StructuredText;
 using System;
 using TwitchCorpse;
 
@@ -6,6 +8,31 @@ namespace StreamGlass.StreamChat
 {
     public class UserMessage
     {
+        public class JSerializer : AJSerializer<UserMessage>
+        {
+            protected override OperationResult<UserMessage> Deserialize(JObject reader)
+            {
+                if (reader.TryGet("message", out Text? message) &&
+                    reader.TryGet("user", out TwitchUser? user) &&
+                    reader.TryGet("id", out string? id) &&
+                    reader.TryGet("color", out string? color) &&
+                    reader.TryGet("channel", out string? channel) &&
+                    reader.TryGet("is_highlighted", out bool? isHighlighted))
+                    return new(new(user!, (bool)isHighlighted!, id!, color!, channel!, message!));
+                return new("Bad json", string.Empty);
+            }
+
+            protected override void Serialize(UserMessage obj, JObject writer)
+            {
+                writer["message"] = obj.m_Message;
+                writer["user"] = obj.m_User;
+                writer["id"] = obj.m_ID;
+                writer["color"] = obj.m_Color;
+                writer["channel"] = obj.m_Channel;
+                writer["is_highlighted"] = obj.m_IsHighlighted;
+            }
+        }
+
         private readonly Text m_Message;
         private readonly TwitchUser m_User;
         private readonly string m_ID;

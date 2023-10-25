@@ -1,4 +1,7 @@
-﻿using CorpseLib.StructuredText;
+﻿using CorpseLib.Json;
+using CorpseLib;
+using CorpseLib.StructuredText;
+using TwitchCorpse;
 
 namespace StreamGlass.Events
 {

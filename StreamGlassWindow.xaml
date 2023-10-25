@@ -33,6 +33,7 @@
                     <ui:MenuItem TranslationKey="menu_file" Header="File" BrushPaletteKey="top_bar_background"/>
                     <ui:MenuItem TranslationKey="menu_settings" Header="Settings" Click="SettingsToolStripMenuItem_Click" BrushPaletteKey="top_bar_background"/>
                     <ui:MenuItem x:Name="ProfilesMenu" TranslationKey="menu_profile" Header="Profiles" BrushPaletteKey="top_bar_background">
+                        <ui:MenuItem x:Name="StatisticsMenuEdit" TranslationKey="menu_edit_statistics" Header="Edit statistics..." Click="EditStatisticsButton_Click" BrushPaletteKey="top_bar_background"/>
                         <ui:MenuItem x:Name="ProfileMenuEdit" TranslationKey="menu_edit_profile" Header="Edit profiles..." Click="EditProfilesButton_Click" BrushPaletteKey="top_bar_background"/>
                         <Separator Name="ProfilesMenuSeparator"/>
                     </ui:MenuItem>

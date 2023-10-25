@@ -13,7 +13,6 @@ namespace StreamGlass.Twitch
 {
     public class Connection : AStreamConnection
     {
-        private readonly StatisticManager m_Statistics;
         private readonly RecurringAction m_GetViewerCount = new(500);
         private TwitchChannelInfo? m_OriginalBroadcasterChannelInfo = null;
         private readonly TwitchAuthenticator m_Authenticator;
@@ -27,9 +26,8 @@ namespace StreamGlass.Twitch
         private RefreshToken? m_APIToken = null;
         private RefreshToken? m_IRCToken = null;
 
-        public Connection(StatisticManager statistics, IniSection settings, StreamGlassWindow form): base(settings, form)
+        public Connection(IniSection settings, StreamGlassWindow form): base(settings, form)
         {
-            m_Statistics = statistics;
             TwitchAPI.StartLogging();
             TwitchPubSub.StartLogging();
             TwitchEventSub.StartLogging();
@@ -57,19 +55,19 @@ namespace StreamGlass.Twitch
             StreamGlassCanals.BAN.Register(BanUser);
             StreamGlassCanals.ALLOW_MESSAGE.Register(AllowMessage);
 
-            ChatCommand.AddFunction("Game", (string[] variables) => {
+            StreamGlassContext.RegisterFunction("Game", (string[] variables) => {
                 var channelInfo = m_API.GetChannelInfo(variables[0]);
                 if (channelInfo != null)
                     return channelInfo.GameName;
                 return variables[0];
             });
-            ChatCommand.AddFunction("DisplayName", (string[] variables) => {
+            StreamGlassContext.RegisterFunction("DisplayName", (string[] variables) => {
                 var userInfo = m_API.GetUserInfoFromLogin(variables[0]);
                 if (userInfo != null)
                     return userInfo.DisplayName;
                 return variables[0];
             });
-            ChatCommand.AddFunction("Channel", (string[] variables) => {
+            StreamGlassContext.RegisterFunction("Channel", (string[] variables) => {
                 var userInfo = m_API.GetUserInfoFromLogin(variables[0]);
                 if (userInfo != null)
                     return userInfo.Name;
@@ -98,7 +96,7 @@ namespace StreamGlass.Twitch
             if (m_APIToken == null || m_IRCToken == null)
                 return false;
             m_API = new(m_APIToken);
-            m_TwitchHandler = new TwitchHandler(m_Statistics, Settings, m_API);
+            m_TwitchHandler = new TwitchHandler(Settings, m_API);
             m_API.LoadGlobalEmoteSet();
             TwitchUser? creator = m_API.GetUserInfoFromLogin("chaporon_");
             if (creator != null)
@@ -146,9 +144,9 @@ namespace StreamGlass.Twitch
             StreamGlassCanals.UPDATE_STREAM_INFO.Unregister(SetStreamInfo);
             StreamGlassCanals.BAN.Unregister(BanUser);
             StreamGlassCanals.ALLOW_MESSAGE.Unregister(AllowMessage);
-            ChatCommand.RemoveFunction("Game");
-            ChatCommand.RemoveFunction("DisplayName");
-            ChatCommand.RemoveFunction("Channel");
+            StreamGlassContext.UnregisterFunction("Game");
+            StreamGlassContext.UnregisterFunction("DisplayName");
+            StreamGlassContext.UnregisterFunction("Channel");
         }
 
         public override TabItemContent[] GetSettings() => new TabItemContent[] { new TwitchSettingsItem(Settings, this) };
