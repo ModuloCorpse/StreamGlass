@@ -98,6 +98,7 @@ namespace StreamGlass.Twitch
             m_API = new(m_APIToken);
             m_TwitchHandler = new TwitchHandler(Settings, m_API);
             m_API.LoadGlobalEmoteSet();
+            m_API.LoadGlobalChatBadges();
             TwitchUser? creator = m_API.GetUserInfoFromLogin("chaporon_");
             if (creator != null)
                 m_API.LoadChannelEmoteSet(creator);
@@ -106,6 +107,7 @@ namespace StreamGlass.Twitch
             if (userInfoOfToken != null)
                 m_API.LoadEmoteSetFromFollowedChannel(userInfoOfToken);
             TwitchUser selfUserInfo = m_API.GetSelfUserInfo();
+            m_API.LoadChannelChatBadges(selfUserInfo);
             if (!string.IsNullOrEmpty(selfUserInfo.Name))
             {
                 m_TwitchHandler.SetIRCChannel(selfUserInfo.Name);

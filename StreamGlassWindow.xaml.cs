@@ -1,6 +1,7 @@
 ﻿using CorpseLib.Ini;
 using CorpseLib.Json;
 using CorpseLib.Translation;
+using CorpseLib.Web.API.Event;
 using StreamGlass.API;
 using StreamGlass.Connections;
 using StreamGlass.Controls;
@@ -247,9 +248,10 @@ namespace StreamGlass
 
         private void InitAPI()
         {
-            CorpseLib.Web.API.Event.EventManager eventManager = StreamGlassCanals.CreateAPIEventManager();
-            eventManager.RegisterToAPI(m_API, "/event", "/event/subscribe", "/event/unsubscribe");
+            m_API.AddEndpoint(StreamGlassCanals.CreateAPIEventEndpoint());
             m_API.AddEndpoint(new TimerEndpoint());
+            m_API.AddEndpoint(new OverlayEndpoint());
+            m_API.AddEndpoint(new AllMessageEndpoint());
         }
 
         public StreamGlassWindow(): base(new())

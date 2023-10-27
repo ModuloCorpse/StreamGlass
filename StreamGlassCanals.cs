@@ -31,9 +31,9 @@ namespace StreamGlass
         public static readonly Canal<string> CHAT_CLEAR_USER = new();
         public static readonly Canal<string> CHAT_CLEAR_MESSAGE = new();
 
-        public static EventManager CreateAPIEventManager()
+        public static EventEndpoint CreateAPIEventEndpoint()
         {
-            EventManager eventManager = new();
+            EventEndpoint eventManager = new("/event");
             eventManager.RegisterCanal("chat_message", CHAT_MESSAGE);
             eventManager.RegisterCanal("chat_connected", CHAT_CONNECTED);
             eventManager.RegisterCanal("chat_joined", CHAT_JOINED);

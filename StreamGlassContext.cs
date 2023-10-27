@@ -27,6 +27,7 @@ namespace StreamGlass
 
         internal static void Init()
         {
+            JHelper.RegisterSerializer(new TwitchBadgeInfo.JSerializer());
             JHelper.RegisterSerializer(new TwitchUser.JSerializer());
             JHelper.RegisterSerializer(new Text.JSerializer());
             JHelper.RegisterSerializer(new Section.JSerializer());
