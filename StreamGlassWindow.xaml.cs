@@ -3,6 +3,7 @@ using CorpseLib.Json;
 using CorpseLib.Translation;
 using CorpseLib.Web.API.Event;
 using StreamGlass.API;
+using StreamGlass.API.Overlay;
 using StreamGlass.Connections;
 using StreamGlass.Controls;
 using StreamGlass.Profile;
@@ -250,8 +251,9 @@ namespace StreamGlass
         {
             m_API.AddEndpoint(StreamGlassCanals.CreateAPIEventEndpoint());
             m_API.AddEndpoint(new TimerEndpoint());
-            m_API.AddEndpoint(new OverlayEndpoint());
+            m_API.AddEndpoint(new OverlayHTTPEndpoint());
             m_API.AddEndpoint(new AllMessageEndpoint());
+            m_API.AddEndpoint(new ClearMessageEndpoint());
         }
 
         public StreamGlassWindow(): base(new())

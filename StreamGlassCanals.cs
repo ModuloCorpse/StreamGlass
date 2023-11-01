@@ -1,5 +1,5 @@
 ﻿using CorpseLib;
-using CorpseLib.Web.API.Event;
+using StreamGlass.API.Overlay;
 using StreamGlass.Events;
 using StreamGlass.Profile;
 using StreamGlass.StreamChat;
@@ -31,31 +31,31 @@ namespace StreamGlass
         public static readonly Canal<string> CHAT_CLEAR_USER = new();
         public static readonly Canal<string> CHAT_CLEAR_MESSAGE = new();
 
-        public static EventEndpoint CreateAPIEventEndpoint()
+        public static OverlayWebsocketEndpoint CreateAPIEventEndpoint()
         {
-            EventEndpoint eventManager = new("/event");
-            eventManager.RegisterCanal("chat_message", CHAT_MESSAGE);
-            eventManager.RegisterCanal("chat_connected", CHAT_CONNECTED);
-            eventManager.RegisterCanal("chat_joined", CHAT_JOINED);
-            eventManager.RegisterCanal("user_joined", USER_JOINED);
-            eventManager.RegisterCanal("update_stream_info", UPDATE_STREAM_INFO);
-            eventManager.RegisterCanal("stream_start", STREAM_START);
-            eventManager.RegisterCanal("stream_stop", STREAM_STOP);
-            eventManager.RegisterCanal("donation", DONATION);
-            eventManager.RegisterCanal("follow", FOLLOW);
-            eventManager.RegisterCanal("gift_follow", GIFT_FOLLOW);
-            eventManager.RegisterCanal("raid", RAID);
-            eventManager.RegisterCanal("reward", REWARD);
-            eventManager.RegisterCanal("commands", COMMANDS);
-            eventManager.RegisterCanal("profile_changed_menu_item", PROFILE_CHANGED_MENU_ITEM);
-            eventManager.RegisterCanal("ban", BAN);
-            eventManager.RegisterCanal("held_message", HELD_MESSAGE);
-            eventManager.RegisterCanal("allow_message", ALLOW_MESSAGE);
-            eventManager.RegisterCanal("held_message_moderated", HELD_MESSAGE_MODERATED);
-            eventManager.RegisterCanal("chat_clear", CHAT_CLEAR);
-            eventManager.RegisterCanal("chat_clear_user", CHAT_CLEAR_USER);
-            eventManager.RegisterCanal("chat_clear_message", CHAT_CLEAR_MESSAGE);
-            return eventManager;
+            OverlayWebsocketEndpoint overlayWebsocketEndpoint = new();
+            overlayWebsocketEndpoint.RegisterCanal("chat_message", CHAT_MESSAGE);
+            overlayWebsocketEndpoint.RegisterCanal("chat_connected", CHAT_CONNECTED);
+            overlayWebsocketEndpoint.RegisterCanal("chat_joined", CHAT_JOINED);
+            overlayWebsocketEndpoint.RegisterCanal("user_joined", USER_JOINED);
+            overlayWebsocketEndpoint.RegisterCanal("update_stream_info", UPDATE_STREAM_INFO);
+            overlayWebsocketEndpoint.RegisterCanal("stream_start", STREAM_START);
+            overlayWebsocketEndpoint.RegisterCanal("stream_stop", STREAM_STOP);
+            overlayWebsocketEndpoint.RegisterCanal("donation", DONATION);
+            overlayWebsocketEndpoint.RegisterCanal("follow", FOLLOW);
+            overlayWebsocketEndpoint.RegisterCanal("gift_follow", GIFT_FOLLOW);
+            overlayWebsocketEndpoint.RegisterCanal("raid", RAID);
+            overlayWebsocketEndpoint.RegisterCanal("reward", REWARD);
+            overlayWebsocketEndpoint.RegisterCanal("commands", COMMANDS);
+            overlayWebsocketEndpoint.RegisterCanal("profile_changed_menu_item", PROFILE_CHANGED_MENU_ITEM);
+            overlayWebsocketEndpoint.RegisterCanal("ban", BAN);
+            overlayWebsocketEndpoint.RegisterCanal("held_message", HELD_MESSAGE);
+            overlayWebsocketEndpoint.RegisterCanal("allow_message", ALLOW_MESSAGE);
+            overlayWebsocketEndpoint.RegisterCanal("held_message_moderated", HELD_MESSAGE_MODERATED);
+            overlayWebsocketEndpoint.RegisterCanal("chat_clear", CHAT_CLEAR);
+            overlayWebsocketEndpoint.RegisterCanal("chat_clear_user", CHAT_CLEAR_USER);
+            overlayWebsocketEndpoint.RegisterCanal("chat_clear_message", CHAT_CLEAR_MESSAGE);
+            return overlayWebsocketEndpoint;
         }
     }
 }

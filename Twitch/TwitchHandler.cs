@@ -42,6 +42,12 @@ namespace StreamGlass.Twitch
 
         public void OnChatJoined() => StreamGlassCanals.CHAT_JOINED.Emit(m_IRCChannel);
 
+        public void OnChatMessageRemoved(string messageID) => StreamGlassCanals.CHAT_CLEAR_MESSAGE.Emit(messageID);
+
+        public void OnChatUserRemoved(string userID) => StreamGlassCanals.CHAT_CLEAR_USER.Emit(userID);
+
+        public void OnChatClear() => StreamGlassCanals.CHAT_CLEAR.Trigger();
+
         public void OnChatMessage(TwitchUser user, bool isHighlight, string messageId, string messageColor, Text message)
         {
             StreamGlassCanals.CHAT_MESSAGE.Emit(new(user, isHighlight, messageId, messageColor, m_IRCChannel, message));

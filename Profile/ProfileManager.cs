@@ -1,8 +1,6 @@
 ﻿using CorpseLib.Json;
 using CorpseLib.ManagedObject;
-using StreamGlass;
 using StreamGlass.Connections;
-using StreamGlass.Stat;
 using StreamGlass.StreamChat;
 using TwitchCorpse;
 
@@ -19,7 +17,8 @@ namespace StreamGlass.Profile
             m_ConnectionManager = client;
             StreamGlassCanals.CHAT_MESSAGE.Register(OnChatMessage);
             StreamGlassCanals.CHAT_JOINED.Register(OnJoinedChannel);
-            StreamGlassCanals.STREAM_START.Register(OnStreamStart);
+            StreamGlassCanals.STREAM_START.Register(ResetCurrentProfile);
+            StreamGlassCanals.CHAT_CLEAR.Register(ResetCurrentProfile);
         }
 
         public Profile NewProfile(string name)
@@ -43,7 +42,7 @@ namespace StreamGlass.Profile
 
         public void UpdateStreamInfo() => CurrentObject?.UpdateStreamInfo();
 
-        private void OnStreamStart() => CurrentObject?.Reset();
+        private void ResetCurrentProfile() => CurrentObject?.Reset();
 
         private void OnJoinedChannel(string? channel)
         {

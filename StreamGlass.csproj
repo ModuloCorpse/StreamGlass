@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="API\Overlay\StreamGlass.js" />
     <None Remove="Assets\cancel.png" />
     <None Remove="Assets\chat-bubble.png" />
     <None Remove="Assets\chess-queen.png" />
@@ -27,6 +28,10 @@
 
   <ItemGroup>
     <Content Include="Assets\stream-glass-logo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="API\Overlay\StreamGlass.js" />
   </ItemGroup>
 
   <ItemGroup>
