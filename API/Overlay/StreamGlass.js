@@ -17,9 +17,13 @@ class StreamGlassModule {
 	Init() { }
 
 	constructor(path, parameterLoadCallback = null) {
+		this.#parameters = new URLSearchParams(window.location.search);
 		if (path[0] != '/')
 			path = '/' + path;
 		this.#socket = new WebSocket('ws://' + location.host + '/overlay' + path);
+		this.#socket.onopen = (event) => {
+			this.Init();
+		}
 		this.#socket.onmessage = (event) => {
 			var eventJson = JSON.parse(event.data);
 			if (eventJson.hasOwnProperty('type') && eventJson.hasOwnProperty('data')) {
@@ -52,14 +56,6 @@ class StreamGlassModule {
 							}
 							break;
 						}
-					case 'parameters':
-						{
-							this.#parameters = data;
-							this.Init();
-							if (parameterLoadCallback != null)
-								parameterLoadCallback();
-							break;
-						}
 				}
 			}
 		}
@@ -83,9 +79,19 @@ class StreamGlassModule {
 		this.#Send(JSON.stringify({ 'request': 'unsubscribe', 'event': eventType }));
 	}
 
+	HaveParameter(name) {
+		return this.#parameters.has(name);
+	}
+
 	GetParameter(name) {
-		if (this.#parameters.hasOwnProperty(name))
-			return this.#parameters[name];
+		if (this.#parameters.has(name))
+			return this.#parameters.get(name);
 		return null;
+	}
+
+	GetParameterOr(name, value) {
+		if (this.#parameters.has(name))
+			return this.#parameters.get(name);
+		return value;
 	}
 }
