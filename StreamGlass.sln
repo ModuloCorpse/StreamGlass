@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StreamGlass", "StreamGlass.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Corpse Libraries", "Corpse Libraries", "{912FB481-93CA-4488-8605-1BF9B782FFBA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chemistry", "..\Chemistry\Chemistry.csproj", "{733D8F9B-7258-42A5-BF46-C6276659409A}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CorpseLib", "..\CorpseLib\CorpseLib\CorpseLib.csproj", "{19B526F1-ACAD-4239-9D3A-5C81C6F7A1FA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CorpseLib.Web", "..\CorpseLib\CorpseLib.Web\CorpseLib.Web.csproj", "{5EA947AE-4904-4116-A498-74045E1EF515}"
@@ -16,8 +14,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OBSCorpse", "..\CorpseLib\OBSCorpse\OBSCorpse.csproj", "{15B5F38D-41FA-4A8A-B96C-AA863F159DAF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TwitchCorpse", "..\CorpseLib\TwitchCorpse\TwitchCorpse.csproj", "{F9D6E040-5601-489D-9B0C-15008A414267}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quicksand", "..\Quicksand\Quicksand\Quicksand.csproj", "{A320CECF-443A-4AD4-85F3-63DA2D26810D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +25,6 @@ Global
 		{C3C1F99A-AF09-42AA-A8EF-FA8838F269D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C3C1F99A-AF09-42AA-A8EF-FA8838F269D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C3C1F99A-AF09-42AA-A8EF-FA8838F269D8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{733D8F9B-7258-42A5-BF46-C6276659409A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{733D8F9B-7258-42A5-BF46-C6276659409A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{733D8F9B-7258-42A5-BF46-C6276659409A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{733D8F9B-7258-42A5-BF46-C6276659409A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{19B526F1-ACAD-4239-9D3A-5C81C6F7A1FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{19B526F1-ACAD-4239-9D3A-5C81C6F7A1FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19B526F1-ACAD-4239-9D3A-5C81C6F7A1FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -49,10 +41,6 @@ Global
 		{F9D6E040-5601-489D-9B0C-15008A414267}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9D6E040-5601-489D-9B0C-15008A414267}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F9D6E040-5601-489D-9B0C-15008A414267}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A320CECF-443A-4AD4-85F3-63DA2D26810D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A320CECF-443A-4AD4-85F3-63DA2D26810D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A320CECF-443A-4AD4-85F3-63DA2D26810D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A320CECF-443A-4AD4-85F3-63DA2D26810D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

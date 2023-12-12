@@ -21,7 +21,9 @@ namespace StreamGlass.StreamAlert
             "Tier 1",
             "Tier 2",
             "Tier 3",
-            "Prime/Tier 4"
+            "Prime/Tier 4",
+            "Shoutout",
+            "Being shoutout"
         };
         private readonly AlertInfo[] m_GiftAlertInfo = new AlertInfo[Enum.GetNames(typeof(AlertType)).Length];
         private readonly AlertInfo[] m_AlertInfo = new AlertInfo[Enum.GetNames(typeof(AlertType)).Length];

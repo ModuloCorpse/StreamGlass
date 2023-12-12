@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Assets\stream-glass-logo.ico</ApplicationIcon>
@@ -35,12 +35,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Chemistry\Chemistry.csproj" />
     <ProjectReference Include="..\CorpseLib\CorpseLib.Web\CorpseLib.Web.csproj" />
     <ProjectReference Include="..\CorpseLib\CorpseLib\CorpseLib.csproj" />
     <ProjectReference Include="..\CorpseLib\OBSCorpse\OBSCorpse.csproj" />
     <ProjectReference Include="..\CorpseLib\TwitchCorpse\TwitchCorpse.csproj" />
-    <ProjectReference Include="..\Quicksand\Quicksand\Quicksand.csproj" />
   </ItemGroup>
 
   <ItemGroup>

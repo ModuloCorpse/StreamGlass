@@ -1,7 +1,6 @@
 ﻿using CorpseLib.Ini;
 using CorpseLib.Json;
 using CorpseLib.Translation;
-using CorpseLib.Web.API.Event;
 using StreamGlass.API;
 using StreamGlass.API.Overlay;
 using StreamGlass.Connections;
@@ -16,6 +15,7 @@ using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
+using TwitchCorpse;
 
 namespace StreamGlass
 {
@@ -170,18 +170,46 @@ namespace StreamGlass
             Translator.CurrentLanguageChanged += () => m_Settings.GetOrAdd("settings").Set("language", Translator.CurrentLanguage.Name);
         }
 
-        private void InitializeAlertSetting(AlertScrollPanel.AlertType alertType, string imgPath, string prefix, bool isEnabled)
+        private void InitializeAlertSetting(AlertScrollPanel.AlertType alertType, bool hasGift, string imgPath, string prefix, string chatMessage)
         {
             IniSection alertSection = m_Settings.GetOrAdd("alert");
             string loadedImgPath = alertSection.GetOrAdd(string.Format("{0}_path", alertType), imgPath);
             string loadedPrefix = alertSection.GetOrAdd(string.Format("{0}_prefix", alertType), prefix);
-            bool loadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_enabled", alertType), (isEnabled) ? "true" : "false") == "true";
-            StreamAlertPanel.SetAlertInfo(alertType, loadedImgPath, loadedPrefix, loadedIsEnabled);
+            string loadedChatMessage = alertSection.GetOrAdd(string.Format("{0}_chat_message", alertType), chatMessage);
+            bool loadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_enabled", alertType), "true") == "true";
+            bool loadedChatMessageIsEnabled = alertSection.GetOrAdd(string.Format("{0}_chat_message_enabled", alertType), "true") == "true";
+            StreamAlertPanel.SetAlertInfo(alertType, loadedImgPath, loadedPrefix, loadedChatMessage, loadedIsEnabled, loadedChatMessageIsEnabled);
 
-            string giftLoadedImgPath = alertSection.GetOrAdd(string.Format("{0}_gift_path", alertType), imgPath);
-            string giftLoadedPrefix = alertSection.GetOrAdd(string.Format("{0}_gift_prefix", alertType), prefix);
-            bool giftLoadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_enabled", alertType), (isEnabled) ? "true" : "false") == "true";
-            StreamAlertPanel.SetGiftAlertInfo(alertType, giftLoadedImgPath, giftLoadedPrefix, giftLoadedIsEnabled);
+            if (hasGift)
+            {
+                string giftLoadedImgPath = alertSection.GetOrAdd(string.Format("{0}_gift_path", alertType), imgPath);
+                string giftLoadedPrefix = alertSection.GetOrAdd(string.Format("{0}_gift_prefix", alertType), prefix);
+                string giftLoadedChatMessage = alertSection.GetOrAdd(string.Format("{0}_gift_chat_message", alertType), chatMessage);
+                bool giftLoadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_enabled", alertType), "true") == "true";
+                bool giftLoadedChatMessageIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_chat_message_enabled", alertType), "true") == "true";
+                StreamAlertPanel.SetGiftAlertInfo(alertType, giftLoadedImgPath, giftLoadedPrefix, giftLoadedChatMessage, giftLoadedIsEnabled, giftLoadedChatMessageIsEnabled);
+            }
+        }
+
+        private void InitializeAlertSetting(AlertScrollPanel.AlertType alertType, bool hasGift, string imgPath, string prefix)
+        {
+            IniSection alertSection = m_Settings.GetOrAdd("alert");
+            string loadedImgPath = alertSection.GetOrAdd(string.Format("{0}_path", alertType), imgPath);
+            string loadedPrefix = alertSection.GetOrAdd(string.Format("{0}_prefix", alertType), prefix);
+            string loadedChatMessage = alertSection.GetOrAdd(string.Format("{0}_chat_message", alertType), string.Empty);
+            bool loadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_enabled", alertType), "true") == "true";
+            bool loadedChatMessageIsEnabled = alertSection.GetOrAdd(string.Format("{0}_chat_message_enabled", alertType), "false") == "true";
+            StreamAlertPanel.SetAlertInfo(alertType, loadedImgPath, loadedPrefix, loadedChatMessage, loadedIsEnabled, loadedChatMessageIsEnabled);
+
+            if (hasGift)
+            {
+                string giftLoadedImgPath = alertSection.GetOrAdd(string.Format("{0}_gift_path", alertType), imgPath);
+                string giftLoadedPrefix = alertSection.GetOrAdd(string.Format("{0}_gift_prefix", alertType), prefix);
+                string giftLoadedChatMessage = alertSection.GetOrAdd(string.Format("{0}_gift_chat_message", alertType), string.Empty);
+                bool giftLoadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_enabled", alertType), "true") == "true";
+                bool giftLoadedChatMessageIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_chat_message_enabled", alertType), "false") == "true";
+                StreamAlertPanel.SetGiftAlertInfo(alertType, giftLoadedImgPath, giftLoadedPrefix, giftLoadedChatMessage, giftLoadedIsEnabled, giftLoadedChatMessageIsEnabled);
+            }
         }
 
         private void InitializeSettings()
@@ -201,15 +229,17 @@ namespace StreamGlass
             IniSection alertSection = m_Settings.GetOrAdd("alert");
             StreamAlertPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(alertSection.GetOrAdd("display_type", "0")));
             StreamAlertPanel.SetContentFontSize(double.Parse(alertSection.GetOrAdd("message_font_size", "20")));
-            InitializeAlertSetting(AlertScrollPanel.AlertType.INCOMMING_RAID, "../Assets/parachute.png", "${e.From} is raiding you with ${e.NbViewers} viewers", true);
-            InitializeAlertSetting(AlertScrollPanel.AlertType.OUTGOING_RAID, "../Assets/parachute.png", "You are raiding ${e.To} with ${e.NbViewers} viewers", true);
-            InitializeAlertSetting(AlertScrollPanel.AlertType.DONATION, "../Assets/take-my-money.png", "${e.Name} as donated ${e.Amount} ${e.Currency}: ", true);
-            InitializeAlertSetting(AlertScrollPanel.AlertType.REWARD, "../Assets/chest.png", "${e.From} retrieve ${e.Reward}: ${e.Input}", true);
-            InitializeAlertSetting(AlertScrollPanel.AlertType.FOLLOW, "../Assets/hearts.png", "${e.Name} is now following you: ", true);
-            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER1, "../Assets/stars-stack-1.png", "${e.Name} as subscribed to you with a tier 1: ", true);
-            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER2, "../Assets/stars-stack-2.png", "${e.Name} as subscribed to you with a tier 2: ", true);
-            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER3, "../Assets/stars-stack-3.png", "${e.Name} as subscribed to you with a tier 3: ", true);
-            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER4, "../Assets/chess-queen.png", "${e.Name} as subscribed to you with a prime: ", true);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.INCOMMING_RAID, false, "../Assets/parachute.png", "${e.From.DisplayName} is raiding you with ${e.NbViewers} viewers");
+            InitializeAlertSetting(AlertScrollPanel.AlertType.OUTGOING_RAID, false, "../Assets/parachute.png", "You are raiding ${e.To.DisplayName} with ${e.NbViewers} viewers");
+            InitializeAlertSetting(AlertScrollPanel.AlertType.DONATION, false, "../Assets/take-my-money.png", "${e.User.DisplayName} as donated ${e.Amount} ${e.Currency}: ");
+            InitializeAlertSetting(AlertScrollPanel.AlertType.REWARD, false, "../Assets/chest.png", "${e.From.DisplayName} retrieve ${e.Reward}: ${e.Input}");
+            InitializeAlertSetting(AlertScrollPanel.AlertType.FOLLOW, false, "../Assets/hearts.png", "${e.User.DisplayName} is now following you: ");
+            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER1, true, "../Assets/stars-stack-1.png", "${e.User.DisplayName} as subscribed to you with a tier 1: ");
+            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER2, true, "../Assets/stars-stack-2.png", "${e.User.DisplayName} as subscribed to you with a tier 2: ");
+            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER3, true, "../Assets/stars-stack-3.png", "${e.User.DisplayName} as subscribed to you with a tier 3: ");
+            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER4, true, "../Assets/chess-queen.png", "${e.User.DisplayName} as subscribed to you with a prime: ");
+            InitializeAlertSetting(AlertScrollPanel.AlertType.SHOUTOUT, false, "../Assets/megaphone.png", "${e.Moderator.DisplayName} gave a shoutout to ${e.User.DisplayName}", "Go check ${DisplayName(Lower(e.User.DisplayName))}, who's playing ${Game(e.User.DisplayName)} on https://twitch.tv/${e.User.Name}");
+            InitializeAlertSetting(AlertScrollPanel.AlertType.BEING_SHOUTOUT, false, "../Assets/megaphone.png", "${e.User.DisplayName} gave you a shoutout");
 
             //Held message
             IniSection moderationSection = m_Settings.GetOrAdd("moderation");
@@ -249,9 +279,10 @@ namespace StreamGlass
 
         private void InitAPI()
         {
-            m_API.AddEndpoint(StreamGlassCanals.CreateAPIEventEndpoint());
+            OverlayWebsocketEndpoint overlayWebsocketEndpoint = StreamGlassCanals.CreateAPIEventEndpoint();
+            m_API.AddEndpoint(overlayWebsocketEndpoint);
             m_API.AddEndpoint(new TimerEndpoint());
-            m_API.AddEndpoint(new OverlayHTTPEndpoint());
+            m_API.AddEndpoint(new OverlayHTTPEndpoint(overlayWebsocketEndpoint));
             m_API.AddEndpoint(new AllMessageEndpoint());
             m_API.AddEndpoint(new ClearMessageEndpoint());
         }
@@ -404,15 +435,6 @@ namespace StreamGlass
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             m_ConnectionManager.Test();
-            StreamGlassCanals.FOLLOW.Emit(new("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 0, 69, 42));
-            StreamGlassCanals.FOLLOW.Emit(new("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 1, 69, 42));
-            StreamGlassCanals.FOLLOW.Emit(new("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 2, 69, 42));
-            StreamGlassCanals.FOLLOW.Emit(new("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 3, 69, 42));
-            StreamGlassCanals.FOLLOW.Emit(new("Jean-Michel Jarre", new("J'aime le Pop-Corn"), 4, 69, 42));
-            StreamGlassCanals.GIFT_FOLLOW.Emit(new("Capterge", "Jean-Michel Jarre", new("Il aime le Pop-Corn"), 1, 69, 42, -1));
-            StreamGlassCanals.DONATION.Emit(new("Jean-Michel Jarre", 666, "bits", new("J'aime le Pop-Corn")));
-            StreamGlassCanals.RAID.Emit(new("", "Jean-Michel Jarre", "", "Capterge", 40, true));
-            StreamGlassCanals.REWARD.Emit(new("", "Jean-Michel Jarre", "Chante", "J'aime le Pop-Corn"));
         }
     }
 }

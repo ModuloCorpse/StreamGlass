@@ -12,18 +12,18 @@ namespace StreamGlass.Events
             protected override OperationResult<FollowEventArgs> Deserialize(JObject reader)
             {
                 if (reader.TryGet("message", out Text? message) &&
-                    reader.TryGet("name", out string? name) &&
+                    reader.TryGet("user", out TwitchUser? user) &&
                     reader.TryGet("tier", out int? tier) &&
                     reader.TryGet("month_total", out int? monthTotal) &&
                     reader.TryGet("month_streak", out int? monthStreak))
-                    return new(new(name!, message!, (int)tier!, (int)monthTotal!, (int)monthStreak!));
+                    return new(new(user!, message!, (int)tier!, (int)monthTotal!, (int)monthStreak!));
                 return new("Bad json", string.Empty);
             }
 
             protected override void Serialize(FollowEventArgs obj, JObject writer)
             {
                 writer["message"] = obj.Message;
-                writer["name"] = obj.Name;
+                writer["user"] = obj.User;
                 writer["tier"] = obj.Tier;
                 writer["month_total"] = obj.m_MonthTotal;
                 writer["month_streak"] = obj.m_MonthStreak;
@@ -36,7 +36,7 @@ namespace StreamGlass.Events
         public int MonthTotal => m_MonthTotal;
         public int MonthStreak => m_MonthStreak;
 
-        public FollowEventArgs(string name, Text message, int tier, int monthTotal, int monthStreak) : base(name, message, tier)
+        public FollowEventArgs(TwitchUser? user, Text message, int tier, int monthTotal, int monthStreak) : base(user, message, tier)
         {
             m_MonthTotal = monthTotal;
             m_MonthStreak = monthStreak;

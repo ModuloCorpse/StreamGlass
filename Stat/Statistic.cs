@@ -1,8 +1,4 @@
 ﻿using CorpseLib;
-using CorpseLib.Json;
-using CorpseLib.Placeholder;
-using StreamGlass.Stat;
-using System.IO;
 
 namespace StreamGlass
 {
@@ -26,8 +22,8 @@ namespace StreamGlass
         }
 
         public object? Get() => m_HaveValue ? m_Value : null;
-        public T? Get<T>() => m_HaveValue ? (T)m_Value : default;
-        public T GetOr<T>(T defaultValue) => m_HaveValue ? (T)m_Value : defaultValue;
+        public T? Get<T>() => m_HaveValue ? Helper.Cast<T>(m_Value) : default;
+        public T GetOr<T>(T defaultValue) => m_HaveValue ? Helper.Cast<T>(m_Value) ?? defaultValue : defaultValue;
 
         public void SetValue(object value)
         {

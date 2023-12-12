@@ -5,6 +5,7 @@ using OBSCorpse;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace StreamGlass.API
 {
@@ -28,16 +29,32 @@ namespace StreamGlass.API
             try
             {
                 JFile jfile = new(request.Body);
-                long duration = jfile.Get<long>("duration")!;
                 string path = jfile.Get<string>("path")!;
-                string endMessage = jfile.GetOrDefault("end", string.Empty);
-                if (m_Timers.TryGetValue(path, out var oldTimer))
-                    oldTimer.Stop();
-                FileCountdownTimeAction timer = (string.IsNullOrEmpty(endMessage)) ? new(path, duration) : new(path, endMessage, duration);
-                timer.OnFinish += (object? sender, EventArgs e) => m_Timers.Remove(path);
-                m_Timers[path] = timer;
-                m_FileToClear.Add(path);
-                timer.Start();
+                if (jfile.TryGet("duration", out long duration))
+                {
+                    string endMessage = jfile.GetOrDefault("end", string.Empty);
+                    if (m_Timers.TryGetValue(path, out var oldTimer))
+                        oldTimer.Stop();
+                    FileCountdownTimeAction timer = (string.IsNullOrEmpty(endMessage)) ? new(path, duration) : new(path, endMessage, duration);
+                    timer.OnFinish += (object? sender, EventArgs e) => m_Timers.Remove(path);
+                    timer.OnStop += (object? sender, EventArgs e) => m_Timers.Remove(path);
+                    m_Timers[path] = timer;
+                    m_FileToClear.Add(path);
+                    timer.Start();
+                    if (jfile.TryGet("ads_duration", out uint adsDuration))
+                    {
+                        if (jfile.TryGet("ads_delay", out int adsDelay))
+                            Task.Delay(adsDelay * 1000).ContinueWith(t => StreamGlassCanals.START_ADS.Emit(adsDuration));
+                        else
+                            StreamGlassCanals.START_ADS.Emit(adsDuration);
+                    }
+                }
+                else
+                {
+                    if (m_Timers.TryGetValue(path, out FileCountdownTimeAction? timeAction))
+                        timeAction.Stop();
+                    File.WriteAllText(path, string.Empty);
+                }
             }
             catch
             {

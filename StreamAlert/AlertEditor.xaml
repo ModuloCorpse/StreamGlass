@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="clr-namespace:StreamGlass.Controls"
         mc:Ignorable="d"
-        d:DesignHeight="156"
+        d:DesignHeight="256"
         d:DesignWidth="454"
-        Height="156"
+        Height="256"
         Width="454"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -47,7 +47,7 @@
                             <CheckBox Margin="5,0,0,0" x:Name="AlertEnableCheckBox"/>
                         </ui:StackPanel>
                         <ui:StackPanel Orientation="Horizontal">
-                            <ui:Label x:Name="AlertImageTextBoxLabel" TranslationKey="alert_editor_image" Margin="0,0,5,0" Text="Browser:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="100"/>
+                            <ui:Label x:Name="AlertImageTextBoxLabel" TranslationKey="alert_editor_image" Margin="0,0,5,0" Text="Image:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="100"/>
                             <ui:TextBox x:Name="AlertImageTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="200" Height="25" TextChanged="AlertImageTextBox_TextChanged"/>
                             <ui:Button x:Name="AlertImageTextBoxButton" Margin="3,0,0,0" Width="34" HorizontalAlignment="Left" VerticalAlignment="Top" Click="AlertImageFileDialog_Click">
                                 <ui:Button.Resources>
@@ -62,6 +62,18 @@
                             <ui:Label x:Name="AlertContentTextBoxLabel" TranslationKey="alert_editor_prefix" VerticalAlignment="Center" TextAlignment="Right" Text="Content:" Width="100"/>
                             <ui:TextBox Margin="5,0,0,0" x:Name="AlertContentTextBox" Height="52" Width="200" TextWrapping="Wrap" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                         </ui:StackPanel>
+                        <ui:GroupBox TranslationKey="alert_chat_message" Header="Chat Message">
+                            <ui:StackPanel>
+                                <ui:StackPanel Orientation="Horizontal">
+                                    <ui:Label x:Name="ChatMessageEnableTextBoxLabel" TranslationKey="alert_editor_enable" VerticalAlignment="Center" TextAlignment="Right" Text="Enable:" Width="100"/>
+                                    <CheckBox Margin="5,0,0,0" x:Name="ChatMessageEnableCheckBox"/>
+                                </ui:StackPanel>
+                                <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                    <ui:Label x:Name="ChatMessageContentTextBoxLabel" TranslationKey="alert_editor_prefix" VerticalAlignment="Center" TextAlignment="Right" Text="Content:" Width="100"/>
+                                    <ui:TextBox Margin="5,0,0,0" x:Name="ChatMessageContentTextBox" Height="52" Width="200" TextWrapping="Wrap" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                                </ui:StackPanel>
+                            </ui:StackPanel>
+                        </ui:GroupBox>
                     </ui:StackPanel>
                     <ui:DockPanel Grid.Column="1">
                         <Image x:Name="AlertImage" Width="90" Height="90"/>

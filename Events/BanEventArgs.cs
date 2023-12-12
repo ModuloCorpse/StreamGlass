@@ -1,6 +1,5 @@
 ﻿using CorpseLib.Json;
 using CorpseLib;
-using StreamGlass.StreamChat;
 using TwitchCorpse;
 
 namespace StreamGlass.Events

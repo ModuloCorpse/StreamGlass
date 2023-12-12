@@ -42,6 +42,7 @@ namespace StreamGlass
             JHelper.RegisterSerializer(new CommandEventArgs.JSerializer());
             JHelper.RegisterSerializer(new CategoryInfo.JSerializer());
             JHelper.RegisterSerializer(new UpdateStreamInfoArgs.JSerializer());
+            JHelper.RegisterSerializer(new ShoutoutEventArgs.JSerializer());
 
             ms_Statistics.Load();
 

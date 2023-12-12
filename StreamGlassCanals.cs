@@ -30,6 +30,9 @@ namespace StreamGlass
         public static readonly Canal CHAT_CLEAR = new();
         public static readonly Canal<string> CHAT_CLEAR_USER = new();
         public static readonly Canal<string> CHAT_CLEAR_MESSAGE = new();
+        public static readonly Canal<ShoutoutEventArgs> SHOUTOUT = new();
+        public static readonly Canal<TwitchUser> BEING_SHOUTOUT = new();
+        public static readonly Canal<uint> START_ADS = new();
 
         public static OverlayWebsocketEndpoint CreateAPIEventEndpoint()
         {
@@ -55,6 +58,9 @@ namespace StreamGlass
             overlayWebsocketEndpoint.RegisterCanal("chat_clear", CHAT_CLEAR);
             overlayWebsocketEndpoint.RegisterCanal("chat_clear_user", CHAT_CLEAR_USER);
             overlayWebsocketEndpoint.RegisterCanal("chat_clear_message", CHAT_CLEAR_MESSAGE);
+            overlayWebsocketEndpoint.RegisterCanal("shoutout", SHOUTOUT);
+            overlayWebsocketEndpoint.RegisterCanal("being_shoutout", BEING_SHOUTOUT);
+            overlayWebsocketEndpoint.RegisterCanal("start_ads", START_ADS);
             return overlayWebsocketEndpoint;
         }
     }

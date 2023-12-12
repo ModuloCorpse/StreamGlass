@@ -37,7 +37,7 @@ namespace StreamGlass.Twitch
                 StreamGlassContext.UpdateStatistic("top_bits_donor", user.DisplayName);
                 StreamGlassContext.UpdateStatistic("top_bits_donation", bits);
             }
-            StreamGlassCanals.DONATION.Emit(new(user.DisplayName, bits, "Bits", message));
+            StreamGlassCanals.DONATION.Emit(new(user, bits, "Bits", message));
         }
 
         public void OnChatJoined() => StreamGlassCanals.CHAT_JOINED.Emit(m_IRCChannel);
@@ -56,23 +56,23 @@ namespace StreamGlass.Twitch
         public void OnFollow(TwitchUser user)
         {
             StreamGlassContext.UpdateStatistic("last_follow", user.DisplayName);
-            StreamGlassCanals.FOLLOW.Emit(new(user.DisplayName, new(""), 0, -1, -1));
+            StreamGlassCanals.FOLLOW.Emit(new(user, new(""), 0, -1, -1));
         }
 
         public void OnRaided(TwitchUser user, int nbViewer)
         {
             TwitchUser self = m_API.GetSelfUserInfo();
             StreamGlassContext.UpdateStatistic("last_raider", user.DisplayName);
-            StreamGlassCanals.RAID.Emit(new RaidEventArgs(user.ID, user.DisplayName, self.ID, self.DisplayName, nbViewer, true));
+            StreamGlassCanals.RAID.Emit(new RaidEventArgs(user, self, nbViewer, true));
         }
 
         public void OnRaiding(TwitchUser user, int nbViewer)
         {
             TwitchUser self = m_API.GetSelfUserInfo();
-            StreamGlassCanals.RAID.Emit(new RaidEventArgs(self.ID, self.DisplayName, user.ID, user.DisplayName, nbViewer, false));
+            StreamGlassCanals.RAID.Emit(new RaidEventArgs(self, user, nbViewer, false));
         }
 
-        public void OnReward(TwitchUser user, string reward, string input) => StreamGlassCanals.REWARD.Emit(new(user.ID, user.DisplayName, reward, input));
+        public void OnReward(TwitchUser user, string reward, string input) => StreamGlassCanals.REWARD.Emit(new(user, reward, input));
 
         public void OnStreamStart() => StreamGlassCanals.STREAM_START.Trigger();
 
@@ -92,14 +92,14 @@ namespace StreamGlass.Twitch
                     StreamGlassContext.UpdateStatistic("top_nb_gift", nbGift);
                 }
             }
-            StreamGlassCanals.GIFT_FOLLOW.Emit(new(string.Empty, (user != null) ? user.DisplayName : "", new(""), tier, -1, -1, nbGift!));
+            StreamGlassCanals.GIFT_FOLLOW.Emit(new(null, user, new(""), tier, -1, -1, nbGift!));
         }
 
         public void OnSharedGiftSub(TwitchUser user, TwitchUser recipient, int tier, int monthGifted, int monthStreak, Text message)
         {
             if (m_Settings.Get("sub_mode") == "all")
                 return;
-            StreamGlassCanals.GIFT_FOLLOW.Emit(new(recipient.DisplayName, user.DisplayName, message, tier, monthGifted, monthStreak, 1));
+            StreamGlassCanals.GIFT_FOLLOW.Emit(new(recipient, user, message, tier, monthGifted, monthStreak, 1));
         }
 
         public void OnSub(TwitchUser user, int tier, bool isGift)
@@ -108,9 +108,9 @@ namespace StreamGlass.Twitch
                 return;
             StreamGlassContext.UpdateStatistic("last_sub", user.DisplayName);
             if (isGift)
-                StreamGlassCanals.GIFT_FOLLOW.Emit(new(string.Empty, user.DisplayName, new(""), tier, -1, -1, -1));
+                StreamGlassCanals.GIFT_FOLLOW.Emit(new(null, user, new(""), tier, -1, -1, -1));
             else
-                StreamGlassCanals.FOLLOW.Emit(new(user.DisplayName, new(""), tier, -1, -1));
+                StreamGlassCanals.FOLLOW.Emit(new(user, new(""), tier, -1, -1));
         }
 
         public void OnSharedSub(TwitchUser user, int tier, int monthTotal, int monthStreak, Text message)
@@ -118,7 +118,7 @@ namespace StreamGlass.Twitch
             if (m_Settings.Get("sub_mode") == "all")
                 return;
             StreamGlassContext.UpdateStatistic("last_sub", user.DisplayName);
-            StreamGlassCanals.FOLLOW.Emit(new(user.DisplayName, message, tier, monthTotal, monthStreak));
+            StreamGlassCanals.FOLLOW.Emit(new(user, message, tier, monthTotal, monthStreak));
         }
 
         public void OnUserJoinChat(TwitchUser user) => StreamGlassCanals.USER_JOINED.Emit(user);
@@ -128,5 +128,9 @@ namespace StreamGlass.Twitch
         public void OnMessageHeld(TwitchUser user, string messageID, Text message) => StreamGlassCanals.HELD_MESSAGE.Emit(new(user, false, messageID, string.Empty, string.Empty, message));
 
         public void OnHeldMessageTreated(string messageID) => StreamGlassCanals.HELD_MESSAGE_MODERATED.Emit(messageID);
+
+        public void OnBeingShoutout(TwitchUser from) => StreamGlassCanals.BEING_SHOUTOUT.Emit(from);
+
+        public void OnShoutout(TwitchUser moderator, TwitchUser to) => StreamGlassCanals.SHOUTOUT.Emit(new(moderator, to));
     }
 }

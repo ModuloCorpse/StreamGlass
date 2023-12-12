@@ -37,7 +37,7 @@
                         <ui:MenuItem x:Name="ProfileMenuEdit" TranslationKey="menu_edit_profile" Header="Edit profiles..." Click="EditProfilesButton_Click" BrushPaletteKey="top_bar_background"/>
                         <Separator Name="ProfilesMenuSeparator"/>
                     </ui:MenuItem>
-                    <!--<ui:MenuItem Header="Test" Click="MenuItem_Click" BrushPaletteKey="top_bar_background"/>-->
+                    <ui:MenuItem Header="Test" Click="MenuItem_Click" BrushPaletteKey="top_bar_background"/>
                     <ui:MenuItem TranslationKey="menu_help" Header="Help" BrushPaletteKey="top_bar_background">
                         <ui:MenuItem TranslationKey="menu_about" Header="About" BrushPaletteKey="top_bar_background"/>
                     </ui:MenuItem>

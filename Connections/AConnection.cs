@@ -9,6 +9,8 @@ namespace StreamGlass.Connections
         private readonly StreamGlassWindow m_Form;
         private bool m_IsConnected = false;
 
+        public bool IsConnected => m_IsConnected;
+
         protected IniSection Settings => m_Settings;
         protected StreamGlassWindow Form => m_Form;
 

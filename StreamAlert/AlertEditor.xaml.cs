@@ -10,19 +10,21 @@ namespace StreamGlass.StreamAlert
     {
         private AlertScrollPanel.AlertInfo? m_CreatedAlertInfo = null;
 
-        internal AlertEditor(StreamGlass.Controls.Window parent, AlertScrollPanel.AlertInfo alertInfo) : base(parent)
+        internal AlertEditor(Controls.Window parent, AlertScrollPanel.AlertInfo alertInfo) : base(parent)
         {
             InitializeComponent();
             AlertEnableCheckBox.IsChecked = alertInfo.IsEnabled;
+            ChatMessageEnableCheckBox.IsChecked = alertInfo.HaveChatMessage;
             AlertImageTextBox.Text = alertInfo.ImgPath;
             AlertContentTextBox.Text = alertInfo.Prefix;
+            ChatMessageContentTextBox.Text = alertInfo.ChatMessage;
         }
 
         internal AlertScrollPanel.AlertInfo? AlertInfo => m_CreatedAlertInfo;
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            m_CreatedAlertInfo = new(AlertImageTextBox.Text, AlertContentTextBox.Text, AlertEnableCheckBox.IsChecked ?? false);
+            m_CreatedAlertInfo = new(AlertImageTextBox.Text, AlertContentTextBox.Text, ChatMessageContentTextBox.Text, AlertEnableCheckBox.IsChecked ?? false, ChatMessageEnableCheckBox.IsChecked ?? false);
             Close();
         }
 

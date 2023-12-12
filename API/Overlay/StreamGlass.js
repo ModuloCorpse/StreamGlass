@@ -13,6 +13,8 @@ class StreamGlassModule {
 	#eventDictionary = {};
 	#socket;
 	#parameters;
+	#isHoldingEvent = false;
+	#heldEvents = [];
 
 	Init() { }
 
@@ -21,42 +23,58 @@ class StreamGlassModule {
 		if (path[0] != '/')
 			path = '/' + path;
 		this.#socket = new WebSocket('ws://' + location.host + '/overlay' + path);
-		this.#socket.onopen = (event) => {
-			this.Init();
+		this.#socket.onopen = this.#OnOpen.bind(this);
+		this.#socket.onmessage = this.#OnMessage.bind(this);
+	}
+
+	#OnOpen(event) {
+		this.Init();
+	}
+
+	#HandleUnsubscribed(data) {
+		if (data.hasOwnProperty('event')) {
+			var event = data['event'];
+			this.#eventDictionary.delete(event);
 		}
-		this.#socket.onmessage = (event) => {
-			var eventJson = JSON.parse(event.data);
-			if (eventJson.hasOwnProperty('type') && eventJson.hasOwnProperty('data')) {
-				var type = eventJson['type'];
-				var data = eventJson['data'];
-				switch (type) {
-					case 'error':
-						{
-							if (data.hasOwnProperty('event')) {
-								var event = data['event'];
-								this.#eventDictionary.delete(event);
-							}
-							break;
-						}
-					case 'unsubscribed':
-						{
-							if (data.hasOwnProperty('event')) {
-								var event = data['event'];
-								this.#eventDictionary.delete(event);
-							}
-							break;
-						}
-					case 'event':
-						{
-							if (data.hasOwnProperty('event') && data.hasOwnProperty('data')) {
-								var event = data['event'];
-								var eventData = data['data'];
-								if (this.#eventDictionary.hasOwnProperty(event))
-									this.#eventDictionary[event](eventData);
-							}
-							break;
-						}
-				}
+	}
+
+	#HandleEventData(data) {
+		if (data.hasOwnProperty('event') && data.hasOwnProperty('data')) {
+			var event = data['event'];
+			var eventData = data['data'];
+			if (this.#eventDictionary.hasOwnProperty(event))
+				this.#eventDictionary[event](eventData);
+		}
+	}
+
+	#HandleEvent(data) {
+		if (this.#isHoldingEvent)
+			this.#heldEvents.push(data);
+		else
+			this.#HandleEventData(data);
+	}
+
+	#OnMessage(event) {
+		var eventJson = JSON.parse(event.data);
+		if (eventJson.hasOwnProperty('type') && eventJson.hasOwnProperty('data')) {
+			var type = eventJson['type'];
+			var data = eventJson['data'];
+			switch (type) {
+				case 'error':
+					{
+						this.#HandleUnsubscribed(data);
+						break;
+					}
+				case 'unsubscribed':
+					{
+						this.#HandleUnsubscribed(data);
+						break;
+					}
+				case 'event':
+					{
+						this.#HandleEvent(data);
+						break;
+					}
 			}
 		}
 	}
@@ -79,6 +97,15 @@ class StreamGlassModule {
 		this.#Send(JSON.stringify({ 'request': 'unsubscribe', 'event': eventType }));
 	}
 
+	SubscribeToCustomEvent(eventType, handler) {
+		this.#eventDictionary[eventType] = handler;
+		this.#Send(JSON.stringify({ 'request': 'custom-subscribe', 'event': eventType }));
+	}
+
+	UnregisterToCustomEvent(eventType) {
+		this.#Send(JSON.stringify({ 'request': 'custom-unsubscribe', 'event': eventType }));
+	}
+
 	HaveParameter(name) {
 		return this.#parameters.has(name);
 	}
@@ -93,5 +120,13 @@ class StreamGlassModule {
 		if (this.#parameters.has(name))
 			return this.#parameters.get(name);
 		return value;
+	}
+
+	HoldEvents() { this.#isHoldingEvent = true; }
+
+	UnholdEvents() {
+		while (this.#heldEvents.length != 0)
+			this.#HandleEventData(this.#heldEvents.shift());
+		this.#isHoldingEvent = false;
 	}
 }
