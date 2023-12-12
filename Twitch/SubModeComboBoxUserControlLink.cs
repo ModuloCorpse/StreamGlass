@@ -1,15 +1,12 @@
 ﻿using CorpseLib.Translation;
-using StreamGlass;
 using StreamGlass.Settings;
 using System.Windows.Controls;
 
 namespace StreamGlass.Twitch
 {
-    public class SubModeComboBoxUserControlLink : UserControlLink
+    public class SubModeComboBoxUserControlLink(ComboBox comboBox) : UserControlLink
     {
-        private readonly ComboBox m_ComboBox;
-
-        public SubModeComboBoxUserControlLink(ComboBox comboBox) => m_ComboBox = comboBox;
+        private readonly ComboBox m_ComboBox = comboBox;
 
         protected override void Load()
         {

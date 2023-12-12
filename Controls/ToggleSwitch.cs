@@ -8,9 +8,9 @@ namespace StreamGlass.Controls
     //TODO Create ToggleSwitch control
     public class ToggleSwitch : ToggleButton
     {
-        private static CornerRadius _defaultCornerRadius = new CornerRadius(0.0);
-        private static Brush _defaultOnColor = Brushes.MediumSeaGreen;
-        private static Brush _defaultOffColor = Brushes.IndianRed;
+        private static CornerRadius _defaultCornerRadius = new(0.0);
+        private static readonly Brush _defaultOnColor = Brushes.MediumSeaGreen;
+        private static readonly Brush _defaultOffColor = Brushes.IndianRed;
 
         static ToggleSwitch()
         {

@@ -19,7 +19,7 @@
             ScrollPanelDisplayType.REVERSED_TOP_TO_BOTTOM => "Reversed to bottom",
             ScrollPanelDisplayType.BOTTOM_TO_TOP => "To top",
             ScrollPanelDisplayType.REVERSED_BOTTOM_TO_TOP => "Reversed to top",
-            _ => ""
+            _ => string.Empty
         };
     }
 }

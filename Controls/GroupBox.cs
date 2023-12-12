@@ -27,7 +27,7 @@ namespace StreamGlass.Controls
         #endregion TextBrushPaletteKey
 
         #region TranslationKey
-        public static readonly DependencyProperty TranslationKeyProperty = Helper.NewProperty<GroupBox, string>("TranslationKey", "");
+        public static readonly DependencyProperty TranslationKeyProperty = Helper.NewProperty<GroupBox, string>("TranslationKey", string.Empty);
         [Description("The translation key of the group box's text"), Category("Common Properties")]
         public string TranslationKey
         {

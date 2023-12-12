@@ -9,9 +9,9 @@ namespace StreamGlass.Profile
     public partial class StatisticFileEditor : Dialog
     {
         private Profile? m_CreatedProfile = null;
-        private readonly Dictionary<string, ChatCommand> m_ChatCommands = new();
+        private readonly Dictionary<string, ChatCommand> m_ChatCommands = [];
         private readonly ConnectionManager m_ConnectionManager;
-        private readonly CategoryInfo m_CategoryInfo = new("");
+        private readonly CategoryInfo m_CategoryInfo = new(string.Empty);
         private readonly string m_ID = Guid.NewGuid().ToString();
 
         public StatisticFileEditor(Controls.Window parent, ProfileManager profileManager, ConnectionManager connectionManager): base(parent)
@@ -54,7 +54,7 @@ namespace StreamGlass.Profile
         }
 
         internal Profile? Profile => m_CreatedProfile;
-        internal string ParentID => ((Profile.Info?)ParentComboBox.SelectedItem)?.ID ?? "";
+        internal string ParentID => ((Profile.Info?)ParentComboBox.SelectedItem)?.ID ?? string.Empty;
 
         private void ChatCommandsList_AddChatCommand(object? sender, EventArgs _)
         {

@@ -11,8 +11,8 @@ namespace StreamGlass.Profile
     public class Profile: Object<Profile>
     {
         private readonly StreamInfo m_StreamInfo = new();
-        private readonly Dictionary<string, int> m_CommandLocation = new();
-        private readonly List<ChatCommand> m_Commands = new();
+        private readonly Dictionary<string, int> m_CommandLocation = [];
+        private readonly List<ChatCommand> m_Commands = [];
         private readonly object m_Lock = new();
         private bool m_IsSelectable = true;
 
@@ -103,7 +103,7 @@ namespace StreamGlass.Profile
                 return m_StreamInfo.GetStreamTitle();
             else if (Parent != null)
                 return Parent.GetStreamTitleOrParent();
-            return "";
+            return string.Empty;
         }
 
         private string GetStreamDescriptionOrParent()
@@ -112,7 +112,7 @@ namespace StreamGlass.Profile
                 return m_StreamInfo.GetStreamDescription();
             else if (Parent != null)
                 return Parent.GetStreamDescriptionOrParent();
-            return "";
+            return string.Empty;
         }
 
         private CategoryInfo GetStreamCategoryOrParent()
@@ -121,7 +121,7 @@ namespace StreamGlass.Profile
                 return m_StreamInfo.GetStreamCategory();
             else if (Parent != null)
                 return Parent.GetStreamCategoryOrParent();
-            return new("");
+            return new(string.Empty);
         }
 
         private string GetStreamLanguageOrParent()
@@ -130,7 +130,7 @@ namespace StreamGlass.Profile
                 return m_StreamInfo.GetStreamLanguage();
             else if (Parent != null)
                 return Parent.GetStreamLanguageOrParent();
-            return "";
+            return string.Empty;
         }
 
         public string GetStreamTitle() => m_StreamInfo.GetStreamTitle();
@@ -143,7 +143,7 @@ namespace StreamGlass.Profile
 
         protected override void Save(ref JObject json)
         {
-            List<JObject> chatCommandArray = new();
+            List<JObject> chatCommandArray = [];
             foreach (var command in m_Commands)
                 chatCommandArray.Add(command.Serialize());
             json.Add("chat_commands", chatCommandArray);

@@ -1,23 +1,16 @@
 ﻿using CorpseLib.Ini;
 using CorpseLib.StructuredText;
 using StreamGlass.Events;
-using StreamGlass.Stat;
 using System.Collections.Generic;
 using TwitchCorpse;
 
 namespace StreamGlass.Twitch
 {
-    public class TwitchHandler : ITwitchHandler
+    public class TwitchHandler(IniSection settings, TwitchAPI api) : ITwitchHandler
     {
-        private readonly IniSection m_Settings;
-        private readonly TwitchAPI m_API;
+        private readonly IniSection m_Settings = settings;
+        private readonly TwitchAPI m_API = api;
         private string m_IRCChannel = string.Empty;
-
-        public TwitchHandler(IniSection settings, TwitchAPI api)
-        {
-            m_Settings = settings;
-            m_API = api;
-        }
 
         internal void UpdateViewerCountOf(TwitchUser user)
         {
@@ -56,7 +49,7 @@ namespace StreamGlass.Twitch
         public void OnFollow(TwitchUser user)
         {
             StreamGlassContext.UpdateStatistic("last_follow", user.DisplayName);
-            StreamGlassCanals.FOLLOW.Emit(new(user, new(""), 0, -1, -1));
+            StreamGlassCanals.FOLLOW.Emit(new(user, new(string.Empty), 0, -1, -1));
         }
 
         public void OnRaided(TwitchUser user, int nbViewer)
@@ -92,7 +85,7 @@ namespace StreamGlass.Twitch
                     StreamGlassContext.UpdateStatistic("top_nb_gift", nbGift);
                 }
             }
-            StreamGlassCanals.GIFT_FOLLOW.Emit(new(null, user, new(""), tier, -1, -1, nbGift!));
+            StreamGlassCanals.GIFT_FOLLOW.Emit(new(null, user, new(string.Empty), tier, -1, -1, nbGift!));
         }
 
         public void OnSharedGiftSub(TwitchUser user, TwitchUser recipient, int tier, int monthGifted, int monthStreak, Text message)
@@ -108,9 +101,9 @@ namespace StreamGlass.Twitch
                 return;
             StreamGlassContext.UpdateStatistic("last_sub", user.DisplayName);
             if (isGift)
-                StreamGlassCanals.GIFT_FOLLOW.Emit(new(null, user, new(""), tier, -1, -1, -1));
+                StreamGlassCanals.GIFT_FOLLOW.Emit(new(null, user, new(string.Empty), tier, -1, -1, -1));
             else
-                StreamGlassCanals.FOLLOW.Emit(new(user, new(""), tier, -1, -1));
+                StreamGlassCanals.FOLLOW.Emit(new(user, new(string.Empty), tier, -1, -1));
         }
 
         public void OnSharedSub(TwitchUser user, int tier, int monthTotal, int monthStreak, Text message)

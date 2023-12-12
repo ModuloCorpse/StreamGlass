@@ -5,7 +5,7 @@ namespace StreamGlass.Settings
     public abstract class UserControlLink
     {
         private IniSection? m_Settings = null;
-        private string m_Setting = "";
+        private string m_Setting = string.Empty;
 
         internal void Init(string setting, IniSection settings)
         {

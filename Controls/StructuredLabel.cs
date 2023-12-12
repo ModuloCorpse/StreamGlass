@@ -38,8 +38,8 @@ namespace StreamGlass.Controls
         }
         #endregion TextBrushPaletteKey
 
-        private readonly List<SectionRun> m_Text = new();
-        private readonly List<Image> m_Images = new();
+        private readonly List<SectionRun> m_Text = [];
+        private readonly List<Image> m_Images = [];
         private double m_FontSize = 14;
 
         public void SetText(Text text)

@@ -1,6 +1,4 @@
-﻿using StreamGlass;
-using StreamGlass.Events;
-using StreamGlass.StreamChat;
+﻿using StreamGlass.StreamChat;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;

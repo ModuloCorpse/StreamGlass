@@ -18,7 +18,7 @@ namespace StreamGlass.Controls
         #endregion BrushPaletteKey
 
         #region TranslationKey
-        public static readonly DependencyProperty TranslationKeyProperty = Helper.NewProperty<Label, string>("TranslationKey", "");
+        public static readonly DependencyProperty TranslationKeyProperty = Helper.NewProperty<Label, string>("TranslationKey", string.Empty);
         [Description("The translation key of the label's text"), Category("Common Properties")]
         public string TranslationKey
         {

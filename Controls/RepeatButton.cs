@@ -17,7 +17,7 @@ namespace StreamGlass.Controls
         #endregion Value
 
         #region TranslationKey
-        public static readonly DependencyProperty TranslationKeyProperty = Helper.NewProperty<RepeatButton, string>("TranslationKey", "");
+        public static readonly DependencyProperty TranslationKeyProperty = Helper.NewProperty<RepeatButton, string>("TranslationKey", string.Empty);
         [Description("The translation key of the button's text"), Category("Common Properties")]
         public string TranslationKey
         {

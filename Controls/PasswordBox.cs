@@ -16,7 +16,7 @@ namespace StreamGlass.Controls
         #endregion HideChars
 
         #region Password
-        public static readonly DependencyProperty PasswordProperty = Helper.NewProperty("Password", "", (PasswordBox i, string _) => i.UpdateTextValue());
+        public static readonly DependencyProperty PasswordProperty = Helper.NewProperty("Password", string.Empty, (PasswordBox i, string _) => i.UpdateTextValue());
         public string Password
         {
             get => (string)GetValue(PasswordProperty);

@@ -8,7 +8,7 @@ namespace StreamGlass.Settings
     {
         protected Dialog? m_SettingsDialog = null;
         private readonly IniSection m_Settings;
-        private readonly List<UserControlLink> m_Links = new();
+        private readonly List<UserControlLink> m_Links = [];
         private readonly string m_HeaderSource;
 
         protected TabItemContent(string headerSource, IniSection settings)

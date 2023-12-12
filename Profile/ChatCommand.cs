@@ -1,7 +1,6 @@
 ﻿using CorpseLib.Json;
 using CorpseLib.Placeholder;
 using StreamGlass.Connections;
-using StreamGlass.Stat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,18 +10,18 @@ namespace StreamGlass.Profile
 {
     public class ChatCommand
     {
-        private readonly string m_Name = "";
-        private readonly string[] m_Aliases = Array.Empty<string>();
+        private readonly string m_Name = string.Empty;
+        private readonly string[] m_Aliases = [];
         private readonly int m_AwaitTime = 0;
         private readonly int m_NbMessage = 0;
-        private readonly string m_Content = "";
+        private readonly string m_Content = string.Empty;
         private readonly TwitchUser.Type m_UserType = TwitchUser.Type.NONE;
-        private readonly List<string> m_Commands = new();
+        private readonly List<string> m_Commands = [];
         //Variables use for command that trigger after a certain amount of time
         private readonly bool m_AutoTrigger = false;
         private readonly int m_AutoTriggerTime = 0;
         private readonly int m_AutoTriggerDeltaTime = 0;
-        private readonly string[] m_AutoTriggerArguments = Array.Empty<string>();
+        private readonly string[] m_AutoTriggerArguments = [];
         //Variables to check if the command can be triggered
         private long m_TimeSinceLastTrigger = 0;
         private long m_DeltaTime = 0;
@@ -42,18 +41,18 @@ namespace StreamGlass.Profile
 
         internal ChatCommand(JObject json)
         {
-            m_Name = json.GetOrDefault("name", "")!;
-            m_Aliases = json.GetList<string>("aliases").ToArray();
+            m_Name = json.GetOrDefault("name", string.Empty)!;
+            m_Aliases = [.. json.GetList<string>("aliases")];
             m_AwaitTime = json.GetOrDefault("time", 0);
             m_NbMessage = json.GetOrDefault("messages", 0);
-            m_Content = json.GetOrDefault("content", "")!;
+            m_Content = json.GetOrDefault("content", string.Empty)!;
             m_UserType = json.GetOrDefault("user", TwitchUser.Type.SELF);
             m_Commands = json.GetList<string>("commands");
             //AutoTrigger
             m_AutoTrigger = json.GetOrDefault("auto_trigger", false);
             m_AutoTriggerTime = json.GetOrDefault("auto_trigger_time", 0);
             m_AutoTriggerDeltaTime = json.GetOrDefault("auto_trigger_delta_time", 0);
-            m_AutoTriggerArguments = json.GetList<string>("auto_trigger_argv").ToArray();
+            m_AutoTriggerArguments = [.. json.GetList<string>("auto_trigger_argv")];
         }
 
         public ChatCommand(string name,
@@ -84,7 +83,7 @@ namespace StreamGlass.Profile
 
         internal JObject Serialize()
         {
-            JObject json = new();
+            JObject json = [];
             if (!string.IsNullOrWhiteSpace(m_Name))
                 json.Add("name", m_Name);
             if (m_Aliases.Length > 0)

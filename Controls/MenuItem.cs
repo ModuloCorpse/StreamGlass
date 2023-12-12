@@ -27,7 +27,7 @@ namespace StreamGlass.Controls
         #endregion TextBrushPaletteKey
 
         #region TranslationKey
-        public static readonly DependencyProperty TranslationKeyProperty = Helper.NewProperty<MenuItem, string>("TranslationKey", "");
+        public static readonly DependencyProperty TranslationKeyProperty = Helper.NewProperty<MenuItem, string>("TranslationKey", string.Empty);
         [Description("The translation key of the menu item's text"), Category("Common Properties")]
         public string TranslationKey
         {

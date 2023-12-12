@@ -2,17 +2,15 @@
 
 namespace StreamGlass
 {
-    public class Statistic
+    public class Statistic(string name)
     {
-        private readonly string m_Name;
+        private readonly string m_Name = name;
         private object m_Value = new();
         private bool m_HaveValue = false;
 
         public string Name => m_Name;
         internal object Value => m_Value;
         internal bool HasValue => m_HaveValue;
-
-        public Statistic(string name) => m_Name = name;
 
         public Statistic(string name, object value) : this(name)
         {

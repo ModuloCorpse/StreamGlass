@@ -10,7 +10,7 @@ namespace StreamGlass.Controls
         private readonly ScrollViewer Scroller = new();
         private readonly DockPanel ScrollableDockPanel = new();
         private readonly StackPanel ElementsStackPanel = new();
-        private readonly List<T> m_Controls = new();
+        private readonly List<T> m_Controls = [];
         private bool m_AutoScroll = true;
         private bool m_ForceAutoScroll = false;
         private bool m_Reversed = false;

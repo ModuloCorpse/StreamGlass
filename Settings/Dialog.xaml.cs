@@ -9,7 +9,7 @@ namespace StreamGlass.Settings
 {
     public partial class Dialog : Controls.Dialog
     {
-        private readonly List<TabItemContent> m_TabItems = new();
+        private readonly List<TabItemContent> m_TabItems = [];
 
         public Dialog(StreamGlassWindow window): base(window)
         {

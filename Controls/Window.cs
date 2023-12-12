@@ -9,7 +9,7 @@ using System.Windows.Interop;
 
 namespace StreamGlass.Controls
 {
-    public class Window : System.Windows.Window
+    public partial class Window : System.Windows.Window
     {
         [Flags]
         private enum DwmWindowAttribute : uint
@@ -42,8 +42,8 @@ namespace StreamGlass.Controls
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool DwmIsCompositionEnabled();
 
-        [DllImport("dwmapi.dll", PreserveSig = true)]
-        private static extern int DwmSetWindowAttribute(IntPtr hwnd, DwmWindowAttribute dwmAttribute, IntPtr pvAttribute, uint cbAttribute);
+        [LibraryImport("dwmapi.dll", EntryPoint = "DwmSetWindowAttributeA")]
+        private static partial int DwmSetWindowAttribute(IntPtr hwnd, DwmWindowAttribute dwmAttribute, IntPtr pvAttribute, uint cbAttribute);
 
         protected void UpdateAeroPeek()
         {

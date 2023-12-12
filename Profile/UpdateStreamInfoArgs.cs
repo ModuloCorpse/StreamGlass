@@ -3,7 +3,7 @@ using CorpseLib;
 
 namespace StreamGlass.Profile
 {
-    public class UpdateStreamInfoArgs
+    public class UpdateStreamInfoArgs(string title, string description, CategoryInfo category, string language)
     {
         public class JSerializer : AJSerializer<UpdateStreamInfoArgs>
         {
@@ -26,22 +26,14 @@ namespace StreamGlass.Profile
             }
         }
 
-        private readonly CategoryInfo m_Category;
-        private readonly string m_Title;
-        private readonly string m_Description;
-        private readonly string m_Language;
+        private readonly CategoryInfo m_Category = category;
+        private readonly string m_Title = title;
+        private readonly string m_Description = description;
+        private readonly string m_Language = language;
 
         public CategoryInfo Category => m_Category;
         public string Title => m_Title;
         public string Description => m_Description;
         public string Language => m_Language;
-
-        public UpdateStreamInfoArgs(string title, string description, CategoryInfo category, string language)
-        {
-            m_Title = title;
-            m_Description = description;
-            m_Category = category;
-            m_Language = language;
-        }
     }
 }

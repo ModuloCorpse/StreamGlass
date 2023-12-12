@@ -2,10 +2,9 @@
 
 namespace StreamGlass.Settings
 {
-    public class CheckBoxUserControlLink: UserControlLink
+    public class CheckBoxUserControlLink(CheckBox checkBox) : UserControlLink
     {
-        private readonly CheckBox m_CheckBox;
-        public CheckBoxUserControlLink(CheckBox checkBox) => m_CheckBox = checkBox;
+        private readonly CheckBox m_CheckBox = checkBox;
         protected override void Load() => m_CheckBox.IsChecked = GetSettings() == "true";
         protected override void Save() => SetSettings((m_CheckBox.IsChecked != null && (bool)m_CheckBox.IsChecked) ? "true" : "false");
     }

@@ -110,7 +110,7 @@ namespace StreamGlass.Controls
             comboBox.Items.Clear();
             if (addEmpty)
             {
-                Object<T>.Info info = new("", "");
+                Object<T>.Info info = new(string.Empty, string.Empty);
                 comboBox.Items.Add(info);
                 if (manager.CurrentObject == null)
                     comboBox.SelectedItem = info;

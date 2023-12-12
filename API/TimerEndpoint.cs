@@ -11,8 +11,8 @@ namespace StreamGlass.API
 {
     public class TimerEndpoint : AHTTPEndpoint
     {
-        private readonly Dictionary<string, FileCountdownTimeAction> m_Timers = new();
-        private readonly HashSet<string> m_FileToClear = new();
+        private readonly Dictionary<string, FileCountdownTimeAction> m_Timers = [];
+        private readonly HashSet<string> m_FileToClear = [];
 
         public TimerEndpoint() : base("/timer") { }
 

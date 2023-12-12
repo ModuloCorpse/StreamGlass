@@ -20,7 +20,7 @@ namespace StreamGlass.API
 
             public Page(AllMessageEndpoint endpoint, List<UserMessage> messages)
             {
-                List<UserMessage> messagesRet = new();
+                List<UserMessage> messagesRet = [];
                 bool keepPaging = true;
                 long length = 0;
                 while (messages.Count > 0 && keepPaging)
@@ -39,7 +39,7 @@ namespace StreamGlass.API
                         keepPaging = false;
                 }
 
-                m_Messages = messagesRet.ToArray();
+                m_Messages = [.. messagesRet];
                 if (messages.Count > 0)
                 {
                     m_NextPage = new(endpoint, messages);
@@ -56,13 +56,13 @@ namespace StreamGlass.API
             }
         }
 
-        private readonly Dictionary<Guid, Page> m_Pages = new();
-        private readonly List<UserMessage> m_Messages = new();
+        private readonly Dictionary<Guid, Page> m_Pages = [];
+        private readonly List<UserMessage> m_Messages = [];
 
         public AllMessageEndpoint() : base("/all_message")
         {
             StreamGlassCanals.CHAT_MESSAGE.Register((UserMessage? message) => { if (message != null) m_Messages.Add(message); });
-            StreamGlassCanals.CHAT_CLEAR.Register(() => m_Messages.Clear());
+            StreamGlassCanals.CHAT_CLEAR.Register(m_Messages.Clear);
             StreamGlassCanals.CHAT_CLEAR_MESSAGE.Register((string? messageID) => { if (messageID != null) m_Messages.RemoveAll(message => message.ID == messageID); });
             StreamGlassCanals.CHAT_CLEAR_USER.Register((string? userID) => { if (userID != null) m_Messages.RemoveAll(message => message.UserID == userID); });
         }

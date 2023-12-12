@@ -9,7 +9,7 @@ namespace StreamGlass.Profile
     public class ProfileManager: Manager<Profile>
     {
         private readonly ConnectionManager m_ConnectionManager;
-        private string m_Channel = "";
+        private string m_Channel = string.Empty;
         private int m_NbMessage = 0;
 
         public ProfileManager(ConnectionManager client) : base("./profiles")

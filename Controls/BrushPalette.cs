@@ -16,7 +16,7 @@ namespace StreamGlass.Controls
 
         private Type m_Type;
         private readonly BrushConverter m_Converter = new();
-        private readonly Dictionary<string, Brush> m_Palette = new();
+        private readonly Dictionary<string, Brush> m_Palette = [];
 
         public Type PaletteType => m_Type;
 
@@ -50,7 +50,7 @@ namespace StreamGlass.Controls
 
         protected override void Save(ref JObject json)
         {
-            JObject obj = new();
+            JObject obj = [];
             foreach (var color in m_Palette)
                 obj.Add(color.Key, m_Converter.ConvertToString(color.Value));
             json.Add("colors", obj);

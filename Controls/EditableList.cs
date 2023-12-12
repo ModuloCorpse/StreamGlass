@@ -13,18 +13,12 @@ namespace StreamGlass.Controls
     {
         public delegate string ConversionDelegate(object obj);
 
-        private class ItemWrapper
+        private class ItemWrapper(object item, ConversionDelegate? conversionDelegate)
         {
-            private readonly object m_Item;
-            private readonly ConversionDelegate? m_ConversionDelegate;
+            private readonly object m_Item = item;
+            private readonly ConversionDelegate? m_ConversionDelegate = conversionDelegate;
 
             public object Item => m_Item;
-
-            public ItemWrapper(object item, ConversionDelegate? conversionDelegate)
-            {
-                m_Item = item;
-                m_ConversionDelegate = conversionDelegate;
-            }
 
             public override bool Equals(object? obj) => obj is ItemWrapper other ? m_Item!.Equals(other.m_Item) : m_Item!.Equals(obj);
             public override int GetHashCode() => m_Item!.GetHashCode();
@@ -64,7 +58,7 @@ namespace StreamGlass.Controls
         #endregion IsEditOnly
 
         #region SearchImageSource
-        public static readonly DependencyProperty SearchImageSourceProperty = Helper.NewProperty("SearchImageSource", "", (EditableList instance, string value) => instance.Property_SetSearchImageSource(value));
+        public static readonly DependencyProperty SearchImageSourceProperty = Helper.NewProperty("SearchImageSource", string.Empty, (EditableList instance, string value) => instance.Property_SetSearchImageSource(value));
         [Description("Image of the search button"), Category("Common Properties")]
         public string SearchImageSource { get => (string)GetValue(SearchImageSourceProperty); set => SetValue(SearchImageSourceProperty, value); }
         internal void Property_SetSearchImageSource(string source)
@@ -82,7 +76,7 @@ namespace StreamGlass.Controls
         #endregion SearchImageSource
 
         #region EditImageSource
-        public static readonly DependencyProperty EditImageSourceProperty = Helper.NewProperty("EditImageSource", "", (EditableList instance, string value) => instance.Property_SetEditImageSource(value));
+        public static readonly DependencyProperty EditImageSourceProperty = Helper.NewProperty("EditImageSource", string.Empty, (EditableList instance, string value) => instance.Property_SetEditImageSource(value));
         [Description("Image of the edit button"), Category("Common Properties")]
         public string EditImageSource { get => (string)GetValue(EditImageSourceProperty); set => SetValue(EditImageSourceProperty, value); }
         internal void Property_SetEditImageSource(string source)
@@ -147,7 +141,7 @@ namespace StreamGlass.Controls
         private readonly Button SearchButton = new() { Width = 20, Height = 20, BrushPaletteKey = "list_search" };
         private readonly ListBox ObjectListBox = new() { Margin = new(0, 0, 5, 0), BrushPaletteKey = "list_item_background", TextBrushPaletteKey = "list_item_text" };
         private readonly DictionaryTree<ItemWrapper> m_SearchTree = new();
-        private string m_Search = "";
+        private string m_Search = string.Empty;
 
         public event EventHandler? ItemAdded;
         public event EventHandler<object>? ItemRemoved;
@@ -259,7 +253,7 @@ namespace StreamGlass.Controls
 
         public List<object> GetItems()
         {
-            List<object> ret = new();
+            List<object> ret = [];
             foreach (var item in ObjectListBox.Items)
             {
                 if (item != null && item is ItemWrapper wrapper)

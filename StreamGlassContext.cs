@@ -5,7 +5,6 @@ using StreamGlass.Events;
 using StreamGlass.Profile;
 using StreamGlass.Stat;
 using StreamGlass.StreamChat;
-using StreamGlass.Twitch;
 using System.Collections.Generic;
 using TwitchCorpse;
 
@@ -14,7 +13,7 @@ namespace StreamGlass
     public class StreamGlassContext : Context
     {
         private static readonly StatisticManager ms_Statistics = new();
-        private static readonly Dictionary<string, Function> ms_Functions = new();
+        private static readonly Dictionary<string, Function> ms_Functions = [];
 
         public static StatisticManager Statistics => ms_Statistics;
 

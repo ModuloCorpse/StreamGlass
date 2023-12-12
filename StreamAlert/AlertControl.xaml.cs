@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Windows;
 using System.Windows.Media.Imaging;
-using StreamGlass;
 using StreamGlass.Controls;
 using StreamGlass.Connections;
 

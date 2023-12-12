@@ -3,21 +3,14 @@ using TwitchCorpse;
 
 namespace StreamGlass.Events
 {
-    public class FollowEventArgsBase
+    public class FollowEventArgsBase(TwitchUser? user, Text message, int tier)
     {
-        private readonly Text m_Message;
-        private readonly TwitchUser? m_User;
-        private readonly int m_Tier;
+        private readonly Text m_Message = message;
+        private readonly TwitchUser? m_User = user;
+        private readonly int m_Tier = tier;
 
         public Text Message => m_Message;
         public TwitchUser? User => m_User;
         public int Tier => m_Tier;
-
-        public FollowEventArgsBase(TwitchUser? user, Text message, int tier)
-        {
-            m_User = user;
-            m_Message = message;
-            m_Tier = tier;
-        }
     }
 }

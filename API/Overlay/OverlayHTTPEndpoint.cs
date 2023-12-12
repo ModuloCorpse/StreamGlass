@@ -7,11 +7,9 @@ using System.Reflection;
 
 namespace StreamGlass.API.Overlay
 {
-    public class OverlayHTTPEndpoint : AHTTPEndpoint
+    public class OverlayHTTPEndpoint(OverlayWebsocketEndpoint websocketEndpoint) : AHTTPEndpoint("/overlay", false)
     {
-        private readonly OverlayWebsocketEndpoint m_WebsocketEndpoint;
-
-        public OverlayHTTPEndpoint(OverlayWebsocketEndpoint websocketEndpoint) : base("/overlay", false) => m_WebsocketEndpoint = websocketEndpoint;
+        private readonly OverlayWebsocketEndpoint m_WebsocketEndpoint = websocketEndpoint;
 
         private static MIME? GetMIME(string path) => System.IO.Path.GetExtension(path).ToLower() switch
         {

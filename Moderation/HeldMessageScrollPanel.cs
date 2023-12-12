@@ -1,5 +1,4 @@
-﻿using StreamGlass;
-using StreamGlass.Controls;
+﻿using StreamGlass.Controls;
 using StreamGlass.StreamChat;
 using System;
 

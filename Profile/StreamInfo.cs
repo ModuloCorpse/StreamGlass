@@ -4,10 +4,10 @@ namespace StreamGlass.Profile
 {
     public class StreamInfo
     {
-        private readonly CategoryInfo m_StreamCategory = new("");
-        private string m_StreamTitle = "";
-        private string m_StreamDescription = "";
-        private string m_StreamLanguage = "";
+        private readonly CategoryInfo m_StreamCategory = new(string.Empty);
+        private string m_StreamTitle = string.Empty;
+        private string m_StreamDescription = string.Empty;
+        private string m_StreamLanguage = string.Empty;
 
         public bool HaveStreamTitle() => !string.IsNullOrWhiteSpace(m_StreamTitle);
         public string GetStreamTitle() => m_StreamTitle;
@@ -42,11 +42,11 @@ namespace StreamGlass.Profile
 
         internal void Load(JObject json)
         {
-            m_StreamTitle = json.GetOrDefault("stream_title", "");
-            m_StreamDescription = json.GetOrDefault("stream_description", "");
-            m_StreamCategory.SetID(json.GetOrDefault("stream_category_id", ""));
-            m_StreamCategory.SetName(json.GetOrDefault("stream_category_name", ""));
-            m_StreamLanguage = json.GetOrDefault("stream_language", "");
+            m_StreamTitle = json.GetOrDefault("stream_title", string.Empty);
+            m_StreamDescription = json.GetOrDefault("stream_description", string.Empty);
+            m_StreamCategory.SetID(json.GetOrDefault("stream_category_id", string.Empty));
+            m_StreamCategory.SetName(json.GetOrDefault("stream_category_name", string.Empty));
+            m_StreamLanguage = json.GetOrDefault("stream_language", string.Empty);
         }
     }
 }

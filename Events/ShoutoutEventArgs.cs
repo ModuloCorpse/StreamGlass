@@ -4,7 +4,7 @@ using TwitchCorpse;
 
 namespace StreamGlass.Events
 {
-    public class ShoutoutEventArgs
+    public class ShoutoutEventArgs(TwitchUser moderator, TwitchUser user)
     {
         public class JSerializer : AJSerializer<ShoutoutEventArgs>
         {
@@ -23,16 +23,10 @@ namespace StreamGlass.Events
             }
         }
 
-        private readonly TwitchUser m_Moderator;
-        private readonly TwitchUser m_User;
+        private readonly TwitchUser m_Moderator = moderator;
+        private readonly TwitchUser m_User = user;
 
         public TwitchUser Moderator => m_Moderator;
         public TwitchUser User => m_User;
-
-        public ShoutoutEventArgs(TwitchUser moderator, TwitchUser user)
-        {
-            m_Moderator = moderator;
-            m_User = user;
-        }
     }
 }

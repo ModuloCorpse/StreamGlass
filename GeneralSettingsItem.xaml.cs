@@ -9,11 +9,10 @@ namespace StreamGlass.StreamChat
 {
     public partial class GeneralSettingsItem : TabItemContent
     {
-        private class LanguageInfo
+        private class LanguageInfo(CultureInfo cultureInfo)
         {
-            private readonly CultureInfo m_CultureInfo;
+            private readonly CultureInfo m_CultureInfo = cultureInfo;
             public CultureInfo CultureInfo => m_CultureInfo;
-            public LanguageInfo(CultureInfo cultureInfo) => m_CultureInfo = cultureInfo;
             public override string ToString() => m_CultureInfo.NativeName;
         }
 

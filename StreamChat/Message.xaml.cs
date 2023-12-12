@@ -2,7 +2,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using StreamGlass;
 using StreamGlass.Controls;
 using StreamGlass.Connections;
 using StreamGlass.Events;
@@ -10,7 +9,7 @@ using TwitchCorpse;
 
 namespace StreamGlass.StreamChat
 {
-    public partial class Message : StreamGlass.Controls.UserControl
+    public partial class Message : Controls.UserControl
     {
         private readonly UserMessageScrollPanel m_StreamChat;
         private readonly UserMessage m_Message;

@@ -17,7 +17,7 @@ namespace StreamGlass.Controls
         }
         #endregion BrushPaletteKey
 
-        private readonly Dictionary<string, object?> m_Style = new();
+        private readonly Dictionary<string, object?> m_Style = [];
 
         public bool IsStyleOverriden => m_Style != null;
 

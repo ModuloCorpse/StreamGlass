@@ -5,7 +5,7 @@ using TwitchCorpse;
 
 namespace StreamGlass.Events
 {
-    public class DonationEventArgs
+    public class DonationEventArgs(TwitchUser user, float amount, string currency, Text message)
     {
         public class JSerializer : AJSerializer<DonationEventArgs>
         {
@@ -28,22 +28,14 @@ namespace StreamGlass.Events
             }
         }
 
-        private readonly Text m_Message;
-        private readonly TwitchUser m_User;
-        private readonly string m_Currency;
-        private readonly float m_Amount;
+        private readonly Text m_Message = message;
+        private readonly TwitchUser m_User = user;
+        private readonly string m_Currency = currency;
+        private readonly float m_Amount = amount;
 
         public TwitchUser User => m_User;
         public float Amount => m_Amount;
         public string Currency => m_Currency;
         public Text Message => m_Message;
-
-        public DonationEventArgs(TwitchUser user, float amount, string currency, Text message)
-        {
-            m_User = user;
-            m_Amount = amount;
-            m_Currency = currency;
-            m_Message = message;
-        }
     }
 }

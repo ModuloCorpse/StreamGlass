@@ -10,7 +10,7 @@ namespace StreamGlass.Stat
 {
     public class StatisticFile : Object<StatisticFile>
     {
-        private readonly HashSet<string> m_Statistics = new();
+        private readonly HashSet<string> m_Statistics = [];
         private string m_Content = string.Empty;
 
         internal StatisticFile(string id, string path) : base(id, path) { }

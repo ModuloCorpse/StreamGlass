@@ -1,7 +1,6 @@
 ﻿using CorpseLib.Json;
 using CorpseLib.ManagedObject;
 using CorpseLib.Placeholder;
-using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -9,13 +8,13 @@ namespace StreamGlass.Stat
 {
     public class StatisticManager : Manager<StatisticFile>, IContext
     {
-        private readonly Dictionary<string, Statistic> m_Statistics = new();
+        private readonly Dictionary<string, Statistic> m_Statistics = [];
 
         public StatisticManager() : base("./statistics") { }
 
-        public object? Get(string name) => m_Statistics.ContainsKey(name) ? m_Statistics[name].Get() : null;
-        public T? Get<T>(string name) => m_Statistics.ContainsKey(name) ? m_Statistics[name].Get<T>() : default;
-        public T GetOr<T>(string name, T defaultValue) => m_Statistics.ContainsKey(name) ? m_Statistics[name].GetOr(defaultValue) : defaultValue;
+        public object? Get(string name) => m_Statistics.TryGetValue(name, out Statistic? value) ? value.Get() : null;
+        public T? Get<T>(string name) => m_Statistics.TryGetValue(name, out Statistic? value) ? value.Get<T>() : default;
+        public T GetOr<T>(string name, T defaultValue) => m_Statistics.TryGetValue(name, out Statistic? value) ? value.GetOr(defaultValue) : defaultValue;
 
         private void AddStatistic(Statistic statistic)
         {
@@ -73,7 +72,7 @@ namespace StreamGlass.Stat
 
         protected override void SaveSettings(ref JFile obj)
         {
-            JObject statsObj = new();
+            JObject statsObj = [];
             foreach (Statistic statistic in m_Statistics.Values)
             {
                 if (statistic.HasValue)

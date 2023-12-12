@@ -4,7 +4,7 @@ using TwitchCorpse;
 
 namespace StreamGlass.Events
 {
-    public class RaidEventArgs
+    public class RaidEventArgs(TwitchUser? from, TwitchUser? to, int nbViewers, bool isIncomming)
     {
         public class JSerializer : AJSerializer<RaidEventArgs>
         {
@@ -28,22 +28,14 @@ namespace StreamGlass.Events
             }
         }
 
-        private readonly TwitchUser? m_From;
-        private readonly TwitchUser? m_To;
-        private readonly int m_NbViewers;
-        private readonly bool m_IsIncomming;
+        private readonly TwitchUser? m_From = from;
+        private readonly TwitchUser? m_To = to;
+        private readonly int m_NbViewers = nbViewers;
+        private readonly bool m_IsIncomming = isIncomming;
 
         public TwitchUser? From => m_From;
         public TwitchUser? To => m_To;
         public int NbViewers => m_NbViewers;
         public bool IsIncomming => m_IsIncomming;
-
-        public RaidEventArgs(TwitchUser? from, TwitchUser? to, int nbViewers, bool isIncomming)
-        {
-            m_From = from;
-            m_To = to;
-            m_NbViewers = nbViewers;
-            m_IsIncomming = isIncomming;
-        }
     }
 }

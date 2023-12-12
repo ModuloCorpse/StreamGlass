@@ -39,9 +39,9 @@ namespace StreamGlass.Twitch
 
         protected override void InitSettings()
         {
-            CreateSetting("browser", "");
-            CreateSetting("public_key", "");
-            CreateSetting("secret_key", "");
+            CreateSetting("browser", string.Empty);
+            CreateSetting("public_key", string.Empty);
+            CreateSetting("secret_key", string.Empty);
             CreateSetting("sub_mode", "all");
         }
 
@@ -244,8 +244,7 @@ namespace StreamGlass.Twitch
             StreamGlassCanals.REWARD.Emit(new(m_StreamGlass, "Chante", "J'aime le Pop-Corn"));
             StreamGlassCanals.SHOUTOUT.Emit(new(m_StreamGlass, m_Self));
 
-            List<string> tests = new()
-            {
+            List<string> tests = [
                 "@badge-info=;badges=vip/1,artist-badge/1;color=#5F9EA0;display-name=arecaceae_;emotes=;first-msg=0;flags=;id=217a1866-58d0-4a95-ae76-471b8dddf9f4;mod=0;returning-chatter=0;room-id=52792239;subscriber=0;tmi-sent-ts=1700680360256;turbo=0;user-id=753317728;user-type=;vip=1 :arecaceae_!arecaceae_@arecaceae_.tmi.twitch.tv PRIVMSG #chaporon_ :Salut",
                 "@badge-info=;badges=vip/1,artist-badge/1;color=#5F9EA0;display-name=arecaceae_;emotes=;first-msg=0;flags=;id=14616d77-0af1-4105-90bf-0690148078d0;mod=0;returning-chatter=0;room-id=52792239;subscriber=0;tmi-sent-ts=1700680374459;turbo=0;user-id=753317728;user-type=;vip=1 :arecaceae_!arecaceae_@arecaceae_.tmi.twitch.tv PRIVMSG #chaporon_ :Oui et toi ?",
                 ":arecaceae_!arecaceae_@arecaceae_.tmi.twitch.tv JOIN #chaporon_",
@@ -289,7 +288,7 @@ namespace StreamGlass.Twitch
                 "@badge-info=founder/1;badges=moderator/1,founder/0;client-nonce=f55adb4c84fd4b7b7cf4f616605ec5dc;color=#1E90FF;display-name=Dragshur;emotes=;first-msg=0;flags=;id=fbd19bdf-6254-4bae-84f9-69bc534676fc;mod=1;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682528957;turbo=0;user-id=737196630;user-type=mod :dragshur!dragshur@dragshur.tmi.twitch.tv PRIVMSG #chaporon_ :Ah",
                 "@badge-info=founder/1;badges=moderator/1,founder/0;client-nonce=d0b9d81a1d587950df0847bdfa3f88b8;color=#1E90FF;display-name=Dragshur;emotes=;first-msg=0;flags=;id=6e57a202-9da2-4f90-a7c3-6ff54a4c860e;mod=1;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682542725;turbo=0;user-id=737196630;user-type=mod :dragshur!dragshur@dragshur.tmi.twitch.tv PRIVMSG #chaporon_ :Faut te reposer ^^",
                 "@badge-info=founder/1;badges=moderator/1,founder/0;bits=1;color=#1E90FF;display-name=Dragshur;emotes=;first-msg=0;flags=;id=40a50bf4-3c8c-454f-9479-dd56136c4ded;mod=1;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682556611;turbo=0;user-id=737196630;user-type=mod :dragshur!dragshur@dragshur.tmi.twitch.tv PRIVMSG #chaporon_ :Pour te consoler Cheer1"
-            };
+            ];
             //m_Chat.TestMessages(tests);
         }
     }

@@ -1,5 +1,4 @@
-﻿using StreamGlass;
-using StreamGlass.Controls;
+﻿using StreamGlass.Controls;
 using StreamGlass.Profile;
 using System;
 using System.Windows;
@@ -28,7 +27,7 @@ namespace StreamGlass
             if (IsChecked)
                 m_Manager.SetCurrentProfile(m_ProfileID);
             else
-                m_Manager.SetCurrentProfile("");
+                m_Manager.SetCurrentProfile(string.Empty);
             m_Manager.UpdateStreamInfo();
         }
     }

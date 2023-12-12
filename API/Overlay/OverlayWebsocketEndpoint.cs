@@ -9,25 +9,19 @@ namespace StreamGlass.API.Overlay
 {
     public class OverlayWebsocketEndpoint : EventEndpoint
     {
-        private class CustomEventHandler
+        private class CustomEventHandler(OverlayWebsocketEndpoint manager, string eventType)
         {
-            private readonly OverlayWebsocketEndpoint m_Manager;
-            private readonly HashSet<string> m_RegisteredClients = new();
-            private readonly string m_EventType;
+            private readonly OverlayWebsocketEndpoint m_Manager = manager;
+            private readonly HashSet<string> m_RegisteredClients = [];
+            private readonly string m_EventType = eventType;
 
             public string EventType => m_EventType;
-
-            public CustomEventHandler(OverlayWebsocketEndpoint manager, string eventType)
-            {
-                m_Manager = manager;
-                m_EventType = eventType;
-            }
 
             public bool RegisterClient(string clientID) => m_RegisteredClients.Add(clientID);
             public bool UnregisterClient(string clientID) => m_RegisteredClients.Remove(clientID);
             public bool IsRegistered(string clientID) => m_RegisteredClients.Contains(clientID);
 
-            public void Emit(JObject eventData) => m_Manager.SendEvent(m_RegisteredClients.ToArray(), "event", EventType, eventData);
+            public void Emit(JObject eventData) => m_Manager.SendEvent([.. m_RegisteredClients], "event", EventType, eventData);
         }
 
         private readonly PathTree<Dictionary<string, CustomEventHandler>> m_CustomEvents = new();
@@ -45,7 +39,7 @@ namespace StreamGlass.API.Overlay
                     Dictionary<string, CustomEventHandler>? events = m_CustomEvents.GetValue(client.WebSocketPath);
                     if (events == null)
                     {
-                        m_CustomEvents.AddValue(client.WebSocketPath, new(), true);
+                        m_CustomEvents.AddValue(client.WebSocketPath, [], true);
                         events = m_CustomEvents.GetValue(client.WebSocketPath)!;
                     }
                     if (!events.TryGetValue(eventType!, out CustomEventHandler? customEventHandler))

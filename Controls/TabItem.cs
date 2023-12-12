@@ -28,7 +28,7 @@ namespace StreamGlass.Controls
         #endregion TextBrushPaletteKey
 
         #region TranslationKey
-        public static readonly DependencyProperty TranslationKeyProperty = Helper.NewProperty<TabItem, string>("TranslationKey", "");
+        public static readonly DependencyProperty TranslationKeyProperty = Helper.NewProperty<TabItem, string>("TranslationKey", string.Empty);
         [Description("The translation key of the tab item's text"), Category("Common Properties")]
         public string TranslationKey
         {

@@ -1,7 +1,6 @@
 ﻿using CorpseLib.Translation;
 using System.ComponentModel;
 using System.Windows;
-using System.Windows.Input;
 
 namespace StreamGlass.Controls
 {
@@ -18,7 +17,7 @@ namespace StreamGlass.Controls
         #endregion BrushPaletteKey
 
         #region TranslationKey
-        public static readonly DependencyProperty TranslationKeyProperty = Helper.NewProperty<Button, string>("TranslationKey", "");
+        public static readonly DependencyProperty TranslationKeyProperty = Helper.NewProperty<Button, string>("TranslationKey", string.Empty);
         [Description("The translation key of the button's text"), Category("Common Properties")]
         public string TranslationKey
         {

@@ -6,8 +6,8 @@ namespace StreamGlass.Connections
 {
     public class ConnectionManager
     {
-        private readonly List<AConnection> m_Connections = new();
-        private readonly List<AStreamConnection> m_StreamChatConnections = new();
+        private readonly List<AConnection> m_Connections = [];
+        private readonly List<AStreamConnection> m_StreamChatConnections = [];
 
         public void RegisterConnection(AConnection connection)
         {

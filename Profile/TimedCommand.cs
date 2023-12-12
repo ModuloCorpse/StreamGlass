@@ -1,19 +1,12 @@
 ﻿namespace StreamGlass.Profile
 {
-    public class TimedCommand
+    public class TimedCommand(long time, int nbMessage, string command)
     {
-        private readonly string m_Command;
-        private readonly long m_Time;
+        private readonly string m_Command = command;
+        private readonly long m_Time = time;
         private long m_TimeSinceLastTrigger = 0;
-        private readonly int m_NbMessage;
+        private readonly int m_NbMessage = nbMessage;
         private int m_MessageSinceLastTrigger = 0;
-
-        public TimedCommand(long time, int nbMessage, string command)
-        {
-            m_Time = time;
-            m_NbMessage = nbMessage;
-            m_Command = command;
-        }
 
         public long Time => m_Time;
         public int NbMessage => m_NbMessage;

@@ -5,7 +5,7 @@ using TwitchCorpse;
 
 namespace StreamGlass.Events
 {
-    public class FollowEventArgs : FollowEventArgsBase
+    public class FollowEventArgs(TwitchUser? user, Text message, int tier, int monthTotal, int monthStreak) : FollowEventArgsBase(user, message, tier)
     {
         public class JSerializer : AJSerializer<FollowEventArgs>
         {
@@ -30,16 +30,10 @@ namespace StreamGlass.Events
             }
         }
 
-        private readonly int m_MonthTotal;
-        private readonly int m_MonthStreak;
+        private readonly int m_MonthTotal = monthTotal;
+        private readonly int m_MonthStreak = monthStreak;
 
         public int MonthTotal => m_MonthTotal;
         public int MonthStreak => m_MonthStreak;
-
-        public FollowEventArgs(TwitchUser? user, Text message, int tier, int monthTotal, int monthStreak) : base(user, message, tier)
-        {
-            m_MonthTotal = monthTotal;
-            m_MonthStreak = monthStreak;
-        }
     }
 }

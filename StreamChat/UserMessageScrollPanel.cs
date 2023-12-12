@@ -8,7 +8,7 @@ namespace StreamGlass.StreamChat
     public class UserMessageScrollPanel : ScrollPanel<Message>
     {
         private BrushPaletteManager m_ChatPalette = new();
-        private readonly HashSet<string> m_ChatHighlightedUsers = new();
+        private readonly HashSet<string> m_ChatHighlightedUsers = [];
         private ConnectionManager? m_ConnectionManager = null;
         private double m_MessageSenderFontSize = 14;
         private double m_MessageSenderWidth = 100;
@@ -56,9 +56,7 @@ namespace StreamGlass.StreamChat
 
         public void ToggleHighlightedUser(string userID)
         {
-            if (m_ChatHighlightedUsers.Contains(userID))
-                m_ChatHighlightedUsers.Remove(userID);
-            else
+            if (!m_ChatHighlightedUsers.Remove(userID))
                 m_ChatHighlightedUsers.Add(userID);
         }
 
@@ -86,7 +84,7 @@ namespace StreamGlass.StreamChat
         {
             if (userID == null)
                 return;
-            List<Message> messageToRemove = new();
+            List<Message> messageToRemove = [];
             foreach (Message message in Controls)
             {
                 if (message.UserID == userID)

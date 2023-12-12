@@ -1,7 +1,6 @@
 ﻿using StreamGlass.Settings;
 using StreamGlass.Controls;
 using System.Windows.Controls;
-using StreamGlass;
 using static StreamGlass.StreamAlert.AlertScrollPanel;
 using System;
 using CorpseLib.Translation;
@@ -11,8 +10,7 @@ namespace StreamGlass.StreamAlert
 {
     public partial class StreamAlertSettingsItem : TabItemContent
     {
-        private readonly string[] m_AlertTypeNames = new string[]
-        {
+        private readonly string[] m_AlertTypeNames = [
             "Incomming raid",
             "Outgoing raid",
             "Donation",
@@ -24,7 +22,7 @@ namespace StreamGlass.StreamAlert
             "Prime/Tier 4",
             "Shoutout",
             "Being shoutout"
-        };
+        ];
         private readonly AlertInfo[] m_GiftAlertInfo = new AlertInfo[Enum.GetNames(typeof(AlertType)).Length];
         private readonly AlertInfo[] m_AlertInfo = new AlertInfo[Enum.GetNames(typeof(AlertType)).Length];
         private readonly AlertScrollPanel m_StreamAlert;

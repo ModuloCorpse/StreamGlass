@@ -9,9 +9,9 @@ namespace StreamGlass.Twitch
     {
         private readonly TwitchAPI m_API;
         private Profile.CategoryInfo? m_SearchedCategoryInfo = null;
-        private readonly List<CategoryControl> m_Categories = new();
-        private string m_CategoryID = "";
-        private string m_CategoryName = "";
+        private readonly List<CategoryControl> m_Categories = [];
+        private string m_CategoryID = string.Empty;
+        private string m_CategoryName = string.Empty;
 
         public CategorySearchDialog(Controls.Window parent, Profile.CategoryInfo? info, TwitchAPI api) : base(parent)
         {
@@ -46,8 +46,8 @@ namespace StreamGlass.Twitch
                 if (currentControl == null || control.CategoryID != currentControl.CategoryID)
                     control.SetChecked(false);
             }
-            m_CategoryID = currentControl?.CategoryID ?? "";
-            m_CategoryName = currentControl?.CategoryName ?? "";
+            m_CategoryID = currentControl?.CategoryID ?? string.Empty;
+            m_CategoryName = currentControl?.CategoryName ?? string.Empty;
         }
 
         private void StreamInfoCategorySearchButton_Click(object sender, RoutedEventArgs e)
@@ -69,8 +69,8 @@ namespace StreamGlass.Twitch
             }
             if (clearSelection)
             {
-                m_CategoryID = "";
-                m_CategoryName = "";
+                m_CategoryID = string.Empty;
+                m_CategoryName = string.Empty;
             }
         }
     }
