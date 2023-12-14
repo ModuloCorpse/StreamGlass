@@ -295,9 +295,9 @@ namespace StreamGlass
 
             InitializeComponent();
             LoadIni();
-            InitializeSettings();
-            InitializeBrushPalette();
             InitializeTranslation();
+            InitializeBrushPalette();
+            InitializeSettings();
 
             m_ConnectionManager.RegisterConnection(new Twitch.Connection(m_Settings.GetOrAdd("twitch"), this));
             m_Manager = new(m_ConnectionManager);

@@ -26,10 +26,21 @@ namespace StreamGlass.Controls
         }
         #endregion TranslationKey
 
+        public Button() => Translator.CurrentLanguageChanged += Translator_CurrentLanguageChanged;
+
+        ~Button() => Translator.CurrentLanguageChanged -= Translator_CurrentLanguageChanged;
+
+        private void Translator_CurrentLanguageChanged()
+        {
+            Dispatcher.Invoke(delegate
+            {
+                if (Translator.HaveKey(TranslationKey))
+                    Content = Translator.Translate("${" + TranslationKey + "}");
+            });
+        }
+
         public void Update(BrushPaletteManager palette)
         {
-            if (Translator.HaveKey(TranslationKey))
-                Content = Translator.Translate("${" + TranslationKey + "}");
             Helper.ApplyButtonPalette<System.Windows.Controls.Button>(palette, this, BrushPaletteKey);
         }
     }

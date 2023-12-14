@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CorpseLib\CorpseLib.Web\CorpseLib.Web.csproj" />
+    <ProjectReference Include="..\CorpseLib\CorpseLib.Wpf\CorpseLib.Wpf.csproj" />
     <ProjectReference Include="..\CorpseLib\CorpseLib\CorpseLib.csproj" />
     <ProjectReference Include="..\CorpseLib\OBSCorpse\OBSCorpse.csproj" />
     <ProjectReference Include="..\CorpseLib\TwitchCorpse\TwitchCorpse.csproj" />

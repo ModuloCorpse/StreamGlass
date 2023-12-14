@@ -1,5 +1,6 @@
 ﻿using CorpseLib.Json;
 using CorpseLib.ManagedObject;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Media;
 
 namespace StreamGlass.Controls
@@ -22,11 +23,11 @@ namespace StreamGlass.Controls
             return palette;
         }
 
-        public bool TryGetColor(string name, out Brush color)
+        public bool TryGetColor(string name, [MaybeNullWhen(false)] out Brush? color)
         {
             if (CurrentObject != null)
                 return CurrentObject.TryGetColor(name, out color);
-            color = new SolidColorBrush(Colors.Black);
+            color = null;
             return false;
         }
 

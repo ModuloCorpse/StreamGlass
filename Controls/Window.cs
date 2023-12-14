@@ -42,8 +42,8 @@ namespace StreamGlass.Controls
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool DwmIsCompositionEnabled();
 
-        [LibraryImport("dwmapi.dll", EntryPoint = "DwmSetWindowAttributeA")]
-        private static partial int DwmSetWindowAttribute(IntPtr hwnd, DwmWindowAttribute dwmAttribute, IntPtr pvAttribute, uint cbAttribute);
+        [DllImport("dwmapi.dll", PreserveSig = false)]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, DwmWindowAttribute dwmAttribute, IntPtr pvAttribute, uint cbAttribute);
 
         protected void UpdateAeroPeek()
         {

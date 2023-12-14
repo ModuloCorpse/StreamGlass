@@ -120,11 +120,14 @@ namespace StreamGlass.StreamAlert
                 SetSetting(string.Format("{0}_prefix", type), alertInfo.Prefix);
                 SetSetting(string.Format("{0}_enabled", type), (alertInfo.IsEnabled) ? "true" : "false");
                 m_StreamAlert.SetAlertInfo(type, alertInfo);
-                AlertInfo giftAlertInfo = m_GiftAlertInfo[(int)type];
-                SetSetting(string.Format("{0}_gift_path", type), giftAlertInfo.ImgPath);
-                SetSetting(string.Format("{0}_gift_prefix", type), giftAlertInfo.Prefix);
-                SetSetting(string.Format("{0}_gift_enabled", type), (giftAlertInfo.IsEnabled) ? "true" : "false");
-                m_StreamAlert.SetGiftAlertInfo(type, alertInfo);
+                AlertInfo? giftAlertInfo = m_GiftAlertInfo[(int)type];
+                if (giftAlertInfo != null)
+                {
+                    SetSetting(string.Format("{0}_gift_path", type), giftAlertInfo.ImgPath);
+                    SetSetting(string.Format("{0}_gift_prefix", type), giftAlertInfo.Prefix);
+                    SetSetting(string.Format("{0}_gift_enabled", type), (giftAlertInfo.IsEnabled) ? "true" : "false");
+                    m_StreamAlert.SetGiftAlertInfo(type, giftAlertInfo);
+                }
             }
         }
 

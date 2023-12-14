@@ -37,6 +37,19 @@ namespace StreamGlass.Controls
         }
         #endregion TranslationKey
 
+        public TabItem() => Translator.CurrentLanguageChanged += Translator_CurrentLanguageChanged;
+
+        ~TabItem() => Translator.CurrentLanguageChanged -= Translator_CurrentLanguageChanged;
+
+        private void Translator_CurrentLanguageChanged()
+        {
+            Dispatcher.Invoke(delegate
+            {
+                if (Translator.HaveKey(TranslationKey))
+                    Header = Translator.Translate("${" + TranslationKey + "}");
+            });
+        }
+
         private void UpdateStyle(BrushPaletteManager palette)
         {
             Style style = new(typeof(TabItem));
@@ -76,8 +89,6 @@ namespace StreamGlass.Controls
         public void Update(BrushPaletteManager palette)
         {
             UpdateStyle(palette);
-            if (Translator.HaveKey(TranslationKey))
-                Header = Translator.Translate("${" + TranslationKey + "}");
             if (palette.TryGetColor(BrushPaletteKey, out var topBarBackground))
                 Background = topBarBackground;
             if (palette.TryGetColor(TextBrushPaletteKey, out var topBarText))

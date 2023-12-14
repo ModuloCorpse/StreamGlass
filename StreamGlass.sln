@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OBSCorpse", "..\CorpseLib\O
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TwitchCorpse", "..\CorpseLib\TwitchCorpse\TwitchCorpse.csproj", "{F9D6E040-5601-489D-9B0C-15008A414267}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CorpseLib.Wpf", "..\CorpseLib\CorpseLib.Wpf\CorpseLib.Wpf.csproj", "{9CD8103E-D709-46D7-9CF9-74DF33FA2540}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,10 @@ Global
 		{F9D6E040-5601-489D-9B0C-15008A414267}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9D6E040-5601-489D-9B0C-15008A414267}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F9D6E040-5601-489D-9B0C-15008A414267}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CD8103E-D709-46D7-9CF9-74DF33FA2540}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CD8103E-D709-46D7-9CF9-74DF33FA2540}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CD8103E-D709-46D7-9CF9-74DF33FA2540}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CD8103E-D709-46D7-9CF9-74DF33FA2540}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +56,7 @@ Global
 		{5EA947AE-4904-4116-A498-74045E1EF515} = {912FB481-93CA-4488-8605-1BF9B782FFBA}
 		{15B5F38D-41FA-4A8A-B96C-AA863F159DAF} = {912FB481-93CA-4488-8605-1BF9B782FFBA}
 		{F9D6E040-5601-489D-9B0C-15008A414267} = {912FB481-93CA-4488-8605-1BF9B782FFBA}
+		{9CD8103E-D709-46D7-9CF9-74DF33FA2540} = {912FB481-93CA-4488-8605-1BF9B782FFBA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CE07077C-4761-4C73-9886-2A9F1488C1F3}
