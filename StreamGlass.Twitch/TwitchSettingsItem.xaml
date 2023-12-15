@@ -1,0 +1,66 @@
+﻿<settings:TabItemContent x:Class="StreamGlass.Twitch.TwitchSettingsItem"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:settings="clr-namespace:StreamGlass.Core.Settings;assembly=StreamGlass.Core"
+             xmlns:ui="clr-namespace:StreamGlass.Core.Controls;assembly=StreamGlass.Core"
+             mc:Ignorable="d" 
+             d:DesignHeight="250"
+             d:DesignWidth="450">
+    <ui:StackPanel BrushPaletteKey="background_2">
+        <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
+            <ui:Button Content="Connect" TranslationKey="settings_twitch_connect" Margin="5,0,0,0" VerticalAlignment="Center" Click="TwitchConnectButton_Click" Width="75" Height="25">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="8"/>
+                    </Style>
+                </Button.Resources>
+            </ui:Button>
+        </ui:StackPanel>
+        <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
+            <ui:Label x:Name="TwitchAutoConnectCheckBoxLabel" TranslationKey="settings_twitch_autoconnect" Text="Autoconnect:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="150"/>
+            <CheckBox Name="TwitchAutoConnectCheckBox" VerticalAlignment="Center" Margin="5,0,0,0"/>
+        </ui:StackPanel>
+        <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
+            <ui:Label x:Name="TwitchBrowserTextBoxLabel" TranslationKey="settings_twitch_browser" Margin="0,0,5,0" Text="Browser:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="150"/>
+            <ui:TextBox x:Name="TwitchBrowserTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="200" Height="25"/>
+            <ui:Button x:Name="TwitchBrowserTextBoxButton" Margin="3,0,0,0" Width="34" HorizontalAlignment="Left" VerticalAlignment="Top" Click="TwitchBrowserFileDialog_Click">
+                <Image Height="20" Width="20" Source="/Assets/magnifying-glass.png" />
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="8"/>
+                    </Style>
+                </Button.Resources>
+            </ui:Button>
+        </ui:StackPanel>
+        <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
+            <ui:Label x:Name="TwitchBotPublicTextBoxLabel" TranslationKey="settings_twitch_bot_public" Margin="0,0,5,0" Text="Bot public key:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="150"/>
+            <ui:TextBox x:Name="TwitchBotPublicTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="200" Height="25"/>
+        </ui:StackPanel>
+        <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
+            <ui:Label x:Name="TwitchBotSecretPasswordBoxLbel" TranslationKey="settings_twitch_bot_private" Margin="0,0,5,0" Text="Bot secret key:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="150"/>
+            <ui:PasswordBox x:Name="TwitchBotSecretPasswordBox" PasswordChar="*" HorizontalAlignment="Center" VerticalAlignment="Center" Width="200" Height="25"/>
+            <ui:Button x:Name="TwitchBotSecretVisibility" Margin="3,0,0,0" Width="34" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <Image Name="TwitchBotSecretVisibilityImage" Height="20" Width="20" Source="/Assets/sight-disabled.png" />
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="8"/>
+                    </Style>
+                </Button.Resources>
+            </ui:Button>
+        </ui:StackPanel>
+        <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
+            <ui:Label x:Name="TwitchSubModeComboBoxLabel" TranslationKey="settings_twitch_sub_mode" Margin="0,0,5,0" Text="Sub mode:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="150"/>
+            <ComboBox Name="TwitchSubModeComboBox" HorizontalAlignment="Center" VerticalAlignment="Top" Width="200" Height="25"/>
+        </ui:StackPanel>
+        <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
+            <ui:Label x:Name="DoWelcomeLabel" TranslationKey="settings_twitch_do_welcome" VerticalAlignment="Center" TextAlignment="Right" Text="Do Welcome:" Width="150"/>
+            <CheckBox x:Name="DoWelcomeCheckBox" Margin="4,7,0,0" />
+        </ui:StackPanel>
+        <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
+            <ui:Label x:Name="WelcomeMessageLabel" TranslationKey="settings_twitch_welcome_message" Margin="0,0,5,0" Text="Welcome Message:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="150"/>
+            <ui:TextBox x:Name="WelcomeMessageTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="200" Height="40"/>
+        </ui:StackPanel>
+    </ui:StackPanel>
+</settings:TabItemContent>

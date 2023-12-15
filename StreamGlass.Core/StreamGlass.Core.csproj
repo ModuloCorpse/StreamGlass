@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\CorpseLib\CorpseLib.Wpf\CorpseLib.Wpf.csproj" />
+    <ProjectReference Include="..\..\CorpseLib\CorpseLib\CorpseLib.csproj" />
+    <ProjectReference Include="..\..\CorpseLib\TwitchCorpse\TwitchCorpse.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Controls\NumericUpDown.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Profile\ChatCommandEditor.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Profile\ProfileEditor.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Profile\ProfilesDialog.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Settings\Dialog.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Stat\StatisticFileDialog.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Stat\StatisticFileEditor.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
+</Project>

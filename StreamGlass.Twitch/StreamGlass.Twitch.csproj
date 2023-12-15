@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\CorpseLib\CorpseLib.Web\CorpseLib.Web.csproj" />
+    <ProjectReference Include="..\..\CorpseLib\CorpseLib\CorpseLib.csproj" />
+    <ProjectReference Include="..\..\CorpseLib\TwitchCorpse\TwitchCorpse.csproj" />
+    <ProjectReference Include="..\StreamGlass.Core\StreamGlass.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="CategoryControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="CategorySearchDialog.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
+</Project>

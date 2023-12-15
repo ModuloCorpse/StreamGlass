@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StreamGlass", "StreamGlass.csproj", "{C3C1F99A-AF09-42AA-A8EF-FA8838F269D8}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Corpse Libraries", "Corpse Libraries", "{912FB481-93CA-4488-8605-1BF9B782FFBA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CorpseLib", "..\CorpseLib\CorpseLib\CorpseLib.csproj", "{19B526F1-ACAD-4239-9D3A-5C81C6F7A1FA}"
@@ -17,16 +15,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TwitchCorpse", "..\CorpseLi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CorpseLib.Wpf", "..\CorpseLib\CorpseLib.Wpf\CorpseLib.Wpf.csproj", "{9CD8103E-D709-46D7-9CF9-74DF33FA2540}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StreamGlass", "StreamGlass\StreamGlass.csproj", "{991316F4-8AE0-434C-AAC4-CE93DDE11BF1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamGlass.Core", "StreamGlass.Core\StreamGlass.Core.csproj", "{98A957AB-A836-4531-808C-FE221DE2E1E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamGlass.Twitch", "StreamGlass.Twitch\StreamGlass.Twitch.csproj", "{3399DB09-4DCF-4D08-A3F3-E5A0EC149553}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C3C1F99A-AF09-42AA-A8EF-FA8838F269D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C3C1F99A-AF09-42AA-A8EF-FA8838F269D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C3C1F99A-AF09-42AA-A8EF-FA8838F269D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C3C1F99A-AF09-42AA-A8EF-FA8838F269D8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{19B526F1-ACAD-4239-9D3A-5C81C6F7A1FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{19B526F1-ACAD-4239-9D3A-5C81C6F7A1FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19B526F1-ACAD-4239-9D3A-5C81C6F7A1FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -47,6 +47,18 @@ Global
 		{9CD8103E-D709-46D7-9CF9-74DF33FA2540}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CD8103E-D709-46D7-9CF9-74DF33FA2540}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CD8103E-D709-46D7-9CF9-74DF33FA2540}.Release|Any CPU.Build.0 = Release|Any CPU
+		{991316F4-8AE0-434C-AAC4-CE93DDE11BF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{991316F4-8AE0-434C-AAC4-CE93DDE11BF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{991316F4-8AE0-434C-AAC4-CE93DDE11BF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{991316F4-8AE0-434C-AAC4-CE93DDE11BF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98A957AB-A836-4531-808C-FE221DE2E1E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98A957AB-A836-4531-808C-FE221DE2E1E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98A957AB-A836-4531-808C-FE221DE2E1E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98A957AB-A836-4531-808C-FE221DE2E1E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3399DB09-4DCF-4D08-A3F3-E5A0EC149553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3399DB09-4DCF-4D08-A3F3-E5A0EC149553}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3399DB09-4DCF-4D08-A3F3-E5A0EC149553}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3399DB09-4DCF-4D08-A3F3-E5A0EC149553}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
