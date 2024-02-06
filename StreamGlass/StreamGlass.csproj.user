@@ -10,6 +10,9 @@
     <Compile Update="Moderation\HeldMessage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="StreamGlassSplashScreen.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="StreamChat\Message.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -18,7 +21,13 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Audio\SoundEditor.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Moderation\HeldMessage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="StreamGlassSplashScreen.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="StreamAlert\AlertControl.xaml">

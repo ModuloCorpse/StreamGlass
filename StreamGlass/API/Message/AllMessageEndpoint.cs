@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace StreamGlass.API
+namespace StreamGlass.API.Message
 {
     public class AllMessageEndpoint : AHTTPEndpoint
     {
@@ -28,12 +28,12 @@ namespace StreamGlass.API
                     UserMessage message = messages.First();
                     JObject node = (JObject)JHelper.Cast(message);
                     long nodeLength = node.ToNetworkString().Length;
-                    if (length + nodeLength < 2000)
+                    if (length == 0 || length + nodeLength < 2000)
                     {
                         length += nodeLength;
                         messages.RemoveAt(0);
                         messagesRet.Add(message);
-                        keepPaging = (length < 1000);
+                        keepPaging = length < 1000;
                     }
                     else
                         keepPaging = false;
@@ -61,10 +61,10 @@ namespace StreamGlass.API
 
         public AllMessageEndpoint() : base("/all_message")
         {
-            StreamGlassCanals.CHAT_MESSAGE.Register((UserMessage? message) => { if (message != null) m_Messages.Add(message); });
+            StreamGlassCanals.CHAT_MESSAGE.Register((message) => { if (message != null) m_Messages.Add(message); });
             StreamGlassCanals.CHAT_CLEAR.Register(m_Messages.Clear);
-            StreamGlassCanals.CHAT_CLEAR_MESSAGE.Register((string? messageID) => { if (messageID != null) m_Messages.RemoveAll(message => message.ID == messageID); });
-            StreamGlassCanals.CHAT_CLEAR_USER.Register((string? userID) => { if (userID != null) m_Messages.RemoveAll(message => message.UserID == userID); });
+            StreamGlassCanals.CHAT_CLEAR_MESSAGE.Register((messageID) => { if (messageID != null) m_Messages.RemoveAll(message => message.ID == messageID); });
+            StreamGlassCanals.CHAT_CLEAR_USER.Register((userID) => { if (userID != null) m_Messages.RemoveAll(message => message.UserID == userID); });
         }
 
         private void AddPage(Page page) => m_Pages[page.ID] = page;

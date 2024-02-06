@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Media.Imaging;
 using StreamGlass.Core.Controls;
-using TwitchCorpse;
+using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch
 {

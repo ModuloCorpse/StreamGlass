@@ -42,14 +42,14 @@ namespace StreamGlass.Core.Settings
         {
             foreach (TabItemContent item in m_TabItems)
                 item.SaveTabItem();
-            Close();
+            OnOkClick();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             foreach (TabItemContent item in m_TabItems)
                 item.CancelTabItem();
-            Close();
+            OnCancelClick();
         }
     }
 }

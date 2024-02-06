@@ -1,18 +1,24 @@
 ﻿using CorpseLib;
 using CorpseLib.Ini;
-using CorpseLib.Web.OAuth;
+using CorpseLib.Network;
+using CorpseLib.Serialize;
+using CorpseLib.Web.WebSocket;
 using StreamGlass.Core;
 using StreamGlass.Core.Connections;
 using StreamGlass.Core.Controls;
 using StreamGlass.Core.Events;
 using StreamGlass.Core.Profile;
 using StreamGlass.Core.Settings;
+using System.Text;
 using TwitchCorpse;
+using static TwitchCorpse.TwitchEventSub;
 
 namespace StreamGlass.Twitch
 {
     public class Connection : AStreamConnection
     {
+        private static readonly string AUTHENTICATOR_PAGE_CONTENT = "<!DOCTYPE html><html><head><title>StreamGlass Twitch Auth</title></head><body><p>You can close this page</p></body></html>";
+
         private readonly ProfileManager m_ProfileManager;
         private readonly ConnectionManager m_ConnectionManager;
         private readonly RecurringAction m_GetViewerCount = new(500);
@@ -22,11 +28,25 @@ namespace StreamGlass.Twitch
         private TwitchHandler m_TwitchHandler = null;
         private TwitchPubSub m_PubSub = null;
         private TwitchEventSub m_EventSub = null;
-        private TwitchChat m_Chat = null;
-        private TwitchAPI m_API = null;
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-        private RefreshToken? m_APIToken = null;
-        private RefreshToken? m_IRCToken = null;
+        private readonly TwitchAPI m_API = new();
+        private TwitchAPI m_IRCAPI = new();
+        private readonly SubscriptionType[] m_SubscriptionTypes = [
+            SubscriptionType.ChannelFollow,
+            SubscriptionType.ChannelSubscribe,
+            SubscriptionType.ChannelSubscriptionGift,
+            SubscriptionType.ChannelRaid,
+            SubscriptionType.ChannelChannelPointsCustomRewardRedemptionAdd,
+            SubscriptionType.StreamOnline,
+            SubscriptionType.StreamOffline,
+            SubscriptionType.ChannelShoutoutCreate,
+            SubscriptionType.ChannelShoutoutReceive,
+            SubscriptionType.ChannelChatClear,
+            SubscriptionType.ChannelChatClearUserMessages,
+            SubscriptionType.ChannelChatMessage,
+            SubscriptionType.ChannelChatMessageDelete,
+            SubscriptionType.ChannelChatNotification
+        ];
 
         public Connection(ProfileManager profileManager, ConnectionManager connectionManager, IniSection settings): base(settings)
         {
@@ -46,7 +66,6 @@ namespace StreamGlass.Twitch
 
         protected override void BeforeConnect()
         {
-            StreamGlassCanals.CHAT_JOINED.Register(OnJoinedChannel);
             StreamGlassCanals.USER_JOINED.Register(OnUserJoinedChannel);
             StreamGlassCanals.UPDATE_STREAM_INFO.Register(SetStreamInfo);
             StreamGlassCanals.BAN.Register(BanUser);
@@ -80,45 +99,68 @@ namespace StreamGlass.Twitch
 
         protected override bool Authenticate()
         {
-            m_APIToken = m_Authenticator.Authenticate();
+            m_API.Authenticate(Settings.Get("public_key"), Settings.Get("secret_key"), 3000, AUTHENTICATOR_PAGE_CONTENT);
             string browser = GetSetting("browser");
             if (string.IsNullOrWhiteSpace(browser))
-                m_IRCToken = m_APIToken;
+                m_IRCAPI = m_API;
             else
-                m_IRCToken = m_Authenticator.Authenticate(browser);
-            return m_APIToken != null && m_IRCToken != null;
+                m_IRCAPI.AuthenticateWithBrowser(Settings.Get("public_key"), Settings.Get("secret_key"), 3000, AUTHENTICATOR_PAGE_CONTENT, browser);
+            return m_API.IsAuthenticated && m_IRCAPI.IsAuthenticated;
         }
 
         protected override bool Init()
         {
-            if (m_APIToken == null || m_IRCToken == null)
+            if (!m_API.IsAuthenticated || !m_IRCAPI.IsAuthenticated)
                 return false;
-            m_API = new(m_APIToken);
             m_TwitchHandler = new TwitchHandler(Settings, m_API);
+            m_API.SetHandler(m_TwitchHandler);
             m_API.LoadGlobalEmoteSet();
             m_API.LoadGlobalChatBadges();
             TwitchUser? creator = m_API.GetUserInfoFromLogin("chaporon_");
             if (creator != null)
                 m_API.LoadChannelEmoteSet(creator);
 
-            TwitchUser? userInfoOfToken = m_API.GetUserInfoOfToken(m_IRCToken);
+            TwitchUser? userInfoOfToken = m_IRCAPI.GetSelfUserInfo();
             if (userInfoOfToken != null)
                 m_API.LoadEmoteSetFromFollowedChannel(userInfoOfToken);
             TwitchUser selfUserInfo = m_API.GetSelfUserInfo();
             m_API.LoadChannelChatBadges(selfUserInfo);
             if (!string.IsNullOrEmpty(selfUserInfo.Name))
-            {
                 m_TwitchHandler.SetIRCChannel(selfUserInfo.Name);
-                m_Chat = TwitchChat.NewConnection(m_API, selfUserInfo.Name, "StreamGlass", m_IRCToken!, m_TwitchHandler);
+
+
+            ResetStreamInfo();
+            m_OriginalBroadcasterChannelInfo = m_API.GetChannelInfo(selfUserInfo);
+
+            m_ProfileManager.UpdateStreamInfo();
+
+            if (m_OriginalBroadcasterChannelInfo != null)
+            {
+                TwitchEventSub? eventSub = m_API.EventSubConnection(m_OriginalBroadcasterChannelInfo.Broadcaster.ID, m_SubscriptionTypes);
+                if (eventSub != null)
+                {
+                    m_EventSub = eventSub;
+                    m_EventSub.SetMonitor(new DebugLogMonitor(TwitchEventSub.LOGGER));
+                    m_EventSub.OnWelcome += (object? sender, EventArgs e) =>
+                    {
+                        if (Settings.Get("do_welcome") == "true")
+                            m_ConnectionManager.SendMessage(Settings.Get("welcome_message"));
+                    };
+                }
+                TwitchPubSub? pubSub = m_API.PubSubConnection(m_OriginalBroadcasterChannelInfo.Broadcaster.ID);
+                if (pubSub != null)
+                {
+                    m_PubSub = pubSub;
+                    m_PubSub.SetMonitor(new DebugLogMonitor(TwitchPubSub.PUBSUB));
+                }
             }
+
             return true;
         }
 
-        protected override bool OnReconnect()
-        {
-            m_Chat.Reconnect();
-            return true;
-        }
+
+
+        protected override bool OnReconnect() => true;
 
         protected override void BeforeDisconnect()
         {
@@ -129,7 +171,6 @@ namespace StreamGlass.Twitch
         {
             m_PubSub?.Disconnect();
             m_EventSub?.Disconnect();
-            m_Chat?.Disconnect();
         }
 
         protected override void Clean()
@@ -139,7 +180,6 @@ namespace StreamGlass.Twitch
 
         protected override void AfterDisconnect()
         {
-            StreamGlassCanals.CHAT_JOINED.Unregister(OnJoinedChannel);
             StreamGlassCanals.USER_JOINED.Unregister(OnUserJoinedChannel);
             StreamGlassCanals.UPDATE_STREAM_INFO.Unregister(SetStreamInfo);
             StreamGlassCanals.BAN.Unregister(BanUser);
@@ -151,24 +191,6 @@ namespace StreamGlass.Twitch
 
         public override TabItemContent[] GetSettings() => new TabItemContent[] { new TwitchSettingsItem(Settings, this) };
 
-        private void OnJoinedChannel(string? channel)
-        {
-            if (channel == null)
-                return;
-            ResetStreamInfo();
-            m_OriginalBroadcasterChannelInfo = m_API.GetChannelInfo(channel);
-
-            m_ProfileManager.UpdateStreamInfo();
-            if (Settings.Get("do_welcome") == "true")
-                m_ConnectionManager.SendMessage(Settings.Get("welcome_message"));
-
-            if (m_OriginalBroadcasterChannelInfo != null)
-            {
-                m_EventSub = TwitchEventSub.NewConnection(m_OriginalBroadcasterChannelInfo.Broadcaster.ID, m_APIToken!, m_TwitchHandler);
-                m_PubSub = TwitchPubSub.NewConnection(m_OriginalBroadcasterChannelInfo.Broadcaster.ID, m_API, m_APIToken!, m_TwitchHandler);
-            }
-        }
-
         protected override void OnUpdate(long deltaTime) { }
 
         private void OnUserJoinedChannel(TwitchUser? user)
@@ -178,7 +200,10 @@ namespace StreamGlass.Twitch
             m_API.LoadEmoteSetFromFollowedChannel(user);
         }
 
-        public override void SendMessage(string message) => m_Chat.SendMessage(message);
+        public override void SendMessage(string message)
+        {
+            m_IRCAPI.PostMessage(m_API.GetSelfUserInfo(), message);
+        }
 
         private void ResetStreamInfo()
         {
@@ -232,65 +257,36 @@ namespace StreamGlass.Twitch
         {
             if (!IsConnected)
                 return;
-            TwitchUser m_StreamGlass = m_Chat.Self;
-            TwitchUser m_Self = m_OriginalBroadcasterChannelInfo!.Broadcaster;
+            TwitchUser m_StreamGlass = m_IRCAPI.GetSelfUserInfo();
+            TwitchUser m_Self = m_API.GetSelfUserInfo();
+            StreamGlassContext.LOGGER.Log("Testing Twitch");
+            StreamGlassContext.LOGGER.Log("Testing follow");
             StreamGlassCanals.FOLLOW.Emit(new(m_StreamGlass, new("J'aime le Pop-Corn"), 0, 69, 42));
+            StreamGlassContext.LOGGER.Log("Testing sub tier 1");
             StreamGlassCanals.FOLLOW.Emit(new(m_StreamGlass, new("J'aime le Pop-Corn"), 1, 69, 42));
+            StreamGlassContext.LOGGER.Log("Testing sub tier 2");
             StreamGlassCanals.FOLLOW.Emit(new(m_StreamGlass, new("J'aime le Pop-Corn"), 2, 69, 42));
+            StreamGlassContext.LOGGER.Log("Testing sub tier 3");
             StreamGlassCanals.FOLLOW.Emit(new(m_StreamGlass, new("J'aime le Pop-Corn"), 3, 69, 42));
+            StreamGlassContext.LOGGER.Log("Testing prime sub");
             StreamGlassCanals.FOLLOW.Emit(new(m_StreamGlass, new("J'aime le Pop-Corn"), 4, 69, 42));
+            StreamGlassContext.LOGGER.Log("Testing gift sub tier 1");
             StreamGlassCanals.GIFT_FOLLOW.Emit(new(m_Self, m_StreamGlass, new("Il aime le Pop-Corn"), 1, 69, 42, -1));
+            StreamGlassContext.LOGGER.Log("Testing bits donation");
             StreamGlassCanals.DONATION.Emit(new(m_StreamGlass, 666, "bits", new("J'aime le Pop-Corn")));
+            StreamGlassContext.LOGGER.Log("Testing incomming raid");
             StreamGlassCanals.RAID.Emit(new(m_StreamGlass, m_Self, 40, true));
+            StreamGlassContext.LOGGER.Log("Testing reward");
             StreamGlassCanals.REWARD.Emit(new(m_StreamGlass, "Chante", "J'aime le Pop-Corn"));
+            StreamGlassContext.LOGGER.Log("Testing shoutout");
             StreamGlassCanals.SHOUTOUT.Emit(new(m_StreamGlass, m_Self));
+            StreamGlassContext.LOGGER.Log("Testing incomming shoutout");
+            StreamGlassCanals.BEING_SHOUTOUT.Emit(m_StreamGlass);
+            StreamGlassContext.LOGGER.Log("Twitch tested");
 
-            List<string> tests = [
-                /*"@badge-info=;badges=vip/1,artist-badge/1;color=#5F9EA0;display-name=arecaceae_;emotes=;first-msg=0;flags=;id=217a1866-58d0-4a95-ae76-471b8dddf9f4;mod=0;returning-chatter=0;room-id=52792239;subscriber=0;tmi-sent-ts=1700680360256;turbo=0;user-id=753317728;user-type=;vip=1 :arecaceae_!arecaceae_@arecaceae_.tmi.twitch.tv PRIVMSG #chaporon_ :Salut",
-                "@badge-info=;badges=vip/1,artist-badge/1;color=#5F9EA0;display-name=arecaceae_;emotes=;first-msg=0;flags=;id=14616d77-0af1-4105-90bf-0690148078d0;mod=0;returning-chatter=0;room-id=52792239;subscriber=0;tmi-sent-ts=1700680374459;turbo=0;user-id=753317728;user-type=;vip=1 :arecaceae_!arecaceae_@arecaceae_.tmi.twitch.tv PRIVMSG #chaporon_ :Oui et toi ?",
-                ":arecaceae_!arecaceae_@arecaceae_.tmi.twitch.tv JOIN #chaporon_",
-                ":cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv JOIN #chaporon_",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=caf34c50-d6b3-4c34-931f-0f38caba2d0e;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700680726661;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :1) c’est quoi ce titre ? 2) Bonsoir",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=aba7bfb6-f31c-47ea-ae2c-dade5f4ec982;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700680779748;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Ca va un peu fatigué",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=3e8cea14-d863-4ead-ad77-600700df049c;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700680825347;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Encore une fois tu n’a pas posé la bonne question…",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=6cc41570-4800-42a5-a519-b9a9363941c6;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700680851651;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :💩💩💩💩💩💩💩",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=555555589:64-65;first-msg=0;flags=;id=c1f3addb-7204-4faa-a71d-27aa6af772c8;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700680990740;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Je serais content quand tu auras fait une Game sur Dread Valley ;)",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=2c236beb-ec12-4ab0-b737-7fbd670a5bfc;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681011700;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Le mec qui en veut toujours plus…",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=c7c72b3e-3a1b-4399-9385-f3cceb38d9d7;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681135588;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Si quelqu’un s’introduisait chez toi pour voler absolument TOUT ce qui est à l’intérieur je doute que tu arrives à rester calme…. Le Mejai c’est pareil",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=8030ba49-1c5c-4fb1-b39a-2aac95d39453;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681206291;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :En même temps quelle idée d’avoir un piaf de compagnie",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=f79a00fd-38a2-459a-a3ac-2e48b39c856e;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681301459;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Vivement le rework du bannissement et les nouveaux puzzles…",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=ce590fe8-8db2-4e95-b973-d824800492f7;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681421428;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Ça m’étonnerait pas que ça sorte en janvier 2024 comme ils l’avaient fait avec le rework des Mejais cette année",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=5d25712b-a3b2-4395-bccc-7ed3decb0c41;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681469741;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :D’ailleurs Necreph n’a toujours pas sa nouvelle animation de mort…",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=5005fa17-ccd8-4072-beef-fbebd5dd4290;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681492950;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :En moins de 9 minutes ça passe large",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=2fcfb05d-e974-4582-8893-a720fc464960;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681541505;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :…..",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=34-40:A.3,55-60:A.3;id=f5f1001f-ec72-4e18-aea5-fce843c04d38;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681577413;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Donnez argent pour soigner momies debiles (et un Chapo debile accessoirement)",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=c3c4c18a-f0c1-4f56-a220-7b09d1be1290;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681625496;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Et en plus tu prends un coup…",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=92fea46b-266a-425d-b3d6-a29ee978cc3f;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681648896;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :C’est un de trop",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=ad4864c1-2134-4ac0-9542-16d0d9280050;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681667498;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Ça manquait de reverb",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=8294b586-6a21-4046-b145-40df8ca45185;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681688421;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :le premier hein pas le deuxième",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=60-65:P.6;id=ee0a491c-9049-4b8c-acdc-9b097cd202f5;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681753328;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :j’ai pas assez de points pour claquer un « Buvez de l’eau » PUTAIN",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=504a096b-1eb0-4188-8881-ffb066c3a687;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681819425;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Faut pas abuser non plus…",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=b59dfccb-bac9-46ce-a2aa-b24422fb5162;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681839092;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Buvez pas de l’eau buvez Holy…",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=e620a5ca-0d00-4721-8da5-4a0e393bb8bb;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681866603;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Ça m’arrangerait…",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=54d9080c-a742-480c-abcb-a412f93263e1;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681891044;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :ça me permettrait de te soutenir ET d’acheter mes boissons préférées moins cher",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=a70795f0-ca04-4256-83bb-2ecd083c10c7;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700681944953;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :En parlant d’escalade tu compte nous faire Jusant un de ces jours ?",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=59d0a5aa-d856-4abd-8e7f-36962a2b33a1;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682072737;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Capterge ?",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=dcd57968-d777-4217-87ca-3a6af0a2d267;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682151786;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Chapoforceur vibes intensifies",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=8b1cf876-cef5-467c-ad80-2faeccde0455;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682169852;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Je confirme",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=6ecb0582-1e93-40ea-a4d5-3d65bf3bb536;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682223043;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Cheminée de ses morts",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=c0d53187-f413-40a4-bcb0-cd9cdb64587d;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682259724;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Bonjour Ouphris",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=ac889c4f-eccf-4715-a2ee-d12d47c6d9e1;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682373445;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :C’était Matt dans le cercueil on est d’accord ?",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=cbeb5f46-c215-4b96-bad7-52b3105f3eda;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682448104;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Si Matt est dans le cercueil alors qui est dans les toilettes du lobby ? ….",
-                "@badge-info=founder/1;badges=moderator/1,founder/0;client-nonce=80eab5f2cbf22159cc3907281946900a;color=#1E90FF;display-name=Dragshur;emotes=;first-msg=0;flags=;id=b34cdbe0-2c3b-4b4b-a7a0-08d3455b5d25;mod=1;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682485697;turbo=0;user-id=737196630;user-type=mod :dragshur!dragshur@dragshur.tmi.twitch.tv PRIVMSG #chaporon_ :Hello, ça va ?",
-                "@badge-info=founder/1;badges=moderator/1,founder/0;client-nonce=4a35c9bdb4ce5583ce12b9859126ebe3;color=#1E90FF;display-name=Dragshur;emotes=;first-msg=0;flags=;id=d5d4f90b-8959-407e-81a6-ee0c7c61bbfc;mod=1;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682491330;turbo=0;user-id=737196630;user-type=mod :dragshur!dragshur@dragshur.tmi.twitch.tv PRIVMSG #chaporon_ :ça va",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=cd951cdd-e3a8-4c58-a599-a7c6ecc7fdea;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682493765;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :Salut Drag",
-                "@badge-info=founder/1;badges=moderator/1,founder/0;client-nonce=152a2c6dda2ad953327f786793df7dd9;color=#1E90FF;display-name=Dragshur;emotes=;first-msg=0;flags=;id=50da1ed7-69ca-49a7-b39a-302dde2698ea;mod=1;reply-parent-display-name=CloudWalker02;reply-parent-msg-body=Salut\\sDrag;reply-parent-msg-id=cd951cdd-e3a8-4c58-a599-a7c6ecc7fdea;reply-parent-user-id=132973403;reply-parent-user-login=cloudwalker02;reply-thread-parent-display-name=CloudWalker02;reply-thread-parent-msg-id=cd951cdd-e3a8-4c58-a599-a7c6ecc7fdea;reply-thread-parent-user-id=132973403;reply-thread-parent-user-login=cloudwalker02;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682502945;turbo=0;user-id=737196630;user-type=mod :dragshur!dragshur@dragshur.tmi.twitch.tv PRIVMSG #chaporon_ :@CloudWalker02 ça va ?",
-                "@badge-info=founder/15;badges=founder/0,premium/1;color=#FF69B4;display-name=CloudWalker02;emotes=;first-msg=0;flags=;id=343b9fc5-aad8-4f77-8620-cd83ff21522f;mod=0;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682521338;turbo=0;user-id=132973403;user-type= :cloudwalker02!cloudwalker02@cloudwalker02.tmi.twitch.tv PRIVMSG #chaporon_ :fatigué",
-                "@badge-info=founder/1;badges=moderator/1,founder/0;client-nonce=f55adb4c84fd4b7b7cf4f616605ec5dc;color=#1E90FF;display-name=Dragshur;emotes=;first-msg=0;flags=;id=fbd19bdf-6254-4bae-84f9-69bc534676fc;mod=1;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682528957;turbo=0;user-id=737196630;user-type=mod :dragshur!dragshur@dragshur.tmi.twitch.tv PRIVMSG #chaporon_ :Ah",
-                "@badge-info=founder/1;badges=moderator/1,founder/0;client-nonce=d0b9d81a1d587950df0847bdfa3f88b8;color=#1E90FF;display-name=Dragshur;emotes=;first-msg=0;flags=;id=6e57a202-9da2-4f90-a7c3-6ff54a4c860e;mod=1;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682542725;turbo=0;user-id=737196630;user-type=mod :dragshur!dragshur@dragshur.tmi.twitch.tv PRIVMSG #chaporon_ :Faut te reposer ^^",*/
-                "@badge-info=founder/1;badges=moderator/1,founder/0;bits=1;color=#1E90FF;display-name=Dragshur;emotes=;first-msg=0;flags=;id=40a50bf4-3c8c-454f-9479-dd56136c4ded;mod=1;returning-chatter=0;room-id=52792239;subscriber=1;tmi-sent-ts=1700682556611;turbo=0;user-id=737196630;user-type=mod :dragshur!dragshur@dragshur.tmi.twitch.tv PRIVMSG #chaporon_ :Pour te consoler Cheer1"
-            ];
-            m_Chat.TestMessages(tests);
+            BytesWriter bytesWriter = m_EventSub.CreateBytesWriter();
+            bytesWriter.Write(new Frame(true, 1, Encoding.UTF8.GetBytes("{\"metadata\":{\"message_id\":\"8tFzUmxgpeIhaX0wzBUKeA2KXpeWbc3gAQk7IUzaYBg=\",\"message_type\":\"notification\",\"message_timestamp\":\"2024-01-31T20:46:26.859382297Z\",\"subscription_type\":\"channel.chat.message\",\"subscription_version\":\"1\"},\"payload\":{\"subscription\":{\"id\":\"98860814-754a-4e0c-980b-510640ea008d\",\"status\":\"enabled\",\"type\":\"channel.chat.message\",\"version\":\"1\",\"condition\":{\"broadcaster_user_id\":\"52792239\",\"user_id\":\"52792239\"},\"transport\":{\"method\":\"websocket\",\"session_id\":\"AgoQ0dkFoHiWS9mnjILZYMMazxIGY2VsbC1j\"},\"created_at\":\"2024-01-31T19:20:00.500247071Z\",\"cost\":0},\"event\":{\"broadcaster_user_id\":\"52792239\",\"broadcaster_user_login\":\"chaporon_\",\"broadcaster_user_name\":\"ChapORon_\",\"chatter_user_id\":\"737196630\",\"chatter_user_login\":\"dragshur\",\"chatter_user_name\":\"Dragshur\",\"message_id\":\"28f5dbe3-3543-4245-9497-e1e381f92238\",\"message\":{\"text\":\"Cheer10 GG\",\"fragments\":[{\"type\":\"cheermote\",\"text\":\"Cheer10\",\"cheermote\":{\"prefix\":\"cheer\",\"bits\":10,\"tier\":1},\"emote\":null,\"mention\":null},{\"type\":\"text\",\"text\":\" GG\",\"cheermote\":null,\"emote\":null,\"mention\":null}]},\"color\":\"#1E90FF\",\"badges\":[{\"set_id\":\"moderator\",\"id\":\"1\",\"info\":\"\"},{\"set_id\":\"founder\",\"id\":\"0\",\"info\":\"3\"},{\"set_id\":\"hype-train\",\"id\":\"1\",\"info\":\"\"}],\"message_type\":\"text\",\"cheer\":{\"bits\":10},\"reply\":null,\"channel_points_custom_reward_id\":null}}}")));
+            m_EventSub.TestRead(bytesWriter);
         }
     }
 }

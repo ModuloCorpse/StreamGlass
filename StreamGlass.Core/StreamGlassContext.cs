@@ -1,15 +1,19 @@
 ﻿using CorpseLib.Json;
+using CorpseLib.Logging;
 using CorpseLib.Placeholder;
 using CorpseLib.StructuredText;
 using StreamGlass.Core.Events;
 using StreamGlass.Core.Profile;
 using StreamGlass.Core.Stat;
 using TwitchCorpse;
+using TwitchCorpse.API;
 
 namespace StreamGlass.Core
 {
     public class StreamGlassContext : Context
     {
+        public static readonly Logger LOGGER = new("[${d}-${M}-${y} ${h}:${m}:${s}.${ms}] ${log}") { new LogInFile("./log/${y}${M}${d}${h}.log") };
+
         private static readonly StatisticManager ms_Statistics = new();
         private static readonly Dictionary<string, Function> ms_Functions = [];
 

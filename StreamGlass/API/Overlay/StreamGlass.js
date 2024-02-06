@@ -1,41 +1,17 @@
-function waitForSocketConnection(socket, callback) {
-	setTimeout(function () {
-		if (socket.readyState === 1) {
-			if (callback != null)
-				callback(socket);
-		}
-		else
-			waitForSocketConnection(socket, callback);
-	}, 5);
-}
-
-class StreamGlassOverlayExtension {
-	#eventDictionary = {};
+class StreamGlassEventWebsocket {
 	#socket;
 	#parameters;
-	#isHoldingEvent = false;
+	#eventDictionary = {};
 	#heldEvents = [];
+	#id = '';
+	#isHoldingEvent = false;
 
 	Init() { }
 
-	constructor(path) {
+	constructor() {
 		this.#parameters = new URLSearchParams(window.location.search);
-		if (path[0] != '/')
-			path = '/' + path;
-		this.#socket = new WebSocket('ws://' + location.host + '/overlay' + path);
-		this.#socket.onopen = this.#OnOpen.bind(this);
+		this.#socket = new WebSocket('ws://' + location.host + '/event');
 		this.#socket.onmessage = this.#OnMessage.bind(this);
-	}
-
-	#OnOpen(event) {
-		this.Init();
-	}
-
-	#HandleUnsubscribed(data) {
-		if (data.hasOwnProperty('event')) {
-			var event = data['event'];
-			this.#eventDictionary.delete(event);
-		}
 	}
 
 	#HandleEventData(data) {
@@ -47,63 +23,49 @@ class StreamGlassOverlayExtension {
 		}
 	}
 
-	#HandleEvent(data) {
-		if (this.#isHoldingEvent)
-			this.#heldEvents.push(data);
-		else
-			this.#HandleEventData(data);
-	}
-
 	#OnMessage(event) {
 		var eventJson = JSON.parse(event.data);
 		if (eventJson.hasOwnProperty('type') && eventJson.hasOwnProperty('data')) {
 			var type = eventJson['type'];
 			var data = eventJson['data'];
 			switch (type) {
-				case 'error':
+				case 'welcome':
 					{
-						this.#HandleUnsubscribed(data);
-						break;
-					}
-				case 'unsubscribed':
-					{
-						this.#HandleUnsubscribed(data);
-						break;
+						if (data.hasOwnProperty('id')) {
+							this.#id = data['id'];
+							this.Init();
+						}
 					}
 				case 'event':
 					{
-						this.#HandleEvent(data);
+						if (this.#isHoldingEvent)
+							this.#heldEvents.push(data);
+						else
+							this.#HandleEventData(data);
 						break;
 					}
 			}
 		}
 	}
 
-	#Send(message) {
-		waitForSocketConnection(this.#socket, function (socket) { socket.send(message); });
-	}
-
 	Get(path, handler) {
-		fetch(path)
-			.then((response) => { response.text().then((body) => handler(body)) })
+		fetch(path).then((response) => { response.text().then((body) => handler(body)) })
 	}
 
-	SubscribeToEvent(eventType, handler) {
-		this.#eventDictionary[eventType] = handler;
-		this.#Send(JSON.stringify({ 'request': 'subscribe', 'event': eventType }));
+	RegisterToEvent(eventType, handler) {
+		fetch('http://' + location.host + '/event/register/' + eventType, { method: "POST", body: this.#id })
+			.then((response) => {
+				if (response.status === 200)
+					this.#eventDictionary[eventType] = handler;
+			});
 	}
 
 	UnregisterToEvent(eventType) {
-		this.#Send(JSON.stringify({ 'request': 'unsubscribe', 'event': eventType }));
-	}
-
-	SubscribeToCustomEvent(eventType, handler) {
-		this.#eventDictionary[eventType] = handler;
-		this.#Send(JSON.stringify({ 'request': 'custom-subscribe', 'event': eventType }));
-	}
-
-	UnregisterToCustomEvent(eventType) {
-		this.#Send(JSON.stringify({ 'request': 'custom-unsubscribe', 'event': eventType }));
+		fetch('http://' + location.host + '/event/unregister/' + eventType, { method: "POST", body: this.#id })
+			.then((response) => {
+				if (response.status === 200)
+					this.#eventDictionary.delete(eventType);
+			});
 	}
 
 	HaveParameter(name) {

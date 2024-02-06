@@ -7,5 +7,16 @@
             Owner = parent;
             WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
         }
+
+        protected void OnOkClick()
+        {
+            DialogResult = true;
+            Close();
+        }
+
+        protected void OnCancelClick()
+        {
+            Close();
+        }
     }
 }

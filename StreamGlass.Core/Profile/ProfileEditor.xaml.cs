@@ -104,13 +104,13 @@ namespace StreamGlass.Core.Profile
             foreach (ChatCommand command in m_ChatCommands.Values)
                 newProfile.AddCommand(command);
             m_CreatedProfile = newProfile;
-            Close();
+            OnOkClick();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             m_CreatedProfile = null;
-            Close();
+            OnCancelClick();
         }
 
         private void StreamInfoCategorySearchButton_Click(object sender, RoutedEventArgs e)

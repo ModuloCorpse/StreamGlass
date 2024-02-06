@@ -5,6 +5,7 @@ using static StreamGlass.StreamAlert.AlertScrollPanel;
 using System;
 using CorpseLib.Translation;
 using CorpseLib.Ini;
+using Windows.ApplicationModel.Chat;
 
 namespace StreamGlass.StreamAlert
 {
@@ -110,22 +111,29 @@ namespace StreamGlass.StreamAlert
             m_StreamAlert.SetContentFontSize(e.NewValue);
         }
 
+        private void SaveAlertInfo(string settingName, AlertInfo alertInfo)
+        {
+            SetSetting(string.Format("{0}_audio_file", settingName), (alertInfo.Audio != null) ? alertInfo.Audio.File : string.Empty);
+            SetSetting(string.Format("{0}_audio_output", settingName), (alertInfo.Audio != null) ? alertInfo.Audio.Output : string.Empty);
+            SetSetting(string.Format("{0}_path", settingName), alertInfo.ImgPath);
+            SetSetting(string.Format("{0}_prefix", settingName), alertInfo.Prefix);
+            SetSetting(string.Format("{0}_enabled", settingName), (alertInfo.IsEnabled) ? "true" : "false");
+            SetSetting(string.Format("{0}_chat_message_enabled", settingName), (alertInfo.HaveChatMessage) ? "true" : "false");
+            SetSetting(string.Format("{0}_chat_message", settingName), (alertInfo.HaveChatMessage) ? alertInfo.ChatMessage : string.Empty);
+        }
+
         protected override void OnSave()
         {
             SetSetting("display_type", ((int)ChatModeComboBox.SelectedEnumValue).ToString());
             foreach (AlertType type in Enum.GetValues<AlertType>())
             {
                 AlertInfo alertInfo = m_AlertInfo[(int)type];
-                SetSetting(string.Format("{0}_path", type), alertInfo.ImgPath);
-                SetSetting(string.Format("{0}_prefix", type), alertInfo.Prefix);
-                SetSetting(string.Format("{0}_enabled", type), (alertInfo.IsEnabled) ? "true" : "false");
+                SaveAlertInfo(string.Format("{0}", type), alertInfo);
                 m_StreamAlert.SetAlertInfo(type, alertInfo);
                 AlertInfo? giftAlertInfo = m_GiftAlertInfo[(int)type];
                 if (giftAlertInfo != null)
                 {
-                    SetSetting(string.Format("{0}_gift_path", type), giftAlertInfo.ImgPath);
-                    SetSetting(string.Format("{0}_gift_prefix", type), giftAlertInfo.Prefix);
-                    SetSetting(string.Format("{0}_gift_enabled", type), (giftAlertInfo.IsEnabled) ? "true" : "false");
+                    SaveAlertInfo(string.Format("{0}_gift", type), giftAlertInfo);
                     m_StreamAlert.SetGiftAlertInfo(type, giftAlertInfo);
                 }
             }

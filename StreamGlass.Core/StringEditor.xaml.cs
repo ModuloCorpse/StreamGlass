@@ -22,13 +22,13 @@ namespace StreamGlass.Core
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             m_CreatedString = NameTextBox.Text;
-            Close();
+            OnOkClick();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             m_CreatedString = null;
-            Close();
+            OnCancelClick();
         }
     }
 }

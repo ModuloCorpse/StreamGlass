@@ -17,9 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CorpseLib.Wpf", "..\CorpseL
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StreamGlass", "StreamGlass\StreamGlass.csproj", "{991316F4-8AE0-434C-AAC4-CE93DDE11BF1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamGlass.Core", "StreamGlass.Core\StreamGlass.Core.csproj", "{98A957AB-A836-4531-808C-FE221DE2E1E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StreamGlass.Core", "StreamGlass.Core\StreamGlass.Core.csproj", "{98A957AB-A836-4531-808C-FE221DE2E1E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamGlass.Twitch", "StreamGlass.Twitch\StreamGlass.Twitch.csproj", "{3399DB09-4DCF-4D08-A3F3-E5A0EC149553}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StreamGlass.Twitch", "StreamGlass.Twitch\StreamGlass.Twitch.csproj", "{3399DB09-4DCF-4D08-A3F3-E5A0EC149553}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

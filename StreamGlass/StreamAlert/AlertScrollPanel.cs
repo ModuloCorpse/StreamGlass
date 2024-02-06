@@ -6,6 +6,7 @@ using StreamGlass.Core.Events;
 using System;
 using TwitchCorpse;
 using StreamGlass.Core;
+using StreamGlass.Audio;
 
 namespace StreamGlass.StreamAlert
 {
@@ -28,20 +29,23 @@ namespace StreamGlass.StreamAlert
 
         internal class AlertInfo
         {
+            private readonly Sound? m_Audio;
             private readonly string m_ImgPath;
             private readonly string m_Prefix;
             private readonly string m_ChatMessage;
             private readonly bool m_IsEnabled;
             private readonly bool m_HaveChatMessage;
 
+            public Sound? Audio => m_Audio;
             public string ImgPath => m_ImgPath;
             public string Prefix => m_Prefix;
             public string ChatMessage => m_ChatMessage;
             public bool IsEnabled => m_IsEnabled;
             public bool HaveChatMessage => m_HaveChatMessage;
 
-            public AlertInfo(string imgPath, string prefix, bool isEnabled)
+            public AlertInfo(Sound? audio, string imgPath, string prefix, bool isEnabled)
             {
+                m_Audio = audio;
                 m_ImgPath = imgPath;
                 m_Prefix = prefix;
                 m_ChatMessage = string.Empty;
@@ -49,8 +53,9 @@ namespace StreamGlass.StreamAlert
                 m_HaveChatMessage = false;
             }
 
-            public AlertInfo(string imgPath, string prefix, string chatMessage, bool isEnabled, bool haveChatMessage)
+            public AlertInfo(Sound? audio, string imgPath, string prefix, string chatMessage, bool isEnabled, bool haveChatMessage)
             {
+                m_Audio = audio;
                 m_ImgPath = imgPath;
                 m_Prefix = prefix;
                 m_ChatMessage = chatMessage;
@@ -93,19 +98,20 @@ namespace StreamGlass.StreamAlert
             UpdateControlsPosition();
         }
 
-        internal void SetGiftAlertInfo(AlertType alertType, string imgPath, string prefix, string chatMessage, bool isEnabled, bool haveChatMessage) => m_GiftAlertInfo[(int)alertType] = new(imgPath, prefix, chatMessage, isEnabled, haveChatMessage);
-        internal void SetGiftAlertInfo(AlertType alertType, AlertInfo alertInfo) => m_GiftAlertInfo[(int)alertType] = new(alertInfo.ImgPath, alertInfo.Prefix, alertInfo.IsEnabled);
+        internal void SetGiftAlertInfo(AlertType alertType, Sound? audio, string imgPath, string prefix, string chatMessage, bool isEnabled, bool haveChatMessage) => m_GiftAlertInfo[(int)alertType] = new(audio, imgPath, prefix, chatMessage, isEnabled, haveChatMessage);
+        internal void SetGiftAlertInfo(AlertType alertType, AlertInfo alertInfo) => m_GiftAlertInfo[(int)alertType] = new(alertInfo.Audio, alertInfo.ImgPath, alertInfo.Prefix, alertInfo.IsEnabled);
         internal AlertInfo GetGiftAlertInfo(AlertType alertType) => m_GiftAlertInfo[(int)alertType];
 
-        internal void SetAlertInfo(AlertType alertType, string imgPath, string prefix, string chatMessage, bool isEnabled, bool haveChatMessage) => m_AlertInfo[(int)alertType] = new(imgPath, prefix, chatMessage, isEnabled, haveChatMessage);
-        internal void SetAlertInfo(AlertType alertType, AlertInfo alertInfo) => m_AlertInfo[(int)alertType] = new(alertInfo.ImgPath, alertInfo.Prefix, alertInfo.IsEnabled);
+        internal void SetAlertInfo(AlertType alertType, Sound? audio, string imgPath, string prefix, string chatMessage, bool isEnabled, bool haveChatMessage) => m_AlertInfo[(int)alertType] = new(audio, imgPath, prefix, chatMessage, isEnabled, haveChatMessage);
+        internal void SetAlertInfo(AlertType alertType, AlertInfo alertInfo) => m_AlertInfo[(int)alertType] = new(alertInfo.Audio, alertInfo.ImgPath, alertInfo.Prefix, alertInfo.IsEnabled);
         internal AlertInfo GetAlertInfo(AlertType alertType) => m_AlertInfo[(int)alertType];
 
 
         private void NewAlert(AlertInfo alertInfo, object e, Text? message = null)
         {
-            Dispatcher.Invoke((Delegate)(() =>
+            Dispatcher.Invoke(() =>
             {
+                StreamGlassContext.LOGGER.Log("Adding visual alert");
                 if (alertInfo.IsEnabled)
                 {
                     StreamGlassContext context = new();
@@ -123,14 +129,18 @@ namespace StreamGlass.StreamAlert
                     AddControl(alertControl);
 
                     if (alertInfo.HaveChatMessage)
-                        m_ConnectionManager.SendMessage(Converter.Convert(alertInfo.ChatMessage, context));
+                        m_ConnectionManager!.SendMessage(Converter.Convert(alertInfo.ChatMessage, context));
+
+                    if (alertInfo.Audio != null)
+                        SoundManager.PlaySound(alertInfo.Audio);
                 }
-            }));
+            });
         }
 
         private void OnNewFollow(FollowEventArgs? obj)
         {
             FollowEventArgs e = obj!;
+            StreamGlassContext.LOGGER.Log("New follow alert");
             switch (e.Tier)
             {
                 case 0: NewAlert(m_AlertInfo[(int)AlertType.FOLLOW], e, e.Message); break;
@@ -143,6 +153,7 @@ namespace StreamGlass.StreamAlert
 
         private void OnNewGiftFollow(GiftFollowEventArgs? obj)
         {
+            StreamGlassContext.LOGGER.Log("New gift follow alert");
             GiftFollowEventArgs e = obj!;
             switch (e.Tier)
             {
@@ -154,12 +165,34 @@ namespace StreamGlass.StreamAlert
             }
         }
 
-        private void OnDonation(DonationEventArgs? obj) => NewAlert(m_AlertInfo[(int)AlertType.DONATION], obj!, (obj!).Message);
+        private void OnDonation(DonationEventArgs? obj)
+        {
+            StreamGlassContext.LOGGER.Log("New donation alert");
+            NewAlert(m_AlertInfo[(int)AlertType.DONATION], obj!, (obj!).Message);
+        }
 
-        private void OnRaid(RaidEventArgs? obj) => NewAlert(m_AlertInfo[(int)((obj!).IsIncomming ? AlertType.INCOMMING_RAID : AlertType.OUTGOING_RAID)], obj!);
+        private void OnRaid(RaidEventArgs? obj)
+        {
+            StreamGlassContext.LOGGER.Log("New raid alert");
+            NewAlert(m_AlertInfo[(int)((obj!).IsIncomming ? AlertType.INCOMMING_RAID : AlertType.OUTGOING_RAID)], obj!);
+        }
 
-        private void OnReward(RewardEventArgs? obj) => NewAlert(m_AlertInfo[(int)AlertType.REWARD], obj!);
-        private void OnShoutout(ShoutoutEventArgs? obj) => NewAlert(m_AlertInfo[(int)AlertType.SHOUTOUT], obj!);
-        private void OnBeingShoutout(TwitchUser? obj) => NewAlert(m_AlertInfo[(int)AlertType.BEING_SHOUTOUT], obj!);
+        private void OnReward(RewardEventArgs? obj)
+        {
+            StreamGlassContext.LOGGER.Log("New reward alert");
+            NewAlert(m_AlertInfo[(int)AlertType.REWARD], obj!);
+        }
+
+        private void OnShoutout(ShoutoutEventArgs? obj)
+        {
+            StreamGlassContext.LOGGER.Log("New shoutout alert");
+            NewAlert(m_AlertInfo[(int)AlertType.SHOUTOUT], obj!);
+        }
+
+        private void OnBeingShoutout(TwitchUser? obj)
+        {
+            StreamGlassContext.LOGGER.Log("New received shoutout alert");
+            NewAlert(m_AlertInfo[(int)AlertType.BEING_SHOUTOUT], obj!);
+        }
     }
 }

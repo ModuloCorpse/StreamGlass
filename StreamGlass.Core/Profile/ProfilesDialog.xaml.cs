@@ -1,5 +1,4 @@
 ﻿using StreamGlass.Core.Controls;
-using System;
 using System.Windows;
 using StreamGlass.Core.Connections;
 
@@ -10,7 +9,7 @@ namespace StreamGlass.Core.Profile
         private readonly ProfileManager m_ProfileManager;
         private readonly ConnectionManager m_ConnectionManager;
 
-        public ProfilesDialog(StreamGlass.Core.Controls.Window parent, ProfileManager manager, ConnectionManager connectionManager): base(parent)
+        public ProfilesDialog(Controls.Window parent, ProfileManager manager, ConnectionManager connectionManager): base(parent)
         {
             m_ProfileManager = manager;
             m_ConnectionManager = connectionManager;

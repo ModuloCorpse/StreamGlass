@@ -82,13 +82,13 @@ namespace StreamGlass.Core.Profile
             int autoTriggerDeltaTime = (int)AutoTriggerTimeDeltaUpDown.Value;
             string[] autoTriggerArguments = AutoTriggerArguments.GetItems().Cast<string>().ToArray();
             m_CreatedCommand = new(name, aliases, awaitTime, nbMessage, content, userType, commands, autoTrigger, autoTriggerTime, autoTriggerDeltaTime, autoTriggerArguments);
-            Close();
+            OnOkClick();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             m_CreatedCommand = null;
-            Close();
+            OnCancelClick();
         }
 
         private void UpdateAutoTriggerVisibility()

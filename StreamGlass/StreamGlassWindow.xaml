@@ -16,7 +16,9 @@
         WindowStyle="None"
         ResizeMode="CanResizeWithGrip"
         AllowsTransparency="True"
-        Icon="/Assets/stream-glass-logo.ico">
+        Icon="/Assets/stream-glass-logo.ico"
+        SourceInitialized="Window_SourceInitialized"
+        Closing="Window_Closing">
     <ui:DockPanel LastChildFill="True">
         <ui:Grid BrushPaletteKey="top_bar_background" DockPanel.Dock="Top">
             <Grid.ColumnDefinitions>

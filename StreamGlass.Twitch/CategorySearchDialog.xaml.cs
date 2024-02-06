@@ -3,6 +3,7 @@ using StreamGlass.Core.Profile;
 using System.Collections.Generic;
 using System.Windows;
 using TwitchCorpse;
+using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch
 {
@@ -31,13 +32,13 @@ namespace StreamGlass.Twitch
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             m_SearchedCategoryInfo = new(m_CategoryID, m_CategoryName);
-            Close();
+            OnOkClick();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             m_SearchedCategoryInfo = null;
-            Close();
+            OnCancelClick();
         }
 
         internal void SetCurrentControl(CategoryControl? currentControl)

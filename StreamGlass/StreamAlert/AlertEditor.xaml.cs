@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
+using StreamGlass.Audio;
 using StreamGlass.Core.Controls;
 
 namespace StreamGlass.StreamAlert
@@ -9,6 +11,7 @@ namespace StreamGlass.StreamAlert
     public partial class AlertEditor : Dialog
     {
         private AlertScrollPanel.AlertInfo? m_CreatedAlertInfo = null;
+        private Sound? m_CreatedSound = null;
 
         internal AlertEditor(Core.Controls.Window parent, AlertScrollPanel.AlertInfo alertInfo) : base(parent)
         {
@@ -18,20 +21,26 @@ namespace StreamGlass.StreamAlert
             AlertImageTextBox.Text = alertInfo.ImgPath;
             AlertContentTextBox.Text = alertInfo.Prefix;
             ChatMessageContentTextBox.Text = alertInfo.ChatMessage;
+            if (alertInfo.Audio != null)
+            {
+                m_CreatedSound = alertInfo.Audio;
+                AlertAudioFileLabel.Text = Path.GetFileName(alertInfo.Audio.File);
+            }
         }
 
         internal AlertScrollPanel.AlertInfo? AlertInfo => m_CreatedAlertInfo;
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            m_CreatedAlertInfo = new(AlertImageTextBox.Text, AlertContentTextBox.Text, ChatMessageContentTextBox.Text, AlertEnableCheckBox.IsChecked ?? false, ChatMessageEnableCheckBox.IsChecked ?? false);
-            Close();
+            m_CreatedAlertInfo = new(m_CreatedSound, AlertImageTextBox.Text, AlertContentTextBox.Text, ChatMessageContentTextBox.Text, AlertEnableCheckBox.IsChecked ?? false, ChatMessageEnableCheckBox.IsChecked ?? false);
+            OnOkClick();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             m_CreatedAlertInfo = null;
-            Close();
+            m_CreatedSound = null;
+            OnCancelClick();
         }
 
         private void AlertImageFileDialog_Click(object sender, RoutedEventArgs e)
@@ -45,6 +54,23 @@ namespace StreamGlass.StreamAlert
 
             if (openFileDialog.ShowDialog() == true)
                 AlertImageTextBox.Text = openFileDialog.FileName;
+        }
+
+        private void AlertAudioFileDialog_Click(object sender, RoutedEventArgs e)
+        {
+            SoundEditor openFileDialog = new(this, m_CreatedSound);
+            if (openFileDialog.ShowDialog() == true)
+            {
+                m_CreatedSound = openFileDialog.Sound;
+                if (m_CreatedSound != null)
+                    AlertAudioFileLabel.Text = Path.GetFileName(m_CreatedSound.File);
+            }
+        }
+
+        private void AlertAudioTest_Click(object sender, RoutedEventArgs e)
+        {
+            if (m_CreatedSound != null)
+                SoundManager.PlaySound(m_CreatedSound);
         }
 
         private void AlertImageTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)

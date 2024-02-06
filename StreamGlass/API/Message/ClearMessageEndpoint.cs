@@ -2,7 +2,7 @@
 using CorpseLib.Web.Http;
 using StreamGlass.Core;
 
-namespace StreamGlass.API
+namespace StreamGlass.API.Message
 {
     public class ClearMessageEndpoint : AHTTPEndpoint
     {

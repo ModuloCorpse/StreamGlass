@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="clr-namespace:StreamGlass.Core.Controls;assembly=StreamGlass.Core"
         mc:Ignorable="d"
-        d:DesignHeight="256"
+        d:DesignHeight="291"
         d:DesignWidth="454"
-        Height="256"
+        Height="291"
         Width="454"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -46,10 +46,30 @@
                             <ui:Label x:Name="AlertEnableTextBoxLabel" TranslationKey="alert_editor_enable" VerticalAlignment="Center" TextAlignment="Right" Text="Enable:" Width="100"/>
                             <CheckBox Margin="5,0,0,0" x:Name="AlertEnableCheckBox"/>
                         </ui:StackPanel>
-                        <ui:StackPanel Orientation="Horizontal">
+                        <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <ui:Label x:Name="AlertAudioFileLabelLabel" TranslationKey="alert_editor_audio_file" Margin="0,0,5,0" Text="Audio File:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="100"/>
+                            <ui:Label x:Name="AlertAudioFileLabel" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="163" Height="25"/>
+                            <ui:Button x:Name="AlertAudioTestButton" Margin="3,0,0,0" Width="35" HorizontalAlignment="Left" VerticalAlignment="Top" Click="AlertAudioTest_Click">
+                                <ui:Button.Resources>
+                                    <Style TargetType="{x:Type Border}">
+                                        <Setter Property="CornerRadius" Value="8"/>
+                                    </Style>
+                                </ui:Button.Resources>
+                                <Image Height="20" Width="20" Source="/Assets/play-button.png" />
+                            </ui:Button>
+                            <ui:Button x:Name="AlertAudioFileLabelButton" Margin="3,0,0,0" Width="35" HorizontalAlignment="Left" VerticalAlignment="Top" Click="AlertAudioFileDialog_Click">
+                                <ui:Button.Resources>
+                                    <Style TargetType="{x:Type Border}">
+                                        <Setter Property="CornerRadius" Value="8"/>
+                                    </Style>
+                                </ui:Button.Resources>
+                                <Image Height="20" Width="20" Source="/Assets/magnifying-glass.png" />
+                            </ui:Button>
+                        </ui:StackPanel>
+                        <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                             <ui:Label x:Name="AlertImageTextBoxLabel" TranslationKey="alert_editor_image" Margin="0,0,5,0" Text="Image:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="100"/>
                             <ui:TextBox x:Name="AlertImageTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="200" Height="25" TextChanged="AlertImageTextBox_TextChanged"/>
-                            <ui:Button x:Name="AlertImageTextBoxButton" Margin="3,0,0,0" Width="34" HorizontalAlignment="Left" VerticalAlignment="Top" Click="AlertImageFileDialog_Click">
+                            <ui:Button x:Name="AlertImageTextBoxButton" Margin="3,0,0,0" Width="35" HorizontalAlignment="Left" VerticalAlignment="Top" Click="AlertImageFileDialog_Click">
                                 <ui:Button.Resources>
                                     <Style TargetType="{x:Type Border}">
                                         <Setter Property="CornerRadius" Value="8"/>

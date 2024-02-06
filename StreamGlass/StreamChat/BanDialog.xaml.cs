@@ -22,13 +22,13 @@ namespace StreamGlass.StreamChat
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             m_Event = new(m_UserToBan, ReasonTextBox.Text, (uint)TimeUpDown.Value);
-            Close();
+            OnOkClick();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             m_Event = null;
-            Close();
+            OnCancelClick();
         }
     }
 }

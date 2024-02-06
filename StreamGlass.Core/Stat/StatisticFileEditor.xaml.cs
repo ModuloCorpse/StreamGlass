@@ -34,13 +34,13 @@ namespace StreamGlass.Core.Stat
             foreach (string statistic in statistics)
                 newStatisticFile.AddStatistic(statistic);
             m_CreatedStatisticFile = newStatisticFile;
-            Close();
+            OnOkClick();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             m_CreatedStatisticFile = null;
-            Close();
+            OnCancelClick();
         }
 
         private void EditableList_AddString(object? sender, EventArgs _)

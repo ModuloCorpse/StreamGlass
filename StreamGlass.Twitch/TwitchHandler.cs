@@ -2,7 +2,6 @@
 using CorpseLib.StructuredText;
 using StreamGlass.Core;
 using StreamGlass.Core.Events;
-using System.Collections.Generic;
 using TwitchCorpse;
 
 namespace StreamGlass.Twitch
@@ -89,11 +88,11 @@ namespace StreamGlass.Twitch
             StreamGlassCanals.GIFT_FOLLOW.Emit(new(null, user, new(string.Empty), tier, -1, -1, nbGift!));
         }
 
-        public void OnSharedGiftSub(TwitchUser user, TwitchUser recipient, int tier, int monthGifted, int monthStreak, Text message)
+        public void OnSharedGiftSub(TwitchUser? gifter, TwitchUser user, int tier, int monthGifted, int monthStreak, Text message)
         {
             if (m_Settings.Get("sub_mode") == "all")
                 return;
-            StreamGlassCanals.GIFT_FOLLOW.Emit(new(recipient, user, message, tier, monthGifted, monthStreak, 1));
+            StreamGlassCanals.GIFT_FOLLOW.Emit(new(user, gifter, message, tier, monthGifted, monthStreak, 1));
         }
 
         public void OnSub(TwitchUser user, int tier, bool isGift)
@@ -117,7 +116,7 @@ namespace StreamGlass.Twitch
 
         public void OnUserJoinChat(TwitchUser user) => StreamGlassCanals.USER_JOINED.Emit(user);
 
-        public void UnhandledEventSub(string message) => TwitchEventSub.EVENTSUB.Log(message);
+        public void UnhandledEventSub(string message) => TwitchEventSub.LOGGER.Log(message);
 
         public void OnMessageHeld(TwitchUser user, string messageID, Text message) => StreamGlassCanals.HELD_MESSAGE.Emit(new(user, false, messageID, string.Empty, string.Empty, message));
 

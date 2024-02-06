@@ -1,8 +1,13 @@
 ﻿using CorpseLib.Ini;
 using CorpseLib.Json;
 using CorpseLib.Translation;
+using CorpseLib.Web.API.Event;
 using StreamGlass.API;
+using StreamGlass.API.Event;
+using StreamGlass.API.Message;
 using StreamGlass.API.Overlay;
+using StreamGlass.API.Timer;
+using StreamGlass.Audio;
 using StreamGlass.Core;
 using StreamGlass.Core.Connections;
 using StreamGlass.Core.Controls;
@@ -16,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -23,6 +29,7 @@ namespace StreamGlass
 {
     public partial class StreamGlassWindow : Core.Controls.Window
     {
+        private readonly StreamGlassSplashScreen m_SplashScreen;
         private readonly List<APlugin> m_Plugins = [];
         private readonly CorpseLib.Web.API.API m_API = new(15007);
         private readonly Stopwatch m_Watch = new();
@@ -97,6 +104,7 @@ namespace StreamGlass
                 { "settings_general_language", "Language:" },
                 { "save_button", "Save" },
                 { "close_button", "Close" },
+                { "test_button", "Test" },
                 { "section_profiles", "Profiles" },
                 { "section_stream_info", "Stream Info" },
                 { "section_commands", "Commands" },
@@ -156,52 +164,37 @@ namespace StreamGlass
                 { "message_menu_ban", "Ban User" },
                 { "section_statistics", "Statistics" },
                 { "statistic_editor_path", "Path:" },
-                { "statistic_editor_content", "Content:" }
+                { "statistic_editor_content", "Content:" },
+                { "sound_editor_audio_file", "File:" },
+                { "sound_editor_audio_output", "Output:" },
             };
             Translator.AddTranslation(translation);
             Translator.LoadDirectory("./locals");
             Translator.CurrentLanguageChanged += () => m_Settings.GetOrAdd("settings").Set("language", Translator.CurrentLanguage.Name);
         }
 
-        private void InitializeAlertSetting(AlertScrollPanel.AlertType alertType, bool hasGift, string imgPath, string prefix, string chatMessage)
+        private void InitializeAlertSetting(AlertScrollPanel.AlertType alertType, bool hasGift, Sound? audio, string imgPath, string prefix, string? chatMessage)
         {
             IniSection alertSection = m_Settings.GetOrAdd("alert");
+            string audioFilePath = alertSection.GetOrAdd(string.Format("{0}_audio_file", alertType), audio?.File ?? string.Empty);
+            string audioOutputPath = alertSection.GetOrAdd(string.Format("{0}_audio_output", alertType), audio?.Output ?? string.Empty);
             string loadedImgPath = alertSection.GetOrAdd(string.Format("{0}_path", alertType), imgPath);
             string loadedPrefix = alertSection.GetOrAdd(string.Format("{0}_prefix", alertType), prefix);
-            string loadedChatMessage = alertSection.GetOrAdd(string.Format("{0}_chat_message", alertType), chatMessage);
+            string loadedChatMessage = alertSection.GetOrAdd(string.Format("{0}_chat_message", alertType), chatMessage ?? string.Empty);
             bool loadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_enabled", alertType), "true") == "true";
-            bool loadedChatMessageIsEnabled = alertSection.GetOrAdd(string.Format("{0}_chat_message_enabled", alertType), "true") == "true";
-            StreamAlertPanel.SetAlertInfo(alertType, loadedImgPath, loadedPrefix, loadedChatMessage, loadedIsEnabled, loadedChatMessageIsEnabled);
+            bool loadedChatMessageIsEnabled = alertSection.GetOrAdd(string.Format("{0}_chat_message_enabled", alertType), (chatMessage != null) ? "true" : "false") == "true";
+            StreamAlertPanel.SetAlertInfo(alertType, new(audioFilePath, audioOutputPath), loadedImgPath, loadedPrefix, loadedChatMessage, loadedIsEnabled, loadedChatMessageIsEnabled);
 
             if (hasGift)
             {
+                string giftAudioFilePath = alertSection.GetOrAdd(string.Format("{0}_gift_audio_file", alertType), audio?.File ?? string.Empty);
+                string giftAudioOutputPath = alertSection.GetOrAdd(string.Format("{0}_gift_audio_output", alertType), audio?.Output ?? string.Empty);
                 string giftLoadedImgPath = alertSection.GetOrAdd(string.Format("{0}_gift_path", alertType), imgPath);
                 string giftLoadedPrefix = alertSection.GetOrAdd(string.Format("{0}_gift_prefix", alertType), prefix);
-                string giftLoadedChatMessage = alertSection.GetOrAdd(string.Format("{0}_gift_chat_message", alertType), chatMessage);
+                string giftLoadedChatMessage = alertSection.GetOrAdd(string.Format("{0}_gift_chat_message", alertType), chatMessage ?? string.Empty);
                 bool giftLoadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_enabled", alertType), "true") == "true";
-                bool giftLoadedChatMessageIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_chat_message_enabled", alertType), "true") == "true";
-                StreamAlertPanel.SetGiftAlertInfo(alertType, giftLoadedImgPath, giftLoadedPrefix, giftLoadedChatMessage, giftLoadedIsEnabled, giftLoadedChatMessageIsEnabled);
-            }
-        }
-
-        private void InitializeAlertSetting(AlertScrollPanel.AlertType alertType, bool hasGift, string imgPath, string prefix)
-        {
-            IniSection alertSection = m_Settings.GetOrAdd("alert");
-            string loadedImgPath = alertSection.GetOrAdd(string.Format("{0}_path", alertType), imgPath);
-            string loadedPrefix = alertSection.GetOrAdd(string.Format("{0}_prefix", alertType), prefix);
-            string loadedChatMessage = alertSection.GetOrAdd(string.Format("{0}_chat_message", alertType), string.Empty);
-            bool loadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_enabled", alertType), "true") == "true";
-            bool loadedChatMessageIsEnabled = alertSection.GetOrAdd(string.Format("{0}_chat_message_enabled", alertType), "false") == "true";
-            StreamAlertPanel.SetAlertInfo(alertType, loadedImgPath, loadedPrefix, loadedChatMessage, loadedIsEnabled, loadedChatMessageIsEnabled);
-
-            if (hasGift)
-            {
-                string giftLoadedImgPath = alertSection.GetOrAdd(string.Format("{0}_gift_path", alertType), imgPath);
-                string giftLoadedPrefix = alertSection.GetOrAdd(string.Format("{0}_gift_prefix", alertType), prefix);
-                string giftLoadedChatMessage = alertSection.GetOrAdd(string.Format("{0}_gift_chat_message", alertType), string.Empty);
-                bool giftLoadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_enabled", alertType), "true") == "true";
-                bool giftLoadedChatMessageIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_chat_message_enabled", alertType), "false") == "true";
-                StreamAlertPanel.SetGiftAlertInfo(alertType, giftLoadedImgPath, giftLoadedPrefix, giftLoadedChatMessage, giftLoadedIsEnabled, giftLoadedChatMessageIsEnabled);
+                bool giftLoadedChatMessageIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_chat_message_enabled", alertType), (chatMessage != null) ? "true" : "false") == "true";
+                StreamAlertPanel.SetGiftAlertInfo(alertType, new(giftAudioFilePath, giftAudioOutputPath), giftLoadedImgPath, giftLoadedPrefix, giftLoadedChatMessage, giftLoadedIsEnabled, giftLoadedChatMessageIsEnabled);
             }
         }
 
@@ -222,17 +215,17 @@ namespace StreamGlass
             IniSection alertSection = m_Settings.GetOrAdd("alert");
             StreamAlertPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(alertSection.GetOrAdd("display_type", "0")));
             StreamAlertPanel.SetContentFontSize(double.Parse(alertSection.GetOrAdd("message_font_size", "20")));
-            InitializeAlertSetting(AlertScrollPanel.AlertType.INCOMMING_RAID, false, "../Assets/parachute.png", "${e.From.DisplayName} is raiding you with ${e.NbViewers} viewers");
-            InitializeAlertSetting(AlertScrollPanel.AlertType.OUTGOING_RAID, false, "../Assets/parachute.png", "You are raiding ${e.To.DisplayName} with ${e.NbViewers} viewers");
-            InitializeAlertSetting(AlertScrollPanel.AlertType.DONATION, false, "../Assets/take-my-money.png", "${e.User.DisplayName} as donated ${e.Amount} ${e.Currency}: ");
-            InitializeAlertSetting(AlertScrollPanel.AlertType.REWARD, false, "../Assets/chest.png", "${e.From.DisplayName} retrieve ${e.Reward}: ${e.Input}");
-            InitializeAlertSetting(AlertScrollPanel.AlertType.FOLLOW, false, "../Assets/hearts.png", "${e.User.DisplayName} is now following you: ");
-            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER1, true, "../Assets/stars-stack-1.png", "${e.User.DisplayName} as subscribed to you with a tier 1: ");
-            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER2, true, "../Assets/stars-stack-2.png", "${e.User.DisplayName} as subscribed to you with a tier 2: ");
-            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER3, true, "../Assets/stars-stack-3.png", "${e.User.DisplayName} as subscribed to you with a tier 3: ");
-            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER4, true, "../Assets/chess-queen.png", "${e.User.DisplayName} as subscribed to you with a prime: ");
-            InitializeAlertSetting(AlertScrollPanel.AlertType.SHOUTOUT, false, "../Assets/megaphone.png", "${e.Moderator.DisplayName} gave a shoutout to ${e.User.DisplayName}", "Go check ${DisplayName(Lower(e.User.DisplayName))}, who's playing ${Game(e.User.DisplayName)} on https://twitch.tv/${e.User.Name}");
-            InitializeAlertSetting(AlertScrollPanel.AlertType.BEING_SHOUTOUT, false, "../Assets/megaphone.png", "${e.User.DisplayName} gave you a shoutout");
+            InitializeAlertSetting(AlertScrollPanel.AlertType.INCOMMING_RAID, false, null, "../Assets/parachute.png", "${e.From.DisplayName} is raiding you with ${e.NbViewers} viewers", null);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.OUTGOING_RAID, false, null, "../Assets/parachute.png", "You are raiding ${e.To.DisplayName} with ${e.NbViewers} viewers", null);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.DONATION, false, null, "../Assets/take-my-money.png", "${e.User.DisplayName} as donated ${e.Amount} ${e.Currency}: ", null);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.REWARD, false, new("Assets/alert-sound.wav", string.Empty), "../Assets/chest.png", "${e.From.DisplayName} retrieve ${e.Reward}: ${e.Input}", null);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.FOLLOW, false, null, "../Assets/hearts.png", "${e.User.DisplayName} is now following you: ", null);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER1, true, null, "../Assets/stars-stack-1.png", "${e.User.DisplayName} as subscribed to you with a tier 1: ", null);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER2, true, null, "../Assets/stars-stack-2.png", "${e.User.DisplayName} as subscribed to you with a tier 2: ", null);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER3, true, null, "../Assets/stars-stack-3.png", "${e.User.DisplayName} as subscribed to you with a tier 3: ", null);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.TIER4, true, null, "../Assets/chess-queen.png", "${e.User.DisplayName} as subscribed to you with a prime: ", null);
+            InitializeAlertSetting(AlertScrollPanel.AlertType.SHOUTOUT, false, null, "../Assets/megaphone.png", "${e.Moderator.DisplayName} gave a shoutout to ${e.User.DisplayName}", "Go check ${DisplayName(Lower(e.User.DisplayName))}, who's playing ${Game(e.User.DisplayName)} on https://twitch.tv/${e.User.Name}");
+            InitializeAlertSetting(AlertScrollPanel.AlertType.BEING_SHOUTOUT, false, null, "../Assets/megaphone.png", "${e.DisplayName} gave you a shoutout", null);
 
             //Held message
             IniSection moderationSection = m_Settings.GetOrAdd("moderation");
@@ -270,9 +263,9 @@ namespace StreamGlass
             }
         }
 
-        private static OverlayWebsocketEndpoint CreateAPIEventEndpoint()
+        private static APIWebsocketEndpoint CreateAPIEventEndpoint()
         {
-            OverlayWebsocketEndpoint overlayWebsocketEndpoint = new();
+            APIWebsocketEndpoint overlayWebsocketEndpoint = new();
             overlayWebsocketEndpoint.RegisterCanal("chat_message", StreamGlassCanals.CHAT_MESSAGE);
             overlayWebsocketEndpoint.RegisterCanal("chat_connected", StreamGlassCanals.CHAT_CONNECTED);
             overlayWebsocketEndpoint.RegisterCanal("chat_joined", StreamGlassCanals.CHAT_JOINED);
@@ -302,10 +295,13 @@ namespace StreamGlass
 
         private void InitAPI()
         {
-            OverlayWebsocketEndpoint overlayWebsocketEndpoint = CreateAPIEventEndpoint();
+            APIWebsocketEndpoint overlayWebsocketEndpoint = CreateAPIEventEndpoint();
+            m_API.AddEndpoint(new EventRegisterEndpoint("/event/register", overlayWebsocketEndpoint));
+            m_API.AddEndpoint(new EventUnregisterEndpoint("/event/unregister", overlayWebsocketEndpoint));
             m_API.AddEndpoint(overlayWebsocketEndpoint);
+            m_API.AddEndpoint(new EventHTTPEndpoint(overlayWebsocketEndpoint));
             m_API.AddEndpoint(new TimerEndpoint());
-            m_API.AddEndpoint(new OverlayHTTPEndpoint(overlayWebsocketEndpoint));
+            m_API.AddEndpoint(new OverlayHTTPEndpoint());
             m_API.AddEndpoint(new AllMessageEndpoint());
             m_API.AddEndpoint(new ClearMessageEndpoint());
 
@@ -320,25 +316,58 @@ namespace StreamGlass
             m_Plugins.Add(plugin);
         }
 
-        public StreamGlassWindow(): base(new())
+        private void LoadPlugins()
         {
+            if (Directory.Exists("plugins/"))
+            {
+                string[] files = Directory.GetFiles("plugins/");
+                foreach (string file in files)
+                {
+                    try
+                    {
+                        Assembly dllAssembly = Assembly.LoadFile(file);
+                        foreach (Type type in dllAssembly.GetExportedTypes())
+                        {
+                            if (type.IsAssignableTo(typeof(APlugin)))
+                            {
+                                object? pluginInstance = Activator.CreateInstance(type);
+                                if (pluginInstance != null && pluginInstance is APlugin plugin)
+                                    LoadPlugin(plugin);
+                            }
+                        }
+                    } catch { }
+                }
+            }
+        }
+
+        public StreamGlassWindow(StreamGlassSplashScreen splashScreen) : base(new())
+        {
+            m_SplashScreen = splashScreen;
             StreamGlassContext.Init();
+            StreamGlassContext.LOGGER.Start();
 
             InitializeComponent();
+            m_SplashScreen.UpdateProgressBar(10);
             LoadIni();
             InitializeTranslation();
+            m_SplashScreen.UpdateProgressBar(40);
             InitializeBrushPalette();
+            m_SplashScreen.UpdateProgressBar(50);
             InitializeSettings();
+            m_SplashScreen.UpdateProgressBar(60);
 
             m_ProfileManager = new(m_ConnectionManager);
             m_ProfileManager.Load();
             UpdateProfilesMenuList();
+            m_SplashScreen.UpdateProgressBar(70);
 
-            //TODO Load plugins from dll
+            LoadPlugins();
             LoadPlugin(new TwitchPlugin());
+            m_SplashScreen.UpdateProgressBar(80);
 
             InitAPI();
             m_API.Start();
+            m_SplashScreen.UpdateProgressBar(90);
 
             m_DispatcherTimer.Tick += StreamGlassForm_Tick;
             m_DispatcherTimer.Interval = TimeSpan.FromMilliseconds(50);
@@ -347,6 +376,7 @@ namespace StreamGlass
 
             StreamChatPanel.SetConnectionManager(m_ConnectionManager);
             StreamAlertPanel.Init(m_ConnectionManager);
+            m_SplashScreen.UpdateProgressBar(100);
         }
 
         private void UpdateProfilesMenuList()
@@ -461,7 +491,44 @@ namespace StreamGlass
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
+            StreamGlassContext.LOGGER.Log("Testing");
             m_ConnectionManager.Test();
+            StreamGlassContext.LOGGER.Log("Testing done");
+        }
+
+        private void Window_SourceInitialized(object sender, EventArgs e)
+        {
+            Top = Properties.Settings.Default.Top;
+            Left = Properties.Settings.Default.Left;
+            Height = Properties.Settings.Default.Height;
+            Width = Properties.Settings.Default.Width;
+            if (Properties.Settings.Default.Maximized)
+                WindowState = WindowState.Maximized;
+            m_SplashScreen.Close();
+            Activate();
+            Focus();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (WindowState == WindowState.Maximized)
+            {
+                Properties.Settings.Default.Top = RestoreBounds.Top;
+                Properties.Settings.Default.Left = RestoreBounds.Left;
+                Properties.Settings.Default.Height = RestoreBounds.Height;
+                Properties.Settings.Default.Width = RestoreBounds.Width;
+                Properties.Settings.Default.Maximized = true;
+            }
+            else
+            {
+                Properties.Settings.Default.Top = Top;
+                Properties.Settings.Default.Left = Left;
+                Properties.Settings.Default.Height = Height;
+                Properties.Settings.Default.Width = Width;
+                Properties.Settings.Default.Maximized = false;
+            }
+
+            Properties.Settings.Default.Save();
         }
     }
 }

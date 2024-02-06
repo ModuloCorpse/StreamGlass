@@ -3,12 +3,11 @@ using CorpseLib.Web.API;
 using CorpseLib.Web.Http;
 using OBSCorpse;
 using StreamGlass.Core;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace StreamGlass.API
+namespace StreamGlass.API.Timer
 {
     public class TimerEndpoint : AHTTPEndpoint
     {
@@ -36,9 +35,9 @@ namespace StreamGlass.API
                     string endMessage = jfile.GetOrDefault("end", string.Empty);
                     if (m_Timers.TryGetValue(path, out var oldTimer))
                         oldTimer.Stop();
-                    FileCountdownTimeAction timer = (string.IsNullOrEmpty(endMessage)) ? new(path, duration) : new(path, endMessage, duration);
-                    timer.OnFinish += (object? sender, EventArgs e) => m_Timers.Remove(path);
-                    timer.OnStop += (object? sender, EventArgs e) => m_Timers.Remove(path);
+                    FileCountdownTimeAction timer = string.IsNullOrEmpty(endMessage) ? new(path, duration) : new(path, endMessage, duration);
+                    timer.OnFinish += (sender, e) => m_Timers.Remove(path);
+                    timer.OnStop += (sender, e) => m_Timers.Remove(path);
                     m_Timers[path] = timer;
                     m_FileToClear.Add(path);
                     timer.Start();
