@@ -1,12 +1,12 @@
-﻿using System.Globalization;
-using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows;
 using System.Windows.Media;
 using StreamGlass.Core.Controls;
-using StreamGlass.Core.Connections;
 using StreamGlass.Core.Events;
 using TwitchCorpse;
 using StreamGlass.Core;
+using CorpseLib.StructuredText;
+using TwitchCorpse.API;
+using System.Collections.Generic;
 
 namespace StreamGlass.StreamChat
 {
@@ -14,43 +14,63 @@ namespace StreamGlass.StreamChat
     {
         private readonly UserMessageScrollPanel m_StreamChat;
         private readonly UserMessage m_Message;
-        private double m_MaxFontSize;
         private readonly bool m_IsHighlighted;
+        private readonly bool m_ShowBadges;
 
-        private static double GetFontSize(TextBlock textBlock, double textBlockFontSize)
+        private Text ConvertUserMessage(UserMessage message)
         {
-            Typeface typeFace = new(textBlock.FontFamily, textBlock.FontStyle, textBlock.FontWeight, textBlock.FontStretch);
-            Brush foreground = textBlock.Foreground;
-            double dpi = VisualTreeHelper.GetDpi(textBlock).PixelsPerDip;
-            double fontSize = textBlockFontSize;
-            FormattedText ft = new(textBlock.Text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeFace, fontSize, foreground, dpi);
-            while (textBlock.Width < ft.Width)
+            Text displayedMessage = new();
+            TwitchUser user = message.Sender;
+            if (m_ShowBadges)
             {
-                fontSize -= 1;
-                if (fontSize < 0)
-                    return textBlockFontSize;
-                ft = new(textBlock.Text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeFace, fontSize, foreground, dpi);
+                Dictionary<string, object?> badgeProperties = new() {
+                    { "Ratio", 0.85 },
+                    { "Margin-Right", 3.0 }
+                };
+                foreach (TwitchBadgeInfo badgeInfo in user.Badges)
+                    displayedMessage.AddImage(badgeInfo.URL4x, badgeProperties);
             }
-            return fontSize;
+            Dictionary<string, object?> properties = [];
+            if (!string.IsNullOrWhiteSpace(message.Color))
+                properties["Color"] = message.Color;
+            properties["Bold"] = true;
+            displayedMessage.AddText(user.DisplayName, properties);
+            displayedMessage.AddText(": ");
+
+            Dictionary<string, object?> emoteProperties = new() { { "Ratio", 1.5 } };
+            foreach (Section section in message.Message)
+            {
+                switch (section.SectionType)
+                {
+                    case Section.Type.TEXT:
+                    {
+                        displayedMessage.AddText(section.Content);
+                        break;
+                    }
+                    case Section.Type.IMAGE:
+                    {
+                        displayedMessage.AddImage(section.Content, section.Alt, emoteProperties);
+                        break;
+                    }
+                    case Section.Type.ANIMATED_IMAGE:
+                    {
+                        displayedMessage.AddAnimatedImage(section.Content, section.Alt, emoteProperties);
+                        break;
+                    }
+                }
+            }
+            return displayedMessage;
         }
 
-        public Message(UserMessageScrollPanel streamChatPanel, ConnectionManager connectionManager, BrushPaletteManager palette, UserMessage message, bool isHighligted, double senderWidth, double senderFontSize, double contentFontSize)
+        public Message(UserMessageScrollPanel streamChatPanel, BrushPaletteManager palette, UserMessage message, double contentFontSize, bool isHighligted, bool showBadges)
         {
             InitializeComponent();
             m_StreamChat = streamChatPanel;
             m_Message = message;
-            MessageSender.Text = message.UserDisplayName;
-            MessageSender.Width = senderWidth;
-            SetSenderNameFontSize(senderFontSize);
-            MessageContent.SetText(message.Message);
+            m_ShowBadges = showBadges;
+            MessageContent.SetText(ConvertUserMessage(message));
             MessageContent.SetFontSize(contentFontSize);
             BrushConverter converter = new();
-            if (!string.IsNullOrWhiteSpace(message.Color))
-            {
-                SolidColorBrush? color = (SolidColorBrush?)converter.ConvertFrom(message.Color);
-                if (color != null)
-                    MessageSender.Foreground = color;
-            }
             m_IsHighlighted = (isHighligted || message.IsHighlighted() || (message.SenderType > TwitchUser.Type.MOD && message.SenderType < TwitchUser.Type.BROADCASTER));
             if (m_IsHighlighted)
             {
@@ -60,28 +80,21 @@ namespace StreamGlass.StreamChat
             }
             else
                 MessagePanel.BrushPaletteKey = "chat_background";
+
+            if (!string.IsNullOrEmpty(message.AnnouncementColor))
+            {
+                SolidColorBrush? announcementColor = (SolidColorBrush?)converter.ConvertFrom(message.AnnouncementColor);
+                if (announcementColor != null)
+                    AnnouncementBorder.BorderBrush = announcementColor;
+            }
+            else
+                AnnouncementBorder.BorderBrush = Brushes.Transparent;
+
             Update(palette);
         }
 
         public string UserID => m_Message.UserID;
         public string ID => m_Message.ID;
-
-        public double NameWidth { get => MessageSender.Width; }
-        public double NameFontSize { get => MessageSender.FontSize; }
-        public double MessageFontSize { get => MessageContent.FontSize; }
-
-        public void SetSenderNameWidth(double width)
-        {
-            MessageSender.Width = width;
-            MessageContent.Width = (MessagePanel.ActualWidth - MessageSender.ActualWidth) - 20;
-            MessageSender.FontSize = GetFontSize(MessageSender, m_MaxFontSize);
-        }
-
-        public void SetSenderNameFontSize(double fontSize)
-        {
-            m_MaxFontSize = fontSize;
-            MessageSender.FontSize = GetFontSize(MessageSender, fontSize);
-        }
 
         public void SetMessageFontSize(double fontSize) => MessageContent.SetFontSize(fontSize);
 
@@ -99,7 +112,7 @@ namespace StreamGlass.StreamChat
             dialog.ShowDialog();
             BanEventArgs? args = dialog.Event;
             if (args != null)
-                StreamGlassCanals.BAN.Emit(args);
+                StreamGlassCanals.Emit("ban", args);
         }
     }
 }

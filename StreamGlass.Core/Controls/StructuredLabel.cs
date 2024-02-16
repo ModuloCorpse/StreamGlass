@@ -38,13 +38,16 @@ namespace StreamGlass.Core.Controls
                     {
                         if (inline is CorpseLib.Wpf.SectionRun sectionRun)
                         {
-                            if (sectionRun.TryGetStyle("ForegroundPaletteKey", out string? foregroundPaletteKey))
+                            if (!sectionRun.TryGetStyle("Color", out object? _))
                             {
-                                if (palette.TryGetColor(foregroundPaletteKey!, out var foreground))
+                                if (sectionRun.TryGetStyle("ForegroundPaletteKey", out string? foregroundPaletteKey))
+                                {
+                                    if (palette.TryGetColor(foregroundPaletteKey!, out var foreground))
+                                        sectionRun.Foreground = foreground;
+                                }
+                                else if (palette.TryGetColor(TextBrushPaletteKey, out var foreground))
                                     sectionRun.Foreground = foreground;
                             }
-                            else if (palette.TryGetColor(TextBrushPaletteKey, out var foreground))
-                                sectionRun.Foreground = foreground;
 
                             if (sectionRun.TryGetStyle("BackgroundPaletteKey", out string? backgroundPaletteKey))
                             {

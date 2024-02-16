@@ -10,7 +10,7 @@ namespace StreamGlass.API.Message
 
         protected override Response OnDeleteRequest(Request request)
         {
-            StreamGlassCanals.CHAT_CLEAR.Trigger();
+            StreamGlassCanals.Trigger("chat_clear");
             return new(200, "Ok");
         }
     }

@@ -137,7 +137,7 @@ namespace StreamGlass.Core.Profile
         public string GetStreamLanguage() => m_StreamInfo.GetStreamLanguage();
         public void SaveStreamInfo(string title, string description, CategoryInfo category, string language) => m_StreamInfo.SaveStreamInfo(title, description, category, language);
 
-        internal void UpdateStreamInfo() => StreamGlassCanals.UPDATE_STREAM_INFO.Emit(new(GetStreamTitleOrParent(), GetStreamDescriptionOrParent(), GetStreamCategoryOrParent(), GetStreamLanguageOrParent()));
+        internal void UpdateStreamInfo() => StreamGlassCanals.Emit("update_stream_info", new UpdateStreamInfoArgs(GetStreamTitleOrParent(), GetStreamDescriptionOrParent(), GetStreamCategoryOrParent(), GetStreamLanguageOrParent()));
 
         protected override void Save(ref JObject json)
         {

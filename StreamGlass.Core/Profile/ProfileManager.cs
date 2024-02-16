@@ -8,16 +8,14 @@ namespace StreamGlass.Core.Profile
     public class ProfileManager: Manager<Profile>
     {
         private readonly ConnectionManager m_ConnectionManager;
-        private string m_Channel = string.Empty;
         private int m_NbMessage = 0;
 
         public ProfileManager(ConnectionManager client) : base("./profiles")
         {
             m_ConnectionManager = client;
-            StreamGlassCanals.CHAT_MESSAGE.Register(OnChatMessage);
-            StreamGlassCanals.CHAT_JOINED.Register(OnJoinedChannel);
-            StreamGlassCanals.STREAM_START.Register(ResetCurrentProfile);
-            StreamGlassCanals.CHAT_CLEAR.Register(ResetCurrentProfile);
+            StreamGlassCanals.Register<UserMessage>("chat_message", OnChatMessage);
+            StreamGlassCanals.Register("stream_start", ResetCurrentProfile);
+            StreamGlassCanals.Register("chat_clear", ResetCurrentProfile);
         }
 
         public Profile NewProfile(string name)
@@ -43,20 +41,11 @@ namespace StreamGlass.Core.Profile
 
         private void ResetCurrentProfile() => CurrentObject?.Reset();
 
-        private void OnJoinedChannel(string? channel)
-        {
-            if (channel == null)
-                return;
-            SetChannel(channel);
-        }
-
-        internal void SetChannel(string channel) => m_Channel = channel;
-
         public void SetCurrentProfile(string id)
         {
             if (SetCurrentObject(id))
                 CurrentObject?.Reset();
-            StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM.Emit(id);
+            StreamGlassCanals.Emit("profile_changed_menu_item", id);
         }
 
         private void OnChatMessage(UserMessage? message)

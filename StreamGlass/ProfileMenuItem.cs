@@ -1,12 +1,10 @@
-﻿using StreamGlass.Core;
-using StreamGlass.Core.Controls;
+﻿using StreamGlass.Core.Controls;
 using StreamGlass.Core.Profile;
-using System;
 using System.Windows;
 
 namespace StreamGlass
 {
-    public class ProfileMenuItem : MenuItem
+    public class ProfileMenuItem : MenuItem, RadioGroup<string>.IItem
     {
         private readonly ProfileManager m_Manager;
         private readonly string m_ProfileID;
@@ -19,8 +17,13 @@ namespace StreamGlass
             Click += ProfileMenuItem_Click;
             if (m_Manager.CurrentObjectID == m_ProfileID)
                 IsChecked = true;
-            StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM.Register((string? obj) => Dispatcher.Invoke((Delegate)(() => IsChecked = (obj == m_ProfileID))));
         }
+
+        public string GetID() => m_ProfileID;
+
+        public void OnSelected() => Dispatcher.Invoke(() => IsChecked = true);
+
+        public void OnUnselected() => Dispatcher.Invoke(() => IsChecked = false);
 
         private void ProfileMenuItem_Click(object sender, RoutedEventArgs e)
         {

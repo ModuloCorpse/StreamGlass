@@ -10,7 +10,7 @@
     <Compile Update="Moderation\HeldMessage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="StreamGlassSplashScreen.xaml.cs">
+    <Compile Update="SplashScreen.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="StreamChat\Message.xaml.cs">
@@ -27,7 +27,7 @@
     <Page Update="Moderation\HeldMessage.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="StreamGlassSplashScreen.xaml">
+    <Page Update="SplashScreen.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="StreamAlert\AlertControl.xaml">
@@ -51,7 +51,7 @@
     <Page Update="StreamChat\BanDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="StreamGlassWindow.xaml">
+    <Page Update="MainWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

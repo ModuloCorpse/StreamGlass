@@ -72,13 +72,13 @@ namespace StreamGlass.StreamAlert
 
         public AlertScrollPanel() : base()
         {
-            StreamGlassCanals.FOLLOW.Register(OnNewFollow);
-            StreamGlassCanals.GIFT_FOLLOW.Register(OnNewGiftFollow);
-            StreamGlassCanals.DONATION.Register(OnDonation);
-            StreamGlassCanals.RAID.Register(OnRaid);
-            StreamGlassCanals.REWARD.Register(OnReward);
-            StreamGlassCanals.SHOUTOUT.Register(OnShoutout);
-            StreamGlassCanals.BEING_SHOUTOUT.Register(OnBeingShoutout);
+            StreamGlassCanals.Register<DonationEventArgs>("donation", OnDonation);
+            StreamGlassCanals.Register<FollowEventArgs>("follow", OnNewFollow);
+            StreamGlassCanals.Register<GiftFollowEventArgs>("gift_follow", OnNewGiftFollow);
+            StreamGlassCanals.Register<RaidEventArgs>("raid", OnRaid);
+            StreamGlassCanals.Register<RewardEventArgs>("reward", OnReward);
+            StreamGlassCanals.Register<ShoutoutEventArgs>("shoutout", OnShoutout);
+            StreamGlassCanals.Register<TwitchUser>("being_shoutout", OnBeingShoutout);
         }
 
         internal void SetBrushPalette(BrushPaletteManager colorPalette) => m_ChatPalette = colorPalette;
@@ -118,9 +118,9 @@ namespace StreamGlass.StreamAlert
                     context.AddVariable("e", e);
                     string alertPrefix = Converter.Convert(alertInfo.Prefix, context);
                     Text alertMessage = new(alertPrefix);
-                    if (message != null)
+                    if (message != null && !message.IsEmpty)
                     {
-                        alertMessage.AddText(" ");
+                        alertMessage.AddText(": ");
                         alertMessage.Append(message);
                     }
                     Alert alert = new(alertInfo.ImgPath, alertMessage);

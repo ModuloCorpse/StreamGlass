@@ -1,4 +1,5 @@
 ﻿using StreamGlass.Core;
+using StreamGlass.Core.Events;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -68,13 +69,13 @@ namespace StreamGlass.Moderation
 
         private void AllowButton_Click(object sender, RoutedEventArgs e)
         {
-            StreamGlassCanals.ALLOW_MESSAGE.Emit(new(m_HeldMessage.Sender, m_HeldMessage.ID, true));
+            StreamGlassCanals.Emit("allow_message", new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, true));
             m_Parent.Remove(this);
         }
 
         private void DenyButton_Click(object sender, RoutedEventArgs e)
         {
-            StreamGlassCanals.ALLOW_MESSAGE.Emit(new(m_HeldMessage.Sender, m_HeldMessage.ID, false));
+            StreamGlassCanals.Emit("allow_message", new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, false));
             m_Parent.Remove(this);
         }
     }

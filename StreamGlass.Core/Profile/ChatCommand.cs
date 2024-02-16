@@ -143,7 +143,7 @@ namespace StreamGlass.Core.Profile
                     context.AddVariable("$" + i.ToString(), arguments[i]);
                 string contentToSend = Converter.Convert(m_Content, context);
                 connectionManager.SendMessage(contentToSend);
-                StreamGlassCanals.COMMANDS.Emit(new(m_Name, arguments));
+                StreamGlassCanals.Emit("commands", new CommandEventArgs(m_Name, arguments));
                 Reset();
             }
         }

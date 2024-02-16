@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Windows;
-using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media.Animation;
 
 namespace StreamGlass
 {
-    /// <summary>
-    /// Interaction logic for StreamGlassSplashScreen.xaml
-    /// </summary>
-    public partial class StreamGlassSplashScreen : Window
+    public partial class SplashScreen : System.Windows.Window
     {
-        public StreamGlassSplashScreen()
+        public SplashScreen()
         {
             InitializeComponent();
         }
@@ -22,7 +18,7 @@ namespace StreamGlass
             Dispatcher.Invoke(() =>
             {
                 DoubleAnimation doubleanimation = new(100 - percent, new(TimeSpan.FromMilliseconds(100)));
-                SplashProgressBar.BeginAnimation(ProgressBar.ValueProperty, doubleanimation);
+                SplashProgressBar.BeginAnimation(RangeBase.ValueProperty, doubleanimation);
             });
         }
     }

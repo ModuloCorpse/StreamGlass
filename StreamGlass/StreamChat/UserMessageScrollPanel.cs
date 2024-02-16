@@ -1,5 +1,4 @@
 ﻿using StreamGlass.Core.Controls;
-using StreamGlass.Core.Connections;
 using System;
 using System.Collections.Generic;
 using StreamGlass.Core;
@@ -10,42 +9,20 @@ namespace StreamGlass.StreamChat
     {
         private BrushPaletteManager m_ChatPalette = new();
         private readonly HashSet<string> m_ChatHighlightedUsers = [];
-        private ConnectionManager? m_ConnectionManager = null;
-        private double m_MessageSenderFontSize = 14;
-        private double m_MessageSenderWidth = 100;
         private double m_MessageContentFontSize = 14;
+        private bool m_ShowBadges = true;
 
         public UserMessageScrollPanel() : base()
         {
-            StreamGlassCanals.CHAT_MESSAGE.Register(OnMessage);
-            StreamGlassCanals.CHAT_CLEAR.Register(ClearMessages);
-            StreamGlassCanals.CHAT_CLEAR_USER.Register(RemoveAllMessagesFrom);
-            StreamGlassCanals.CHAT_CLEAR_MESSAGE.Register(RemoveMessage);
+            StreamGlassCanals.Register<UserMessage>("chat_message", OnMessage);
+            StreamGlassCanals.Register("chat_clear", ClearMessages);
+            StreamGlassCanals.Register<string>("chat_clear_user", RemoveAllMessagesFrom);
+            StreamGlassCanals.Register<string>("chat_clear_message", RemoveMessage);
         }
 
         internal void SetBrushPalette(BrushPaletteManager colorPalette) => m_ChatPalette = colorPalette;
 
-        public void SetConnectionManager(ConnectionManager connectionManager) => m_ConnectionManager = connectionManager;
-
-        internal double MessageSenderFontSize => m_MessageSenderFontSize;
-        internal double MessageSenderWidth => m_MessageSenderWidth;
         internal double MessageContentFontSize => m_MessageContentFontSize;
-
-        internal void SetSenderWidth(double width)
-        {
-            m_MessageSenderWidth = width;
-            foreach (Message message in Controls)
-                message.SetSenderNameWidth(m_MessageSenderWidth);
-            UpdateControlsPosition();
-        }
-
-        internal void SetSenderFontSize(double fontSize)
-        {
-            m_MessageSenderFontSize = fontSize;
-            foreach (Message message in Controls)
-                message.SetSenderNameFontSize(m_MessageSenderFontSize);
-            UpdateControlsPosition();
-        }
 
         internal void SetContentFontSize(double fontSize)
         {
@@ -66,19 +43,17 @@ namespace StreamGlass.StreamChat
             if (message == null)
                 return;
 
-            Dispatcher.Invoke((Delegate)(() =>
+            Dispatcher.Invoke(() =>
             {
                 Message chatMessage = new(this,
-                m_ConnectionManager!,
                 m_ChatPalette,
                 message,
+                m_MessageContentFontSize,
                 m_ChatHighlightedUsers.Contains(message.UserID),
-                m_MessageSenderWidth,
-                m_MessageSenderFontSize,
-                m_MessageContentFontSize);
+                m_ShowBadges);
                 chatMessage.MessageContent.Loaded += (sender, e) => { UpdateControlsPosition(); };
                 AddControl(chatMessage);
-            }));
+            });
         }
 
         private void RemoveAllMessagesFrom(string? userID)

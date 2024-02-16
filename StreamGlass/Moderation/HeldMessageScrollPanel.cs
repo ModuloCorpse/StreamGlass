@@ -12,8 +12,8 @@ namespace StreamGlass.Moderation
 
         public HeldMessageScrollPanel() : base()
         {
-            StreamGlassCanals.HELD_MESSAGE.Register(OnHeldMessage);
-            StreamGlassCanals.HELD_MESSAGE_MODERATED.Register(RemoveHeldMessage);
+            StreamGlassCanals.Register<UserMessage>("held_message", OnHeldMessage);
+            StreamGlassCanals.Register<string>("held_message_moderated", RemoveHeldMessage);
         }
 
         internal double MessageSenderFontSize => m_MessageSenderFontSize;

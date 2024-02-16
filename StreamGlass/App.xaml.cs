@@ -5,7 +5,7 @@ namespace StreamGlass
 {
     public partial class App : Application
     {
-        private StreamGlassSplashScreen? m_SplashScreen = null;
+        private SplashScreen? m_SplashScreen = null;
         private volatile bool m_IsSplashScreenOpen = false;
 
         private void Application_Startup(object sender, StartupEventArgs e)
@@ -16,7 +16,7 @@ namespace StreamGlass
             newWindowThread.Start();
             while (!m_IsSplashScreenOpen)
                 Thread.Sleep(100);
-            StreamGlassWindow window = new(m_SplashScreen!);
+            MainWindow window = new(m_SplashScreen!);
             window.Show();
         }
 

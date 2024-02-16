@@ -44,9 +44,9 @@ namespace StreamGlass.API.Timer
                     if (jfile.TryGet("ads_duration", out uint adsDuration))
                     {
                         if (jfile.TryGet("ads_delay", out int adsDelay))
-                            Task.Delay(adsDelay * 1000).ContinueWith(t => StreamGlassCanals.START_ADS.Emit(adsDuration));
+                            Task.Delay(adsDelay * 1000).ContinueWith(t => StreamGlassCanals.Emit("start_ads", adsDuration));
                         else
-                            StreamGlassCanals.START_ADS.Emit(adsDuration);
+                            StreamGlassCanals.Emit("start_ads", adsDuration);
                     }
                 }
                 else
