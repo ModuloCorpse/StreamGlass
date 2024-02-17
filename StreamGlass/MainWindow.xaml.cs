@@ -1,12 +1,13 @@
 ﻿using CorpseLib.Ini;
 using CorpseLib.Translation;
-using StreamGlass.Audio;
 using StreamGlass.Core;
+using StreamGlass.Core.Audio;
 using StreamGlass.Core.Controls;
 using StreamGlass.Core.Profile;
 using StreamGlass.Core.Stat;
-using StreamGlass.StreamAlert;
 using StreamGlass.StreamChat;
+using StreamGlass.Twitch.Alert;
+using StreamGlass.Twitch.StreamChat;
 using System;
 using System.Globalization;
 using System.Windows;
@@ -18,7 +19,6 @@ namespace StreamGlass
         private readonly SplashScreen m_SplashScreen;
         private readonly Manager m_Manager;
         private readonly RadioGroup<string> m_MenuItemsRadioGroup = new();
-        private bool m_ChatPanelOnRight = false;
 
         private static void AddDefaultPalette(ref BrushPalette palette, string background, string secondaryBackground, string foreground, string overBack, string dialogBorder)
         {
@@ -88,15 +88,15 @@ namespace StreamGlass
 
         internal void InitializeSettings(IniFile settings)
         {
+            //TODO Move to Twitch plugin
             //Chat
             IniSection chatSection = settings.GetOrAdd("chat");
             StreamChatPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(chatSection.GetOrAdd("display_type", "0")));
             StreamChatPanel.SetContentFontSize(double.Parse(chatSection.GetOrAdd("message_font_size", "14")));
-            if (chatSection.GetOrAdd("panel_on_right", "false") == "true")
-                SetChatPanelOnRight();
             chatSection.Add("do_welcome", "true");
             chatSection.Add("welcome_message", "Hello World! Je suis un bot connecté via StreamGlass!");
 
+            //TODO Move to Twitch plugin
             //Alert
             IniSection alertSection = settings.GetOrAdd("alert");
             StreamAlertPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(alertSection.GetOrAdd("display_type", "0")));
@@ -113,6 +113,7 @@ namespace StreamGlass
             InitializeAlertSetting(settings, AlertScrollPanel.AlertType.SHOUTOUT, false, null, "../Assets/megaphone.png", "${e.Moderator.DisplayName} gave a shoutout to ${e.User.DisplayName}", "Go check ${DisplayName(Lower(e.User.DisplayName))}, who's playing ${Game(e.User.DisplayName)} on https://twitch.tv/${e.User.Name}");
             InitializeAlertSetting(settings, AlertScrollPanel.AlertType.BEING_SHOUTOUT, false, null, "../Assets/megaphone.png", "${e.DisplayName} gave you a shoutout", null);
 
+            //TODO Move to Twitch plugin
             //Held message
             IniSection moderationSection = settings.GetOrAdd("moderation");
             HeldMessagePanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(moderationSection.GetOrAdd("display_type", "0")));
@@ -139,6 +140,8 @@ namespace StreamGlass
             m_Manager = new(splashScreen, this);
             UpdateProfilesMenuList();
 
+            HeldMessagePanel.Init();
+            StreamChatPanel.Init();
             StreamAlertPanel.Init(m_Manager.ConnectionManager);
             m_SplashScreen.UpdateProgressBar(100);
         }
@@ -164,28 +167,6 @@ namespace StreamGlass
             ProfilesMenu.Update(GetBrushPalette());
         }
 
-        public bool IsChatPanelOnRight => m_ChatPanelOnRight;
-
-        public void SetChatPanelOnLeft()
-        {
-            SetColumns(0, 1);
-            m_ChatPanelOnRight = false;
-        }
-
-        public void SetChatPanelOnRight()
-        {
-            SetColumns(1, 0);
-            m_ChatPanelOnRight = true;
-        }
-
-        private void SetColumns(int chatColumn, int profileColumn)
-        {
-            System.Windows.Controls.Grid.SetColumn(StreamChatDock, chatColumn);
-            MainGrid.ColumnDefinitions[chatColumn].Width = new GridLength(2, GridUnitType.Star);
-            System.Windows.Controls.Grid.SetColumn(ProfilePanel, profileColumn);
-            MainGrid.ColumnDefinitions[profileColumn].Width = new GridLength(3, GridUnitType.Star);
-        }
-
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
@@ -200,7 +181,7 @@ namespace StreamGlass
         {
             Core.Settings.Dialog dialog = new(this);
             dialog.AddTabItem(new GeneralSettingsItem(m_Manager.GetOrAddSettings("stream-chat"), GetBrushPalette()));
-            dialog.AddTabItem(new StreamChatSettingsItem(m_Manager.GetOrAddSettings("chat"), StreamChatPanel, this));
+            dialog.AddTabItem(new StreamChatSettingsItem(m_Manager.GetOrAddSettings("chat"), StreamChatPanel));
             dialog.AddTabItem(new StreamAlertSettingsItem(m_Manager.GetOrAddSettings("alert"), StreamAlertPanel));
             m_Manager.FillSettingsDialog(dialog);
             dialog.ShowDialog();

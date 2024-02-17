@@ -31,6 +31,9 @@ namespace StreamGlass.Core.Connections
             m_Settings = settings;
             InitTranslation();
             InitSettings();
+            InitCommands();
+            InitCanals();
+            InitPlugin();
         }
 
         public void RegisterPluginToAPI(API api) => RegisterAPI(api);
@@ -38,6 +41,9 @@ namespace StreamGlass.Core.Connections
 
         protected abstract void InitTranslation();
         protected abstract void InitSettings();
+        protected abstract void InitCommands();
+        protected abstract void InitCanals();
+        protected abstract void InitPlugin();
 
         protected abstract void Register();
         protected abstract void RegisterAPI(API api);

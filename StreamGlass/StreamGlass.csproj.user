@@ -7,48 +7,15 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="Moderation\HeldMessage.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="SplashScreen.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="StreamChat\Message.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="StreamChat\StreamChatSettingsItem.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Audio\SoundEditor.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Moderation\HeldMessage.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Update="SplashScreen.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="StreamAlert\AlertControl.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Update="GeneralSettingsItem.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="StreamAlert\AlertEditor.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="StreamAlert\StreamAlertSettingsItem.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="StreamChat\Message.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="StreamChat\StreamChatSettingsItem.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="StreamChat\BanDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="MainWindow.xaml">

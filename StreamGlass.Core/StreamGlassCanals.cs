@@ -1,8 +1,6 @@
 ﻿using CorpseLib;
 using CorpseLib.Json;
-using StreamGlass.Core.Events;
 using StreamGlass.Core.Profile;
-using TwitchCorpse;
 
 namespace StreamGlass.Core
 {
@@ -134,28 +132,12 @@ namespace StreamGlass.Core
         static StreamGlassCanals()
         {
             NewCanal<UserMessage>("chat_message");
-            NewCanal<string>("chat_joined");
-            NewCanal<TwitchUser>("user_joined");
             NewCanal<UpdateStreamInfoArgs>("update_stream_info");
             NewCanal("stream_start");
             NewCanal("stream_stop");
-            NewCanal<DonationEventArgs>("donation");
-            NewCanal<FollowEventArgs>("follow");
-            NewCanal<GiftFollowEventArgs>("gift_follow");
-            NewCanal<RaidEventArgs>("raid");
-            NewCanal<RewardEventArgs>("reward");
-            NewCanal<CommandEventArgs>("commands");
+            NewCanal<ProfileCommandEventArgs>("profile_commands");
             NewCanal<string>("profile_changed_menu_item");
-            NewCanal<BanEventArgs>("ban");
-            NewCanal<UserMessage>("held_message");
-            NewCanal<MessageAllowedEventArgs>("allow_message");
-            NewCanal<string>("held_message_moderated");
             NewCanal("chat_clear");
-            NewCanal<string>("chat_clear_user");
-            NewCanal<string>("chat_clear_message");
-            NewCanal<ShoutoutEventArgs>("shoutout");
-            NewCanal<TwitchUser>("being_shoutout");
-            NewCanal<uint>("start_ads");
         }
     }
 }

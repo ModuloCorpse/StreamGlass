@@ -38,7 +38,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dirkster.AvalonDock" Version="4.72.1" />
+    <PackageReference Include="Dirkster.AvalonDock" Version="4.72.1">
+      <ExcludeAssets>All</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="NAudio" Version="2.2.1" />
   </ItemGroup>
 
@@ -123,24 +125,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Audio\SoundEditor.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Update="StreamAlert\AlertControl.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="GeneralSettingsItem.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="StreamAlert\AlertEditor.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="StreamAlert\StreamAlertSettingsItem.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -150,12 +140,6 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Audio\SoundEditor.xaml">
-      <SubType>Designer</SubType>
-    </Page>
   </ItemGroup>
 
 </Project>

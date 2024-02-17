@@ -1,13 +1,13 @@
 ﻿using CorpseLib.Ini;
 using CorpseLib.Web.API.Event;
 using StreamGlass.API.Event;
-using StreamGlass.API.Message;
 using StreamGlass.API.Overlay;
 using StreamGlass.API.Timer;
 using StreamGlass.API;
 using StreamGlass.Core.Connections;
 using StreamGlass.Core.Profile;
 using StreamGlass.Twitch;
+using StreamGlass.Twitch.API.Message;
 using System;
 using System.Diagnostics;
 using System.Windows.Threading;
@@ -182,10 +182,7 @@ namespace StreamGlass
             m_API.AddEndpoint(new EventUnregisterEndpoint("/event/unregister", overlayWebsocketEndpoint));
             m_API.AddEndpoint(overlayWebsocketEndpoint);
             m_API.AddEndpoint(new EventHTTPEndpoint(overlayWebsocketEndpoint));
-            m_API.AddEndpoint(new TimerEndpoint());
             m_API.AddEndpoint(new OverlayHTTPEndpoint());
-            m_API.AddEndpoint(new AllMessageEndpoint());
-            m_API.AddEndpoint(new ClearMessageEndpoint());
 
             m_PluginManager.RegisterToAPI(m_API);
         }
@@ -213,9 +210,6 @@ namespace StreamGlass
 
         public void FillSettingsDialog(Core.Settings.Dialog settingsDialog) => m_ConnectionManager.FillSettings(settingsDialog);
 
-        public void Test()
-        {
-            m_ConnectionManager.Test();
-        }
+        public void Test() => m_ConnectionManager.Test();
     }
 }

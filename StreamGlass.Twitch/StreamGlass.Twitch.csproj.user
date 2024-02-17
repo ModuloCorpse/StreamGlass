@@ -8,6 +8,27 @@
     <Page Update="CategorySearchDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Alert\AlertControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Alert\AlertEditor.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Alert\StreamAlertSettingsItem.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Moderation\HeldMessage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="StreamChat\BanDialog.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="StreamChat\Message.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="StreamChat\StreamChatSettingsItem.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="TwitchSettingsItem.xaml">
       <SubType>Designer</SubType>
     </Page>

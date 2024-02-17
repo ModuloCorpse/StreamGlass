@@ -2,7 +2,6 @@
 using CorpseLib.Logging;
 using CorpseLib.Placeholder;
 using CorpseLib.StructuredText;
-using StreamGlass.Core.Events;
 using StreamGlass.Core.Profile;
 using StreamGlass.Core.Stat;
 using TwitchCorpse;
@@ -33,17 +32,9 @@ namespace StreamGlass.Core
             JHelper.RegisterSerializer(new Text.JSerializer());
             JHelper.RegisterSerializer(new Section.JSerializer());
             JHelper.RegisterSerializer(new UserMessage.JSerializer());
-            JHelper.RegisterSerializer(new BanEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new DonationEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new FollowEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new GiftFollowEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new MessageAllowedEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new RaidEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new RewardEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new CommandEventArgs.JSerializer());
+            JHelper.RegisterSerializer(new ProfileCommandEventArgs.JSerializer());
             JHelper.RegisterSerializer(new CategoryInfo.JSerializer());
             JHelper.RegisterSerializer(new UpdateStreamInfoArgs.JSerializer());
-            JHelper.RegisterSerializer(new ShoutoutEventArgs.JSerializer());
 
             ms_Statistics.Load();
 

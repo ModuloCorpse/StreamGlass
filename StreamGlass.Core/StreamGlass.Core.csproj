@@ -8,12 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NAudio" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\CorpseLib\CorpseLib.Wpf\CorpseLib.Wpf.csproj" />
     <ProjectReference Include="..\..\CorpseLib\CorpseLib\CorpseLib.csproj" />
     <ProjectReference Include="..\..\CorpseLib\TwitchCorpse\TwitchCorpse.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Audio\SoundEditor.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Controls\NumericUpDown.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -21,6 +21,24 @@
     <Compile Update="CategorySearchDialog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Alert\AlertControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Alert\AlertEditor.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Alert\StreamAlertSettingsItem.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Moderation\HeldMessage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="StreamChat\Message.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="StreamChat\StreamChatSettingsItem.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
 </Project>

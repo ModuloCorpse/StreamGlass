@@ -1,7 +1,7 @@
 ﻿using CorpseLib.Ini;
 using CorpseLib.StructuredText;
 using StreamGlass.Core;
-using StreamGlass.Core.Events;
+using StreamGlass.Twitch.Events;
 using TwitchCorpse;
 
 namespace StreamGlass.Twitch
