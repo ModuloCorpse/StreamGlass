@@ -2,12 +2,10 @@
 using CorpseLib.Web.API.Event;
 using StreamGlass.API.Event;
 using StreamGlass.API.Overlay;
-using StreamGlass.API.Timer;
 using StreamGlass.API;
 using StreamGlass.Core.Connections;
 using StreamGlass.Core.Profile;
 using StreamGlass.Twitch;
-using StreamGlass.Twitch.API.Message;
 using System;
 using System.Diagnostics;
 using System.Windows.Threading;
