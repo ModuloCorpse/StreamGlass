@@ -14,10 +14,10 @@ namespace StreamGlass.Twitch.StreamChat
 
         public void Init()
         {
-            StreamGlassCanals.Register<TwitchMessage>(TwitchPlugin.CHAT_MESSAGE, OnMessage);
-            StreamGlassCanals.Register(TwitchPlugin.CHAT_CLEAR, ClearMessages);
-            StreamGlassCanals.Register<string>(TwitchPlugin.CHAT_CLEAR_USER, RemoveAllMessagesFrom);
-            StreamGlassCanals.Register<string>(TwitchPlugin.CHAT_CLEAR_MESSAGE, RemoveMessage);
+            StreamGlassCanals.Register<TwitchMessage>(TwitchPlugin.Canals.CHAT_MESSAGE, OnMessage);
+            StreamGlassCanals.Register(TwitchPlugin.Canals.CHAT_CLEAR, ClearMessages);
+            StreamGlassCanals.Register<string>(TwitchPlugin.Canals.CHAT_CLEAR_USER, RemoveAllMessagesFrom);
+            StreamGlassCanals.Register<string>(TwitchPlugin.Canals.CHAT_CLEAR_MESSAGE, RemoveMessage);
         }
 
         internal double MessageContentFontSize => m_MessageContentFontSize;

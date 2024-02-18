@@ -59,10 +59,10 @@ namespace StreamGlass.Twitch.API.Message
 
         public AllMessageEndpoint() : base("/all_message")
         {
-            StreamGlassCanals.Register<TwitchMessage>(TwitchPlugin.CHAT_MESSAGE, (message) => { if (message != null) m_Messages.Add(message); });
-            StreamGlassCanals.Register(TwitchPlugin.CHAT_CLEAR, m_Messages.Clear);
-            StreamGlassCanals.Register<string>(TwitchPlugin.CHAT_CLEAR_USER, (userID) => { if (userID != null) m_Messages.RemoveAll(message => message.UserID == userID); });
-            StreamGlassCanals.Register<string>(TwitchPlugin.CHAT_CLEAR_MESSAGE, (messageID) => { if (messageID != null) m_Messages.RemoveAll(message => message.ID == messageID); });
+            StreamGlassCanals.Register<TwitchMessage>(TwitchPlugin.Canals.CHAT_MESSAGE, (message) => { if (message != null) m_Messages.Add(message); });
+            StreamGlassCanals.Register(TwitchPlugin.Canals.CHAT_CLEAR, m_Messages.Clear);
+            StreamGlassCanals.Register<string>(TwitchPlugin.Canals.CHAT_CLEAR_USER, (userID) => { if (userID != null) m_Messages.RemoveAll(message => message.UserID == userID); });
+            StreamGlassCanals.Register<string>(TwitchPlugin.Canals.CHAT_CLEAR_MESSAGE, (messageID) => { if (messageID != null) m_Messages.RemoveAll(message => message.ID == messageID); });
         }
 
         private void AddPage(Page page) => m_Pages[page.ID] = page;

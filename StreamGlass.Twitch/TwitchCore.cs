@@ -115,10 +115,10 @@ namespace StreamGlass.Twitch
         public void OnPluginInit()
         {
             StreamGlassCanals.Register<string>(StreamGlassCanals.SEND_MESSAGE, PostMessage);
-            StreamGlassCanals.Register<TwitchUser>(TwitchPlugin.USER_JOINED, OnUserJoinedChannel);
+            StreamGlassCanals.Register<TwitchUser>(TwitchPlugin.Canals.USER_JOINED, OnUserJoinedChannel);
             StreamGlassCanals.Register<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
-            StreamGlassCanals.Register<BanEventArgs>(TwitchPlugin.BAN, BanUser);
-            StreamGlassCanals.Register<MessageAllowedEventArgs>(TwitchPlugin.ALLOW_MESSAGE, AllowMessage);
+            StreamGlassCanals.Register<BanEventArgs>(TwitchPlugin.Canals.BAN, BanUser);
+            StreamGlassCanals.Register<MessageAllowedEventArgs>(TwitchPlugin.Canals.ALLOW_MESSAGE, AllowMessage);
 
             StreamGlassContext.RegisterFunction("Game", (string[] variables) => {
                 var channelInfo = m_API.GetChannelInfo(variables[0]);
@@ -166,10 +166,10 @@ namespace StreamGlass.Twitch
                 m_EventSub?.Disconnect();
                 m_IsConnected = false;
                 StreamGlassCanals.Unregister<string>(StreamGlassCanals.SEND_MESSAGE, PostMessage);
-                StreamGlassCanals.Unregister<TwitchUser>(TwitchPlugin.USER_JOINED, OnUserJoinedChannel);
+                StreamGlassCanals.Unregister<TwitchUser>(TwitchPlugin.Canals.USER_JOINED, OnUserJoinedChannel);
                 StreamGlassCanals.Unregister<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
-                StreamGlassCanals.Unregister<BanEventArgs>(TwitchPlugin.BAN, BanUser);
-                StreamGlassCanals.Unregister<MessageAllowedEventArgs>(TwitchPlugin.ALLOW_MESSAGE, AllowMessage);
+                StreamGlassCanals.Unregister<BanEventArgs>(TwitchPlugin.Canals.BAN, BanUser);
+                StreamGlassCanals.Unregister<MessageAllowedEventArgs>(TwitchPlugin.Canals.ALLOW_MESSAGE, AllowMessage);
                 StreamGlassContext.UnregisterFunction("Game");
                 StreamGlassContext.UnregisterFunction("DisplayName");
                 StreamGlassContext.UnregisterFunction("Channel");
@@ -230,12 +230,12 @@ namespace StreamGlass.Twitch
                 m_IRCAPI.PostMessage(m_API.GetSelfUserInfo(), message);
         }
 
-        /*public override CategoryInfo? SearchCategoryInfo(Window parent, CategoryInfo? info)
+        public CategoryInfo? SearchCategoryInfo(Core.Controls.Window parent, CategoryInfo? info)
         {
             CategorySearchDialog dialog = new(parent, info, m_API);
             dialog.ShowDialog();
             return dialog.CategoryInfo;
-        }*/
+        }
 
         public void Test()
         {
@@ -245,27 +245,27 @@ namespace StreamGlass.Twitch
             TwitchUser m_Self = m_API.GetSelfUserInfo();
             StreamGlassContext.LOGGER.Log("Testing Twitch");
             StreamGlassContext.LOGGER.Log("Testing follow");
-            StreamGlassCanals.Emit(TwitchPlugin.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 0, 69, 42));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 0, 69, 42));
             StreamGlassContext.LOGGER.Log("Testing sub tier 1");
-            StreamGlassCanals.Emit(TwitchPlugin.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 1, 69, 42));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 1, 69, 42));
             StreamGlassContext.LOGGER.Log("Testing sub tier 2");
-            StreamGlassCanals.Emit(TwitchPlugin.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 2, 69, 42));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 2, 69, 42));
             StreamGlassContext.LOGGER.Log("Testing sub tier 3");
-            StreamGlassCanals.Emit(TwitchPlugin.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 3, 69, 42));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 3, 69, 42));
             StreamGlassContext.LOGGER.Log("Testing prime sub");
-            StreamGlassCanals.Emit(TwitchPlugin.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 4, 69, 42));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 4, 69, 42));
             StreamGlassContext.LOGGER.Log("Testing gift sub tier 1");
-            StreamGlassCanals.Emit(TwitchPlugin.GIFT_FOLLOW, new GiftFollowEventArgs(m_Self, m_StreamGlass, new("Il aime le Pop-Corn"), 1, 69, 42, -1));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.GIFT_FOLLOW, new GiftFollowEventArgs(m_Self, m_StreamGlass, new("Il aime le Pop-Corn"), 1, 69, 42, -1));
             StreamGlassContext.LOGGER.Log("Testing bits donation");
-            StreamGlassCanals.Emit(TwitchPlugin.DONATION, new DonationEventArgs(m_StreamGlass, 666, "bits", new("J'aime le Pop-Corn")));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.DONATION, new DonationEventArgs(m_StreamGlass, 666, "bits", new("J'aime le Pop-Corn")));
             StreamGlassContext.LOGGER.Log("Testing incomming raid");
-            StreamGlassCanals.Emit(TwitchPlugin.RAID, new RaidEventArgs(m_StreamGlass, m_Self, 40, true));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.RAID, new RaidEventArgs(m_StreamGlass, m_Self, 40, true));
             StreamGlassContext.LOGGER.Log("Testing reward");
-            StreamGlassCanals.Emit(TwitchPlugin.REWARD, new RewardEventArgs(m_StreamGlass, "Chante", "J'aime le Pop-Corn"));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.REWARD, new RewardEventArgs(m_StreamGlass, "Chante", "J'aime le Pop-Corn"));
             StreamGlassContext.LOGGER.Log("Testing shoutout");
-            StreamGlassCanals.Emit(TwitchPlugin.SHOUTOUT, new ShoutoutEventArgs(m_StreamGlass, m_Self));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.SHOUTOUT, new ShoutoutEventArgs(m_StreamGlass, m_Self));
             StreamGlassContext.LOGGER.Log("Testing incomming shoutout");
-            StreamGlassCanals.Emit(TwitchPlugin.BEING_SHOUTOUT, m_StreamGlass);
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.BEING_SHOUTOUT, m_StreamGlass);
             StreamGlassContext.LOGGER.Log("Twitch tested");
 
             BytesWriter bytesWriter = m_EventSub.CreateBytesWriter();

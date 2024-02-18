@@ -70,13 +70,13 @@ namespace StreamGlass.Twitch.Alert
 
         public void Init()
         {
-            StreamGlassCanals.Register<DonationEventArgs>(TwitchPlugin.DONATION, OnDonation);
-            StreamGlassCanals.Register<FollowEventArgs>(TwitchPlugin.FOLLOW, OnNewFollow);
-            StreamGlassCanals.Register<GiftFollowEventArgs>(TwitchPlugin.GIFT_FOLLOW, OnNewGiftFollow);
-            StreamGlassCanals.Register<RaidEventArgs>(TwitchPlugin.RAID, OnRaid);
-            StreamGlassCanals.Register<RewardEventArgs>(TwitchPlugin.REWARD, OnReward);
-            StreamGlassCanals.Register<ShoutoutEventArgs>(TwitchPlugin.SHOUTOUT, OnShoutout);
-            StreamGlassCanals.Register<TwitchUser>(TwitchPlugin.BEING_SHOUTOUT, OnBeingShoutout);
+            StreamGlassCanals.Register<DonationEventArgs>(TwitchPlugin.Canals.DONATION, OnDonation);
+            StreamGlassCanals.Register<FollowEventArgs>(TwitchPlugin.Canals.FOLLOW, OnNewFollow);
+            StreamGlassCanals.Register<GiftFollowEventArgs>(TwitchPlugin.Canals.GIFT_FOLLOW, OnNewGiftFollow);
+            StreamGlassCanals.Register<RaidEventArgs>(TwitchPlugin.Canals.RAID, OnRaid);
+            StreamGlassCanals.Register<RewardEventArgs>(TwitchPlugin.Canals.REWARD, OnReward);
+            StreamGlassCanals.Register<ShoutoutEventArgs>(TwitchPlugin.Canals.SHOUTOUT, OnShoutout);
+            StreamGlassCanals.Register<TwitchUser>(TwitchPlugin.Canals.BEING_SHOUTOUT, OnBeingShoutout);
         }
 
         internal double MessageContentFontSize => m_MessageContentFontSize;

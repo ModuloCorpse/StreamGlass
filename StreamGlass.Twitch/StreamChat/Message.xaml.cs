@@ -109,7 +109,7 @@ namespace StreamGlass.Twitch.StreamChat
             dialog.ShowDialog();
             BanEventArgs? args = dialog.Event;
             if (args != null)
-                StreamGlassCanals.Emit(TwitchPlugin.BAN, args);
+                StreamGlassCanals.Emit(TwitchPlugin.Canals.BAN, args);
         }
     }
 }

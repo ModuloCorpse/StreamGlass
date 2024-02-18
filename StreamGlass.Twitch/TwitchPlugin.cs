@@ -23,25 +23,51 @@ namespace StreamGlass.Twitch
 {
     public class TwitchPlugin : APlugin
     {
-        public static readonly string CHAT_MESSAGE = "twitch_chat_message";
-        public static readonly string CHAT_JOINED = "twitch_chat_joined";
-        public static readonly string USER_JOINED = "twitch_user_joined";
-        public static readonly string DONATION = "twitch_donation";
-        public static readonly string FOLLOW = "twitch_follow";
-        public static readonly string GIFT_FOLLOW = "twitch_gift_follow";
-        public static readonly string RAID = "twitch_raid";
-        public static readonly string REWARD = "twitch_reward";
-        public static readonly string BAN = "twitch_ban";
-        public static readonly string HELD_MESSAGE = "twitch_held_message";
-        public static readonly string ALLOW_MESSAGE = "twitch_allow_message";
-        public static readonly string HELD_MESSAGE_MODERATED = "twitch_held_message_moderated";
-        public static readonly string CHAT_CLEAR_USER = "twitch_chat_clear_user";
-        public static readonly string CHAT_CLEAR_MESSAGE = "twitch_chat_clear_message";
-        public static readonly string SHOUTOUT = "twitch_shoutout";
-        public static readonly string BEING_SHOUTOUT = "twitch_being_shoutout";
-        public static readonly string CHAT_CLEAR = "twitch_chat_clear";
-        public static readonly string STREAM_START = "twitch_stream_start";
-        public static readonly string STREAM_STOP = "twitch_stream_stop";
+        public static class Canals
+        {
+            public static readonly string CHAT_MESSAGE = "twitch_chat_message";
+            public static readonly string CHAT_JOINED = "twitch_chat_joined";
+            public static readonly string USER_JOINED = "twitch_user_joined";
+            public static readonly string DONATION = "twitch_donation";
+            public static readonly string FOLLOW = "twitch_follow";
+            public static readonly string GIFT_FOLLOW = "twitch_gift_follow";
+            public static readonly string RAID = "twitch_raid";
+            public static readonly string REWARD = "twitch_reward";
+            public static readonly string BAN = "twitch_ban";
+            public static readonly string HELD_MESSAGE = "twitch_held_message";
+            public static readonly string ALLOW_MESSAGE = "twitch_allow_message";
+            public static readonly string HELD_MESSAGE_MODERATED = "twitch_held_message_moderated";
+            public static readonly string CHAT_CLEAR_USER = "twitch_chat_clear_user";
+            public static readonly string CHAT_CLEAR_MESSAGE = "twitch_chat_clear_message";
+            public static readonly string SHOUTOUT = "twitch_shoutout";
+            public static readonly string BEING_SHOUTOUT = "twitch_being_shoutout";
+            public static readonly string CHAT_CLEAR = "twitch_chat_clear";
+            public static readonly string STREAM_START = "twitch_stream_start";
+            public static readonly string STREAM_STOP = "twitch_stream_stop";
+        }
+
+        //TODO Replace in all XAML use of TranslationKey attribute by the SetTranslationKey to keep track of used key
+        public static class TranslationKeys
+        {
+            public static readonly TranslationKey SETTINGS_CHAT_MODE = new("settings_chat_mode");
+            public static readonly TranslationKey SETTINGS_CHAT_FONT = new("settings_chat_font");
+            public static readonly TranslationKey ALERT_EDITOR_ENABLE = new("alert_editor_enable");
+            public static readonly TranslationKey ALERT_EDITOR_IMAGE = new("alert_editor_image");
+            public static readonly TranslationKey ALERT_EDITOR_PREFIX = new("alert_editor_prefix");
+            public static readonly TranslationKey SETTINGS_ALERT_ALERTS = new("settings_alert_alerts");
+            public static readonly TranslationKey BAN_BUTTON = new("ban_button");
+            public static readonly TranslationKey BAN_TIME = new("ban_time");
+            public static readonly TranslationKey BAN_REASON = new("ban_reason");
+            public static readonly TranslationKey SETTINGS_TWITCH_AUTOCONNECT = new("settings_twitch_autoconnect");
+            public static readonly TranslationKey SETTINGS_TWITCH_CONNECT = new("settings_twitch_connect");
+            public static readonly TranslationKey SETTINGS_TWITCH_BROWSER = new("settings_twitch_browser");
+            public static readonly TranslationKey SETTINGS_TWITCH_BOT_PUBLIC = new("settings_twitch_bot_public");
+            public static readonly TranslationKey SETTINGS_TWITCH_BOT_PRIVATE = new("settings_twitch_bot_private");
+            public static readonly TranslationKey SETTINGS_TWITCH_SUB_MODE = new("settings_twitch_sub_mode");
+            public static readonly TranslationKey SETTINGS_TWITCH_SEARCH = new("settings_twitch_search");
+            public static readonly TranslationKey SETTINGS_TWITCH_DO_WELCOME = new("settings_twitch_do_welcome");
+            public static readonly TranslationKey SETTINGS_TWITCH_WELCOME_MESSAGE = new("settings_twitch_welcome_message");
+        }
 
         static TwitchPlugin()
         {
@@ -81,16 +107,24 @@ namespace StreamGlass.Twitch
         {
             Translation translation = new(new CultureInfo("en-US"), true)
             {
-                { "settings_twitch_autoconnect", "Auto-Connect:" },
-                { "settings_twitch_connect", "Connect" },
-                { "settings_twitch_browser", "Browser:" },
-                { "settings_twitch_channel", "Twitch channel:" },
-                { "settings_twitch_bot_public", "Bot Public Key:" },
-                { "settings_twitch_bot_private", "Bot Secret Key:" },
-                { "settings_twitch_sub_mode", "Sub Mode:" },
-                { "settings_twitch_search", "Search:" },
-                { "settings_twitch_do_welcome", "Do Welcome:" },
-                { "settings_twitch_welcome_message", "Welcome Message:" }
+                { TranslationKeys.SETTINGS_CHAT_MODE, "Chat Mode:" },
+                { TranslationKeys.SETTINGS_CHAT_FONT, "Chat Font Size:" },
+                { TranslationKeys.ALERT_EDITOR_ENABLE, "Enable:" },
+                { TranslationKeys.ALERT_EDITOR_IMAGE, "Image:" },
+                { TranslationKeys.ALERT_EDITOR_PREFIX, "Prefix:" },
+                { TranslationKeys.SETTINGS_ALERT_ALERTS, "Alerts" },
+                { TranslationKeys.BAN_BUTTON, "Ban" },
+                { TranslationKeys.BAN_TIME, "Time (s):" },
+                { TranslationKeys.BAN_REASON, "Reason:" },
+                { TranslationKeys.SETTINGS_TWITCH_AUTOCONNECT, "Auto-Connect:" },
+                { TranslationKeys.SETTINGS_TWITCH_CONNECT, "Connect" },
+                { TranslationKeys.SETTINGS_TWITCH_BROWSER, "Browser:" },
+                { TranslationKeys.SETTINGS_TWITCH_BOT_PUBLIC, "Bot Public Key:" },
+                { TranslationKeys.SETTINGS_TWITCH_BOT_PRIVATE, "Bot Secret Key:" },
+                { TranslationKeys.SETTINGS_TWITCH_SUB_MODE, "Sub Mode:" },
+                { TranslationKeys.SETTINGS_TWITCH_SEARCH, "Search:" },
+                { TranslationKeys.SETTINGS_TWITCH_DO_WELCOME, "Do Welcome:" },
+                { TranslationKeys.SETTINGS_TWITCH_WELCOME_MESSAGE, "Welcome Message:" }
             };
             Translator.AddTranslation(translation);
         }
@@ -183,6 +217,7 @@ namespace StreamGlass.Twitch
             m_HeldMessagePanel.Init();
             m_StreamChatPanel.Init();
             m_StreamAlertPanel.Init();
+            ProfileEditor.SetSearchCategoryDelegate(m_Core.SearchCategoryInfo);
         }
 
         protected override void InitCommands()
@@ -193,25 +228,25 @@ namespace StreamGlass.Twitch
 
         protected override void InitCanals()
         {
-            StreamGlassCanals.NewCanal<TwitchMessage>(CHAT_MESSAGE);
-            StreamGlassCanals.NewCanal<string>(CHAT_JOINED);
-            StreamGlassCanals.NewCanal<TwitchUser>(USER_JOINED);
-            StreamGlassCanals.NewCanal<DonationEventArgs>(DONATION);
-            StreamGlassCanals.NewCanal<FollowEventArgs>(FOLLOW);
-            StreamGlassCanals.NewCanal<GiftFollowEventArgs>(GIFT_FOLLOW);
-            StreamGlassCanals.NewCanal<RaidEventArgs>(RAID);
-            StreamGlassCanals.NewCanal<RewardEventArgs>(REWARD);
-            StreamGlassCanals.NewCanal<BanEventArgs>(BAN);
-            StreamGlassCanals.NewCanal<TwitchMessage>(HELD_MESSAGE);
-            StreamGlassCanals.NewCanal<MessageAllowedEventArgs>(ALLOW_MESSAGE);
-            StreamGlassCanals.NewCanal<string>(HELD_MESSAGE_MODERATED);
-            StreamGlassCanals.NewCanal<string>(CHAT_CLEAR_USER);
-            StreamGlassCanals.NewCanal<string>(CHAT_CLEAR_MESSAGE);
-            StreamGlassCanals.NewCanal<ShoutoutEventArgs>(SHOUTOUT);
-            StreamGlassCanals.NewCanal<TwitchUser>(BEING_SHOUTOUT);
-            StreamGlassCanals.NewCanal(CHAT_CLEAR);
-            StreamGlassCanals.NewCanal(STREAM_START);
-            StreamGlassCanals.NewCanal(STREAM_STOP);
+            StreamGlassCanals.NewCanal<TwitchMessage>(Canals.CHAT_MESSAGE);
+            StreamGlassCanals.NewCanal<string>(Canals.CHAT_JOINED);
+            StreamGlassCanals.NewCanal<TwitchUser>(Canals.USER_JOINED);
+            StreamGlassCanals.NewCanal<DonationEventArgs>(Canals.DONATION);
+            StreamGlassCanals.NewCanal<FollowEventArgs>(Canals.FOLLOW);
+            StreamGlassCanals.NewCanal<GiftFollowEventArgs>(Canals.GIFT_FOLLOW);
+            StreamGlassCanals.NewCanal<RaidEventArgs>(Canals.RAID);
+            StreamGlassCanals.NewCanal<RewardEventArgs>(Canals.REWARD);
+            StreamGlassCanals.NewCanal<BanEventArgs>(Canals.BAN);
+            StreamGlassCanals.NewCanal<TwitchMessage>(Canals.HELD_MESSAGE);
+            StreamGlassCanals.NewCanal<MessageAllowedEventArgs>(Canals.ALLOW_MESSAGE);
+            StreamGlassCanals.NewCanal<string>(Canals.HELD_MESSAGE_MODERATED);
+            StreamGlassCanals.NewCanal<string>(Canals.CHAT_CLEAR_USER);
+            StreamGlassCanals.NewCanal<string>(Canals.CHAT_CLEAR_MESSAGE);
+            StreamGlassCanals.NewCanal<ShoutoutEventArgs>(Canals.SHOUTOUT);
+            StreamGlassCanals.NewCanal<TwitchUser>(Canals.BEING_SHOUTOUT);
+            StreamGlassCanals.NewCanal(Canals.CHAT_CLEAR);
+            StreamGlassCanals.NewCanal(Canals.STREAM_START);
+            StreamGlassCanals.NewCanal(Canals.STREAM_STOP);
         }
 
         protected override void RegisterAPI(CorpseLib.Web.API.API api)

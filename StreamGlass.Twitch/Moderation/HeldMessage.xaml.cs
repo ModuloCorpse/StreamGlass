@@ -70,13 +70,13 @@ namespace StreamGlass.Twitch.Moderation
 
         private void AllowButton_Click(object sender, RoutedEventArgs e)
         {
-            StreamGlassCanals.Emit(TwitchPlugin.ALLOW_MESSAGE, new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, true));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.ALLOW_MESSAGE, new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, true));
             m_Parent.Remove(this);
         }
 
         private void DenyButton_Click(object sender, RoutedEventArgs e)
         {
-            StreamGlassCanals.Emit(TwitchPlugin.ALLOW_MESSAGE, new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, false));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.ALLOW_MESSAGE, new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, false));
             m_Parent.Remove(this);
         }
     }

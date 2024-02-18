@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using CorpseLib.Wpf;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using TabItem = StreamGlass.Core.Controls.TabItem;
@@ -22,7 +23,7 @@ namespace StreamGlass.Core.Settings
             {
                 Header = new Image()
                 {
-                    Source = new BitmapImage(new Uri(item.GetHeaderSource(), UriKind.Relative)),
+                    Source = ImageLoader.LoadStaticImage(item.GetHeaderSource())?.Source,
                     Width = 35,
                     Height = 35
                 },

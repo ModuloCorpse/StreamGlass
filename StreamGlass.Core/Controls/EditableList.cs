@@ -1,4 +1,5 @@
 ﻿using CorpseLib;
+using CorpseLib.Wpf;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -65,7 +66,7 @@ namespace StreamGlass.Core.Controls
             {
                 SearchButton.Content = new Image
                 {
-                    Source = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute)),
+                    Source = ImageLoader.LoadStaticImage(source)?.Source,
                     Height = 20,
                     Width = 20
                 };
@@ -83,7 +84,7 @@ namespace StreamGlass.Core.Controls
             {
                 EditButton.Content = new Image
                 {
-                    Source = new BitmapImage(new Uri(source, UriKind.RelativeOrAbsolute)),
+                    Source = ImageLoader.LoadStaticImage(source)?.Source,
                     Height = 20,
                     Width = 20
                 };

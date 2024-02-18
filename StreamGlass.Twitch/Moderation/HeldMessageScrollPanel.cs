@@ -18,8 +18,8 @@ namespace StreamGlass.Twitch.Moderation
 
         public void Init()
         {
-            StreamGlassCanals.Register<TwitchMessage>(TwitchPlugin.HELD_MESSAGE, OnHeldMessage);
-            StreamGlassCanals.Register<string>(TwitchPlugin.HELD_MESSAGE_MODERATED, RemoveHeldMessage);
+            StreamGlassCanals.Register<TwitchMessage>(TwitchPlugin.Canals.HELD_MESSAGE, OnHeldMessage);
+            StreamGlassCanals.Register<string>(TwitchPlugin.Canals.HELD_MESSAGE_MODERATED, RemoveHeldMessage);
         }
 
         public void SetSenderWidth(double width)

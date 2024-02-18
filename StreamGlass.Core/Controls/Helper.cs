@@ -12,7 +12,7 @@ namespace StreamGlass.Core.Controls
         public static DependencyProperty NewProperty<TUIElement, TPropertyType>(string name, TPropertyType defaultValue, PropertyChangedDelegate<TUIElement, TPropertyType> callback) where TUIElement : DependencyObject
         {
             return DependencyProperty.Register(name, typeof(TPropertyType), typeof(TUIElement),
-                new PropertyMetadata(defaultValue, new PropertyChangedCallback(((DependencyObject d, DependencyPropertyChangedEventArgs e) => callback((TUIElement)d, (TPropertyType)e.NewValue)))));
+                new PropertyMetadata(defaultValue, new PropertyChangedCallback((DependencyObject d, DependencyPropertyChangedEventArgs e) => callback((TUIElement)d, (TPropertyType)e.NewValue))));
         }
         public static DependencyProperty NewProperty<TUIElement, TPropertyType>(string name, TPropertyType defaultValue) where TUIElement : DependencyObject
         {

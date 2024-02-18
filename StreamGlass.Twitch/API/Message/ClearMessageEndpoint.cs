@@ -10,7 +10,7 @@ namespace StreamGlass.Twitch.API.Message
 
         protected override Response OnDeleteRequest(Request request)
         {
-            StreamGlassCanals.Trigger(TwitchPlugin.CHAT_CLEAR);
+            StreamGlassCanals.Trigger(TwitchPlugin.Canals.CHAT_CLEAR);
             StreamGlassCanals.Trigger(StreamGlassCanals.PROFILE_RESET);
             return new(200, "Ok");
         }

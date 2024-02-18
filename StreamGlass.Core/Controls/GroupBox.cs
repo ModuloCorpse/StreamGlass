@@ -27,7 +27,7 @@ namespace StreamGlass.Core.Controls
         #endregion TextBrushPaletteKey
 
         #region TranslationKey
-        public static readonly DependencyProperty TranslationKeyProperty = Helper.NewProperty<GroupBox, string>("TranslationKey", string.Empty);
+        public static readonly DependencyProperty TranslationKeyProperty = Helper.NewProperty<GroupBox, string>("TranslationKey", string.Empty, (elem, key) => elem.UpdateTranslationKey(key));
         [Description("The translation key of the group box's text"), Category("Common Properties")]
         public string TranslationKey
         {
@@ -35,6 +35,10 @@ namespace StreamGlass.Core.Controls
             set => SetValue(TranslationKeyProperty, value);
         }
         #endregion TranslationKey
+
+        private TranslationKey m_TranslationKey = new(string.Empty);
+        private void UpdateTranslationKey(string key) => m_TranslationKey = new(key);
+        public void SetTranslationKey(TranslationKey key) => m_TranslationKey = key;
 
         public GroupBox() => Translator.CurrentLanguageChanged += Translator_CurrentLanguageChanged;
 
@@ -44,8 +48,8 @@ namespace StreamGlass.Core.Controls
         {
             Dispatcher.Invoke(delegate
             {
-                if (Translator.HaveKey(TranslationKey))
-                    Header = Translator.Translate("${" + TranslationKey + "}");
+                if (Translator.HaveKey(m_TranslationKey))
+                    Header = m_TranslationKey.ToString();
             });
         }
 

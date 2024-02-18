@@ -3,14 +3,18 @@ using System.Windows;
 
 namespace StreamGlass.Core.Profile
 {
-    public partial class StatisticFileEditor : Dialog
+    public partial class ProfileEditor : Dialog
     {
+        public delegate CategoryInfo? ProfileSearchCategoryDelegate(Controls.Window parent, CategoryInfo? info);
+        private static ProfileSearchCategoryDelegate ms_SearchCategoryDelegate = (_, __) => null;
+        public static void SetSearchCategoryDelegate(ProfileSearchCategoryDelegate searchCategoryDelegate) => ms_SearchCategoryDelegate = searchCategoryDelegate;
+
         private Profile? m_CreatedProfile = null;
         private readonly Dictionary<string, ChatCommand> m_ChatCommands = [];
         private readonly CategoryInfo m_CategoryInfo = new(string.Empty);
         private readonly string m_ID = Guid.NewGuid().ToString();
 
-        public StatisticFileEditor(Controls.Window parent, ProfileManager profileManager): base(parent)
+        public ProfileEditor(Controls.Window parent, ProfileManager profileManager): base(parent)
         {
             InitializeComponent();
             ChatCommandsList.SetConversionDelegate(ConvertCommand);
@@ -22,7 +26,7 @@ namespace StreamGlass.Core.Profile
             IsSelectableCheckBox.IsChecked = true;
         }
 
-        public StatisticFileEditor(Controls.Window parent, ProfileManager profileManager, Profile profile): this(parent, profileManager)
+        public ProfileEditor(Controls.Window parent, ProfileManager profileManager, Profile profile): this(parent, profileManager)
         {
             ParentComboBox.Items.Remove(profile.ObjectInfo);
             m_ID = profile.ID;
@@ -112,8 +116,7 @@ namespace StreamGlass.Core.Profile
 
         private void StreamInfoCategorySearchButton_Click(object sender, RoutedEventArgs e)
         {
-            //TODO Search within plugins
-            CategoryInfo? searchedCategory = null;//m_ConnectionManager.SearchCategoryInfo(this, m_CategoryInfo);
+            CategoryInfo? searchedCategory = ms_SearchCategoryDelegate(this, m_CategoryInfo);
             if (searchedCategory != null)
             {
                 m_CategoryInfo.Copy(searchedCategory);
