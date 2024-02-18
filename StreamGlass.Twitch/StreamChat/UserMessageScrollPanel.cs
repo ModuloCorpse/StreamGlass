@@ -1,11 +1,11 @@
 ﻿using StreamGlass.Core.Controls;
 using StreamGlass.Core;
+using StreamGlass.Core.Profile;
 
 namespace StreamGlass.Twitch.StreamChat
 {
     public class UserMessageScrollPanel : ScrollPanel<Message>
     {
-        private BrushPaletteManager m_ChatPalette = new();
         private readonly HashSet<string> m_ChatHighlightedUsers = [];
         private double m_MessageContentFontSize = 14;
         private bool m_ShowBadges = true;
@@ -14,13 +14,11 @@ namespace StreamGlass.Twitch.StreamChat
 
         public void Init()
         {
-            StreamGlassCanals.Register<UserMessage>("chat_message", OnMessage);
-            StreamGlassCanals.Register("chat_clear", ClearMessages);
-            StreamGlassCanals.Register<string>("chat_clear_user", RemoveAllMessagesFrom);
-            StreamGlassCanals.Register<string>("chat_clear_message", RemoveMessage);
+            StreamGlassCanals.Register<TwitchMessage>(TwitchPlugin.CHAT_MESSAGE, OnMessage);
+            StreamGlassCanals.Register(TwitchPlugin.CHAT_CLEAR, ClearMessages);
+            StreamGlassCanals.Register<string>(TwitchPlugin.CHAT_CLEAR_USER, RemoveAllMessagesFrom);
+            StreamGlassCanals.Register<string>(TwitchPlugin.CHAT_CLEAR_MESSAGE, RemoveMessage);
         }
-
-        public void SetBrushPalette(BrushPaletteManager colorPalette) => m_ChatPalette = colorPalette;
 
         internal double MessageContentFontSize => m_MessageContentFontSize;
 
@@ -38,7 +36,7 @@ namespace StreamGlass.Twitch.StreamChat
                 m_ChatHighlightedUsers.Add(userID);
         }
 
-        private void OnMessage(UserMessage? message)
+        private void OnMessage(TwitchMessage? message)
         {
             if (message == null)
                 return;
@@ -46,7 +44,6 @@ namespace StreamGlass.Twitch.StreamChat
             Dispatcher.Invoke(() =>
             {
                 Message chatMessage = new(this,
-                m_ChatPalette,
                 message,
                 m_MessageContentFontSize,
                 m_ChatHighlightedUsers.Contains(message.UserID),

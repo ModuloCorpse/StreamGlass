@@ -3,7 +3,6 @@ using CorpseLib.StructuredText;
 using StreamGlass.Core;
 using StreamGlass.Core.Audio;
 using StreamGlass.Core.Controls;
-using StreamGlass.Core.Connections;
 using StreamGlass.Twitch.Events;
 using TwitchCorpse;
 
@@ -65,24 +64,19 @@ namespace StreamGlass.Twitch.Alert
 
         private readonly AlertInfo[] m_GiftAlertInfo = new AlertInfo[Enum.GetNames(typeof(AlertType)).Length];
         private readonly AlertInfo[] m_AlertInfo = new AlertInfo[Enum.GetNames(typeof(AlertType)).Length];
-        private BrushPaletteManager m_ChatPalette = new();
-        private ConnectionManager? m_ConnectionManager = null;
         private double m_MessageContentFontSize = 20;
 
         public AlertScrollPanel() : base() { }
 
-        public void SetBrushPalette(BrushPaletteManager colorPalette) => m_ChatPalette = colorPalette;
-
-        public void Init(ConnectionManager connectionManager)
+        public void Init()
         {
-            StreamGlassCanals.Register<DonationEventArgs>("donation", OnDonation);
-            StreamGlassCanals.Register<FollowEventArgs>("follow", OnNewFollow);
-            StreamGlassCanals.Register<GiftFollowEventArgs>("gift_follow", OnNewGiftFollow);
-            StreamGlassCanals.Register<RaidEventArgs>("raid", OnRaid);
-            StreamGlassCanals.Register<RewardEventArgs>("reward", OnReward);
-            StreamGlassCanals.Register<ShoutoutEventArgs>("shoutout", OnShoutout);
-            StreamGlassCanals.Register<TwitchUser>("being_shoutout", OnBeingShoutout);
-            m_ConnectionManager = connectionManager;
+            StreamGlassCanals.Register<DonationEventArgs>(TwitchPlugin.DONATION, OnDonation);
+            StreamGlassCanals.Register<FollowEventArgs>(TwitchPlugin.FOLLOW, OnNewFollow);
+            StreamGlassCanals.Register<GiftFollowEventArgs>(TwitchPlugin.GIFT_FOLLOW, OnNewGiftFollow);
+            StreamGlassCanals.Register<RaidEventArgs>(TwitchPlugin.RAID, OnRaid);
+            StreamGlassCanals.Register<RewardEventArgs>(TwitchPlugin.REWARD, OnReward);
+            StreamGlassCanals.Register<ShoutoutEventArgs>(TwitchPlugin.SHOUTOUT, OnShoutout);
+            StreamGlassCanals.Register<TwitchUser>(TwitchPlugin.BEING_SHOUTOUT, OnBeingShoutout);
         }
 
         internal double MessageContentFontSize => m_MessageContentFontSize;
@@ -121,12 +115,12 @@ namespace StreamGlass.Twitch.Alert
                         alertMessage.Append(message);
                     }
                     Alert alert = new(alertInfo.ImgPath, alertMessage);
-                    AlertControl alertControl = new(m_ConnectionManager!, m_ChatPalette, alert, m_MessageContentFontSize);
+                    AlertControl alertControl = new(alert, m_MessageContentFontSize);
                     alertControl.AlertMessage.Loaded += (sender, e) => { UpdateControlsPosition(); };
                     AddControl(alertControl);
 
                     if (alertInfo.HaveChatMessage)
-                        m_ConnectionManager!.SendMessage(Converter.Convert(alertInfo.ChatMessage, context));
+                        StreamGlassCanals.Emit(StreamGlassCanals.SEND_MESSAGE, Converter.Convert(alertInfo.ChatMessage, context));
 
                     if (alertInfo.Audio != null)
                         SoundManager.PlaySound(alertInfo.Audio);

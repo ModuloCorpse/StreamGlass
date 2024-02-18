@@ -1,6 +1,5 @@
 ﻿using StreamGlass.Core.Controls;
 using StreamGlass.Core.Profile;
-using System.Collections.Generic;
 using System.Windows;
 using TwitchCorpse;
 using TwitchCorpse.API;

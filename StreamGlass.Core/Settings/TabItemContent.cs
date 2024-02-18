@@ -3,18 +3,12 @@ using StreamGlass.Core.Controls;
 
 namespace StreamGlass.Core.Settings
 {
-    public abstract class TabItemContent : UserControl
+    public abstract class TabItemContent(string headerSource, IniSection settings) : UserControl
     {
         protected Dialog? m_SettingsDialog = null;
-        private readonly IniSection m_Settings;
+        private readonly IniSection m_Settings = settings;
         private readonly List<UserControlLink> m_Links = [];
-        private readonly string m_HeaderSource;
-
-        protected TabItemContent(string headerSource, IniSection settings)
-        {
-            m_HeaderSource = headerSource;
-            m_Settings = settings;
-        }
+        private readonly string m_HeaderSource = headerSource;
 
         internal void SetSettingDialog(Dialog dialog)
         {

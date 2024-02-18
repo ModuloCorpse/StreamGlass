@@ -1,19 +1,19 @@
 ﻿using CorpseLib.Ini;
+using CorpseLib.Json;
+using CorpseLib.Translation;
 using CorpseLib.Web.API.Event;
+using StreamGlass.API;
 using StreamGlass.API.Event;
 using StreamGlass.API.Overlay;
-using StreamGlass.API;
-using StreamGlass.Core.Connections;
+using StreamGlass.Core;
+using StreamGlass.Core.Plugin;
 using StreamGlass.Core.Profile;
 using StreamGlass.Twitch;
 using System;
 using System.Diagnostics;
-using System.Windows.Threading;
-using StreamGlass.Core;
-using CorpseLib.Json;
-using System.IO;
-using CorpseLib.Translation;
 using System.Globalization;
+using System.IO;
+using System.Windows.Threading;
 
 namespace StreamGlass
 {
@@ -23,38 +23,45 @@ namespace StreamGlass
         private readonly Stopwatch m_Watch = new();
         private readonly DispatcherTimer m_DispatcherTimer = new();
         private readonly IniFile m_Settings = new();
-        private readonly ConnectionManager m_ConnectionManager = new();
         private readonly ProfileManager m_ProfileManager;
         private readonly PluginManager m_PluginManager;
 
-        public ConnectionManager ConnectionManager => m_ConnectionManager;
         public ProfileManager ProfileManager => m_ProfileManager;
 
-        public Manager(SplashScreen splashScreen, MainWindow window)
+        //TODO Temporary code : To remove
+        private readonly TwitchPlugin m_TwitchPlugin = new();
+        public TwitchPlugin TwitchPlugin => m_TwitchPlugin;
+        //
+
+        public Manager(SplashScreen splashScreen)
         {
             LoadIni();
             InitializeTranslation();
             splashScreen.UpdateProgressBar(50);
-            window.InitializeSettings(m_Settings);
+
+            m_ProfileManager = new();
+            m_ProfileManager.Load();
             splashScreen.UpdateProgressBar(60);
 
-            m_ProfileManager = new(m_ConnectionManager);
-            m_ProfileManager.Load();
+            m_PluginManager = new();
+            m_PluginManager.LoadPlugins();
+            //TODO Temporary code : To replace with "new TwitchPlugin()"
+            m_PluginManager.LoadPlugin(m_TwitchPlugin);
             splashScreen.UpdateProgressBar(70);
 
-            m_PluginManager = new(m_Settings, m_ProfileManager, m_ConnectionManager);
-            m_PluginManager.LoadPlugins();
-            m_PluginManager.LoadPlugin(new TwitchPlugin());
-            splashScreen.UpdateProgressBar(80);
+            m_ProfileManager.UpdateStreamInfo();
 
             InitAPI();
             m_API.Start();
-            splashScreen.UpdateProgressBar(90);
+            splashScreen.UpdateProgressBar(80);
 
+            //Last initalization to do
+            m_PluginManager.InitPlugins();
             m_DispatcherTimer.Tick += Tick;
             m_DispatcherTimer.Interval = TimeSpan.FromMilliseconds(50);
             m_Watch.Start();
             m_DispatcherTimer.Start();
+            splashScreen.UpdateProgressBar(90);
         }
 
         private void LoadIni()
@@ -189,7 +196,7 @@ namespace StreamGlass
         {
             m_Watch.Stop();
             long deltaTime = m_Watch.ElapsedMilliseconds;
-            m_ConnectionManager.Update(deltaTime);
+            m_PluginManager.Update(deltaTime);
             m_ProfileManager.Update(deltaTime);
             m_Watch.Restart();
         }
@@ -198,7 +205,7 @@ namespace StreamGlass
         {
             m_Settings.WriteToFile("settings.ini");
             m_ProfileManager.Save();
-            m_ConnectionManager.Disconnect();
+            m_PluginManager.Clear();
             m_Watch.Stop();
             m_DispatcherTimer.Stop();
             m_API.Stop();
@@ -206,8 +213,8 @@ namespace StreamGlass
 
         public IniSection GetOrAddSettings(string sectionName) => m_Settings.GetOrAdd(sectionName);
 
-        public void FillSettingsDialog(Core.Settings.Dialog settingsDialog) => m_ConnectionManager.FillSettings(settingsDialog);
+        public void FillSettingsDialog(Core.Settings.Dialog settingsDialog) => m_PluginManager.FillSettings(settingsDialog);
 
-        public void Test() => m_ConnectionManager.Test();
+        public void Test() => m_PluginManager.Test();
     }
 }

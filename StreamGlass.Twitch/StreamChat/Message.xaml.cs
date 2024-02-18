@@ -1,42 +1,42 @@
 ﻿using System.Windows;
 using System.Windows.Media;
-using StreamGlass.Core.Controls;
 using StreamGlass.Twitch.Events;
 using TwitchCorpse;
 using StreamGlass.Core;
 using CorpseLib.StructuredText;
 using TwitchCorpse.API;
+using StreamGlass.Core.Profile;
 
 namespace StreamGlass.Twitch.StreamChat
 {
     public partial class Message : Core.Controls.UserControl
     {
         private readonly UserMessageScrollPanel m_StreamChat;
-        private readonly UserMessage m_Message;
+        private readonly TwitchMessage m_Message;
         private readonly bool m_IsHighlighted;
         private readonly bool m_ShowBadges;
 
-        private Text ConvertUserMessage(UserMessage message)
+        private Text ConvertUserMessage(TwitchMessage message)
         {
             Text displayedMessage = new();
             TwitchUser user = message.Sender;
             if (m_ShowBadges)
             {
-                Dictionary<string, object?> badgeProperties = new() {
+                Dictionary<string, object> badgeProperties = new() {
                     { "Ratio", 0.85 },
                     { "Margin-Right", 3.0 }
                 };
                 foreach (TwitchBadgeInfo badgeInfo in user.Badges)
                     displayedMessage.AddImage(badgeInfo.URL4x, badgeProperties);
             }
-            Dictionary<string, object?> properties = [];
+            Dictionary<string, object> properties = [];
             if (!string.IsNullOrWhiteSpace(message.Color))
                 properties["Color"] = message.Color;
             properties["Bold"] = true;
             displayedMessage.AddText(user.DisplayName, properties);
             displayedMessage.AddText(": ");
 
-            Dictionary<string, object?> emoteProperties = new() { { "Ratio", 1.5 } };
+            Dictionary<string, object> emoteProperties = new() { { "Ratio", 1.5 } };
             foreach (Section section in message.Message)
             {
                 switch (section.SectionType)
@@ -61,7 +61,7 @@ namespace StreamGlass.Twitch.StreamChat
             return displayedMessage;
         }
 
-        public Message(UserMessageScrollPanel streamChatPanel, BrushPaletteManager palette, UserMessage message, double contentFontSize, bool isHighligted, bool showBadges)
+        public Message(UserMessageScrollPanel streamChatPanel, TwitchMessage message, double contentFontSize, bool isHighligted, bool showBadges)
         {
             InitializeComponent();
             m_StreamChat = streamChatPanel;
@@ -88,8 +88,6 @@ namespace StreamGlass.Twitch.StreamChat
             }
             else
                 AnnouncementBorder.BorderBrush = Brushes.Transparent;
-
-            Update(palette);
         }
 
         public string UserID => m_Message.UserID;
@@ -111,7 +109,7 @@ namespace StreamGlass.Twitch.StreamChat
             dialog.ShowDialog();
             BanEventArgs? args = dialog.Event;
             if (args != null)
-                StreamGlassCanals.Emit("ban", args);
+                StreamGlassCanals.Emit(TwitchPlugin.BAN, args);
         }
     }
 }

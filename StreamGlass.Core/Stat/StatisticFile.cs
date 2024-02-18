@@ -14,7 +14,7 @@ namespace StreamGlass.Core.Stat
         internal StatisticFile(string id, string path) : base(id, path) { }
         internal StatisticFile(JObject json) : base(json) { }
 
-        internal List<string> Statistics => m_Statistics.ToList();
+        internal List<string> Statistics => [.. m_Statistics];
         internal string Path => Name;
         internal string Content => m_Content;
 

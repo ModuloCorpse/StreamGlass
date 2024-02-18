@@ -1,7 +1,5 @@
 ﻿using System.Windows;
-using CorpseLib.Translation;
 using StreamGlass.Core.Controls;
-using TwitchCorpse;
 
 namespace StreamGlass.Core.Profile
 {
@@ -12,14 +10,7 @@ namespace StreamGlass.Core.Profile
         public ChatCommandEditor(Controls.Window parent): base(parent)
         {
             InitializeComponent();
-            UserComboBox.Items.Add("Viewer");
-            UserComboBox.Items.Add("Moderator");
-            UserComboBox.Items.Add("Platform Moderator");
-            UserComboBox.Items.Add("Platform Administrator");
-            UserComboBox.Items.Add("Platform Staff");
-            UserComboBox.Items.Add("Streamer");
-            UserComboBox.Items.Add("Bot");
-            UserComboBox.SelectedIndex = 0;
+            UserUpDown.Value = 0;
             AliasesList.ItemAdded += EditableList_AddString;
             AliasesList.ItemEdited += EditableList_EditString;
             SubCommandList.ItemAdded += EditableList_AddString;
@@ -35,7 +26,7 @@ namespace StreamGlass.Core.Profile
             TimeUpDown.Value = command.AwaitTime;
             NbMessageUpDown.Value = command.NbMessage;
             ContentTextBox.Text = command.Content;
-            UserComboBox.SelectedIndex = (int)command.UserType;
+            UserUpDown.Value = command.UserType;
             SubCommandList.AddObjects(command.Commands);
 
             AutoTriggerEnableCheckBox.IsChecked = command.AutoTrigger;
@@ -44,26 +35,6 @@ namespace StreamGlass.Core.Profile
             AutoTriggerArguments.AddObjects(command.AutoTriggerArguments);
 
             UpdateAutoTriggerVisibility();
-        }
-
-        private void TranslateComboBox()
-        {
-            int selectedIndex = UserComboBox.SelectedIndex;
-            UserComboBox.Items.Clear();
-            UserComboBox.Items.Add(Translator.Translate("${user_type_none}"));
-            UserComboBox.Items.Add(Translator.Translate("${user_type_mod}"));
-            UserComboBox.Items.Add(Translator.Translate("${user_type_global_mod}"));
-            UserComboBox.Items.Add(Translator.Translate("${user_type_admin}"));
-            UserComboBox.Items.Add(Translator.Translate("${user_type_staff}"));
-            UserComboBox.Items.Add(Translator.Translate("${user_type_broadcaster}"));
-            UserComboBox.Items.Add(Translator.Translate("${user_type_self}"));
-            UserComboBox.SelectedIndex = selectedIndex;
-        }
-
-        protected override void OnUpdate(BrushPaletteManager palette)
-        {
-            base.OnUpdate(palette);
-            TranslateComboBox();
         }
 
         internal ChatCommand? Command => m_CreatedCommand;
@@ -75,7 +46,7 @@ namespace StreamGlass.Core.Profile
             int awaitTime = (int)TimeUpDown.Value;
             int nbMessage = (int)NbMessageUpDown.Value;
             string content = ContentTextBox.Text;
-            TwitchUser.Type userType = (TwitchUser.Type)UserComboBox.SelectedIndex;
+            uint userType = (uint)UserUpDown.Value;
             List<string> commands = SubCommandList.GetItems().Cast<string>().ToList();
             bool autoTrigger = AutoTriggerEnableCheckBox.IsChecked ?? false;
             int autoTriggerTime = (int)AutoTriggerTimeUpDown.Value;

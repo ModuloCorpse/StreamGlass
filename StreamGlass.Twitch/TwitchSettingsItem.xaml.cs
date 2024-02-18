@@ -1,20 +1,20 @@
-﻿using Microsoft.Win32;
-using StreamGlass.Core.Settings;
+﻿using CorpseLib.Ini;
+using Microsoft.Win32;
 using StreamGlass.Core.Controls;
+using StreamGlass.Core.Settings;
 using System.Windows;
-using CorpseLib.Ini;
 
 namespace StreamGlass.Twitch
 {
     public partial class TwitchSettingsItem : TabItemContent
     {
-        private readonly Connection m_Connection;
+        private readonly TwitchCore m_Core;
         private readonly SubModeComboBoxUserControlLink m_SubModeComboBoxUserControlLink;
 
-        public TwitchSettingsItem(IniSection settings, Connection connection): base("/Assets/twitch-logo.png", settings)
+        public TwitchSettingsItem(IniSection settings, TwitchCore core): base("/Assets/twitch-logo.png", settings)
         {
             InitializeComponent();
-            m_Connection = connection;
+            m_Core = core;
             m_SubModeComboBoxUserControlLink = new SubModeComboBoxUserControlLink(TwitchSubModeComboBox);
 
             DoWelcomeCheckBox.IsChecked = GetSetting("do_welcome") == "true";
@@ -43,7 +43,7 @@ namespace StreamGlass.Twitch
 
         private void TwitchConnectButton_Click(object sender, RoutedEventArgs e)
         {
-            m_Connection.Connect();
+            m_Core.Connect();
         }
 
         protected override void OnUpdate(BrushPaletteManager palette)

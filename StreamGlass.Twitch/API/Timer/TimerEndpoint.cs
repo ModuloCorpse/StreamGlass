@@ -81,10 +81,11 @@ namespace StreamGlass.Twitch.API.Timer
                     timer.Start();
                     if (jfile.TryGet("ads_duration", out uint adsDuration))
                     {
+                        string adCommand = string.Format("TwitchAd {0}", adsDuration);
                         if (jfile.TryGet("ads_delay", out int adsDelay))
-                            Task.Delay(adsDelay * 1000).ContinueWith(t => StreamGlassCanals.Emit("start_ads", adsDuration));
+                            Task.Delay(adsDelay * 1000).ContinueWith(t => StreamGlassCLI.ExecuteCommand(adCommand));
                         else
-                            StreamGlassCanals.Emit("start_ads", adsDuration);
+                            StreamGlassCLI.ExecuteCommand(adCommand);
                     }
                 }
                 else

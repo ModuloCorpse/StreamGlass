@@ -8,8 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\CorpseLib\CorpseLib.Web\CorpseLib.Web.csproj" />
-    <ProjectReference Include="..\..\CorpseLib\CorpseLib\CorpseLib.csproj" />
     <ProjectReference Include="..\..\CorpseLib\TwitchCorpse\TwitchCorpse.csproj" />
     <ProjectReference Include="..\StreamGlass.Core\StreamGlass.Core.csproj" />
   </ItemGroup>

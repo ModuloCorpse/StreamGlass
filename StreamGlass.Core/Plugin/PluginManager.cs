@@ -1,18 +1,10 @@
-﻿using CorpseLib.Ini;
-using StreamGlass.Core.Connections;
-using StreamGlass.Core.Profile;
-using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 
-namespace StreamGlass
+namespace StreamGlass.Core.Plugin
 {
-    public class PluginManager(IniFile settings, ProfileManager profileManager, ConnectionManager connectionManager)
+    public class PluginManager
     {
-        private readonly IniFile m_Settings = settings;
-        private readonly ProfileManager m_ProfileManager = profileManager;
-        private readonly ConnectionManager m_ConnectionManager = connectionManager;
         private readonly List<APlugin> m_Plugins = [];
 
         public void RegisterToAPI(CorpseLib.Web.API.API api)
@@ -21,9 +13,26 @@ namespace StreamGlass
                 plugin.RegisterPluginToAPI(api);
         }
 
+        public void FillSettings(Settings.Dialog settingsDialog)
+        {
+            foreach (APlugin plugin in m_Plugins)
+                plugin.FillSettings(settingsDialog);
+        }
+
+        public void Update(long deltaTime)
+        {
+            foreach (APlugin plugin in m_Plugins)
+                plugin.Tick(deltaTime);
+        }
+
+        public void Test()
+        {
+            foreach (APlugin plugin in m_Plugins)
+                plugin.Test();
+        }
+
         public void LoadPlugin(APlugin plugin)
         {
-            plugin.OnInit(m_ProfileManager, m_ConnectionManager, m_Settings.GetOrAdd(plugin.Name));
             plugin.RegisterPlugin();
             m_Plugins.Add(plugin);
         }
@@ -51,6 +60,19 @@ namespace StreamGlass
                     catch { }
                 }
             }
+        }
+
+        public void Clear()
+        {
+            foreach (APlugin plugin in m_Plugins)
+                plugin.UnregisterPlugin();
+            m_Plugins.Clear();
+        }
+
+        public void InitPlugins()
+        {
+            foreach (APlugin plugin in m_Plugins)
+                plugin.Init();
         }
     }
 }

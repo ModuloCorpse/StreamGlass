@@ -102,6 +102,8 @@ namespace StreamGlass.Core.Controls
 
         protected void AddControl(T control)
         {
+            if (control is IUIElement uiElement)
+                uiElement.Update(GetWindow().GetBrushPalette());
             ElementsStackPanel.Children.Add(control);
             m_Controls.Add(control);
         }

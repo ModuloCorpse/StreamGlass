@@ -45,11 +45,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\CorpseLib\CorpseLib.Web\CorpseLib.Web.csproj" />
-    <ProjectReference Include="..\..\CorpseLib\CorpseLib.Wpf\CorpseLib.Wpf.csproj" />
-    <ProjectReference Include="..\..\CorpseLib\CorpseLib\CorpseLib.csproj" />
-    <ProjectReference Include="..\..\CorpseLib\TwitchCorpse\TwitchCorpse.csproj" />
-    <ProjectReference Include="..\StreamGlass.Core\StreamGlass.Core.csproj" />
     <ProjectReference Include="..\StreamGlass.Twitch\StreamGlass.Twitch.csproj" />
   </ItemGroup>
 

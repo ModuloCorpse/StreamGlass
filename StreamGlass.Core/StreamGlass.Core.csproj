@@ -14,7 +14,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\CorpseLib\CorpseLib.Wpf\CorpseLib.Wpf.csproj" />
     <ProjectReference Include="..\..\CorpseLib\CorpseLib\CorpseLib.csproj" />
-    <ProjectReference Include="..\..\CorpseLib\TwitchCorpse\TwitchCorpse.csproj" />
   </ItemGroup>
 
   <ItemGroup>

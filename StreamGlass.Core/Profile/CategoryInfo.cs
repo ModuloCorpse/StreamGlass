@@ -3,7 +3,7 @@ using CorpseLib;
 
 namespace StreamGlass.Core.Profile
 {
-    public class CategoryInfo
+    public class CategoryInfo(string id, string name)
     {
         public class JSerializer : AJSerializer<CategoryInfo>
         {
@@ -21,23 +21,13 @@ namespace StreamGlass.Core.Profile
                 writer["name"] = obj.m_Name;
             }
         }
-        private string m_ID;
-        private string m_Name;
+        private string m_ID = id;
+        private string m_Name = name;
 
         public string ID => m_ID;
         public string Name => m_Name;
 
-        public CategoryInfo(string id, string name)
-        {
-            m_ID = id;
-            m_Name = name;
-        }
-
-        public CategoryInfo(string name)
-        {
-            m_ID = name;
-            m_Name = name;
-        }
+        public CategoryInfo(string name) : this(name, name) { }
 
         public void Copy(CategoryInfo other)
         {

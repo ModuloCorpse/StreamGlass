@@ -54,7 +54,7 @@
                 </ui:StackPanel>
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                     <ui:Label x:Name="UserComboBoxLabel" TranslationKey="profile_editor_user" VerticalAlignment="Center" TextAlignment="Right" Text="User:" Width="150"/>
-                    <ComboBox Margin="5,0,0,0" x:Name="UserComboBox" Height="26" Width="250"/>
+                    <ui:NumericUpDown Margin="5,0,0,0" x:Name="UserUpDown" MinValue="0" Height="26" Width="250"/>
                 </ui:StackPanel>
                 <ui:GroupBox x:Name="AliasesGroupBox" TranslationKey="section_aliases" Header="Aliases">
                     <ui:EditableList x:Name="AliasesList" Height="75" EditImageSource="../Assets/pencil.png" IsSearchable="False" />

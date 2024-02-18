@@ -80,9 +80,7 @@
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
                 <ui:DockPanel x:Name="StreamChatDock" LastChildFill="True" Grid.Column="0">
-                    <ui:Border x:Name="StreamChatBorder" BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top">
-                        <chat:UserMessageScrollPanel x:Name="StreamChatPanel"/>
-                    </ui:Border>
+                    <ui:Border x:Name="StreamChatBorder" BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top" />
                 </ui:DockPanel>
                 <ui:DockPanel x:Name="ProfilePanel" LastChildFill="True" Grid.Column="1">
                     <ui:Grid>
@@ -90,12 +88,8 @@
                             <RowDefinition Height="1*" />
                             <RowDefinition Height="1*" />
                         </Grid.RowDefinitions>
-                        <ui:Border Grid.Row="0" BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top">
-                            <alert:AlertScrollPanel x:Name="StreamAlertPanel" />
-                        </ui:Border>
-                        <ui:Border Grid.Row="1" BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top">
-                            <mod:HeldMessageScrollPanel x:Name="HeldMessagePanel" />
-                        </ui:Border>
+                        <ui:Border x:Name="StreamAlertBorder" Grid.Row="0" BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top" />
+                        <ui:Border x:Name="HeldMessageBorder" Grid.Row="1" BrushPaletteKey="dialog_border" CornerRadius="5" BorderThickness="2,1,2,2" DockPanel.Dock="Top" />
                     </ui:Grid>
                 </ui:DockPanel>
             </ui:Grid>

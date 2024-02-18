@@ -4,8 +4,6 @@ using CorpseLib.Placeholder;
 using CorpseLib.StructuredText;
 using StreamGlass.Core.Profile;
 using StreamGlass.Core.Stat;
-using TwitchCorpse;
-using TwitchCorpse.API;
 
 namespace StreamGlass.Core
 {
@@ -21,14 +19,13 @@ namespace StreamGlass.Core
         public static void RegisterFunction(string functionName, Function fct) => ms_Functions[functionName] = fct;
         public static void UnregisterFunction(string functionName) => ms_Functions.Remove(functionName);
 
+        public static void CreateStatistic(string statistic) => ms_Statistics.CreateStatistic(statistic);
         public static void UpdateStatistic(string statistic, object value) => ms_Statistics.UpdateStatistic(statistic, value);
         public static T? GetStatistic<T>(string statistic) => ms_Statistics.Get<T>(statistic);
         public static T GetStatistic<T>(string statistic, T defaultValue) => ms_Statistics.GetOr(statistic, defaultValue);
 
         public static void Init()
         {
-            JHelper.RegisterSerializer(new TwitchBadgeInfo.JSerializer());
-            JHelper.RegisterSerializer(new TwitchUser.JSerializer());
             JHelper.RegisterSerializer(new Text.JSerializer());
             JHelper.RegisterSerializer(new Section.JSerializer());
             JHelper.RegisterSerializer(new UserMessage.JSerializer());
@@ -37,19 +34,6 @@ namespace StreamGlass.Core
             JHelper.RegisterSerializer(new UpdateStreamInfoArgs.JSerializer());
 
             ms_Statistics.Load();
-
-            ms_Statistics.CreateStatistic("viewer_count");
-            ms_Statistics.CreateStatistic("last_bits_donor");
-            ms_Statistics.CreateStatistic("last_bits_donation");
-            ms_Statistics.CreateStatistic("top_bits_donor");
-            ms_Statistics.CreateStatistic("top_bits_donation");
-            ms_Statistics.CreateStatistic("last_follow");
-            ms_Statistics.CreateStatistic("last_raider");
-            ms_Statistics.CreateStatistic("last_gifter");
-            ms_Statistics.CreateStatistic("last_nb_gift");
-            ms_Statistics.CreateStatistic("top_gifter");
-            ms_Statistics.CreateStatistic("top_nb_gift");
-            ms_Statistics.CreateStatistic("last_sub");
         }
 
         public static void Delete()

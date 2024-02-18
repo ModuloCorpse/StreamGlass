@@ -1,5 +1,6 @@
 ﻿using StreamGlass.Core;
 using StreamGlass.Core.Controls;
+using StreamGlass.Core.Profile;
 
 namespace StreamGlass.Twitch.Moderation
 {
@@ -17,8 +18,8 @@ namespace StreamGlass.Twitch.Moderation
 
         public void Init()
         {
-            StreamGlassCanals.Register<UserMessage>("held_message", OnHeldMessage);
-            StreamGlassCanals.Register<string>("held_message_moderated", RemoveHeldMessage);
+            StreamGlassCanals.Register<TwitchMessage>(TwitchPlugin.HELD_MESSAGE, OnHeldMessage);
+            StreamGlassCanals.Register<string>(TwitchPlugin.HELD_MESSAGE_MODERATED, RemoveHeldMessage);
         }
 
         public void SetSenderWidth(double width)
@@ -45,7 +46,7 @@ namespace StreamGlass.Twitch.Moderation
             UpdateControlsPosition();
         }
 
-        private void OnHeldMessage(UserMessage? message)
+        private void OnHeldMessage(TwitchMessage? message)
         {
             if (message == null)
                 return;

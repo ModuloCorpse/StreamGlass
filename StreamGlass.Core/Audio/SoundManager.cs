@@ -8,7 +8,7 @@ namespace StreamGlass.Core.Audio
     {
         class AudioOutput : IDisposable
         {
-            //Using WaveOutEvent instead of WaveOut to avoid audio lag in the UI lag a bit
+            //Using WaveOutEvent instead of WaveOut to avoid audio lag if the UI lag a bit
             private readonly WaveOutEvent m_WaveOut;
             private readonly MixingSampleProvider m_Mixer;
             private readonly string m_Name;

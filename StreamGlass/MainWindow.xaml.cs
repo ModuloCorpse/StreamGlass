@@ -1,15 +1,11 @@
-﻿using CorpseLib.Ini;
-using CorpseLib.Translation;
+﻿using CorpseLib.Translation;
 using StreamGlass.Core;
-using StreamGlass.Core.Audio;
 using StreamGlass.Core.Controls;
 using StreamGlass.Core.Profile;
 using StreamGlass.Core.Stat;
 using StreamGlass.StreamChat;
-using StreamGlass.Twitch.Alert;
-using StreamGlass.Twitch.StreamChat;
+using StreamGlass.Twitch;
 using System;
-using System.Globalization;
 using System.Windows;
 
 namespace StreamGlass
@@ -57,73 +53,6 @@ namespace StreamGlass
             lightMode.AddHexColor("chat_highlight_message", "#FFFFFF");
             palette.SetCurrentPalette("dark-mode");
             palette.Load();
-            StreamChatPanel.SetBrushPalette(palette);
-            StreamAlertPanel.SetBrushPalette(palette);
-        }
-
-        private void InitializeAlertSetting(IniFile settings, AlertScrollPanel.AlertType alertType, bool hasGift, Sound? audio, string imgPath, string prefix, string? chatMessage)
-        {
-            IniSection alertSection = settings.GetOrAdd("alert");
-            string audioFilePath = alertSection.GetOrAdd(string.Format("{0}_audio_file", alertType), audio?.File ?? string.Empty);
-            string audioOutputPath = alertSection.GetOrAdd(string.Format("{0}_audio_output", alertType), audio?.Output ?? string.Empty);
-            string loadedImgPath = alertSection.GetOrAdd(string.Format("{0}_path", alertType), imgPath);
-            string loadedPrefix = alertSection.GetOrAdd(string.Format("{0}_prefix", alertType), prefix);
-            string loadedChatMessage = alertSection.GetOrAdd(string.Format("{0}_chat_message", alertType), chatMessage ?? string.Empty);
-            bool loadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_enabled", alertType), "true") == "true";
-            bool loadedChatMessageIsEnabled = alertSection.GetOrAdd(string.Format("{0}_chat_message_enabled", alertType), (chatMessage != null) ? "true" : "false") == "true";
-            StreamAlertPanel.SetAlertInfo(alertType, new(audioFilePath, audioOutputPath), loadedImgPath, loadedPrefix, loadedChatMessage, loadedIsEnabled, loadedChatMessageIsEnabled);
-
-            if (hasGift)
-            {
-                string giftAudioFilePath = alertSection.GetOrAdd(string.Format("{0}_gift_audio_file", alertType), audio?.File ?? string.Empty);
-                string giftAudioOutputPath = alertSection.GetOrAdd(string.Format("{0}_gift_audio_output", alertType), audio?.Output ?? string.Empty);
-                string giftLoadedImgPath = alertSection.GetOrAdd(string.Format("{0}_gift_path", alertType), imgPath);
-                string giftLoadedPrefix = alertSection.GetOrAdd(string.Format("{0}_gift_prefix", alertType), prefix);
-                string giftLoadedChatMessage = alertSection.GetOrAdd(string.Format("{0}_gift_chat_message", alertType), chatMessage ?? string.Empty);
-                bool giftLoadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_enabled", alertType), "true") == "true";
-                bool giftLoadedChatMessageIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_chat_message_enabled", alertType), (chatMessage != null) ? "true" : "false") == "true";
-                StreamAlertPanel.SetGiftAlertInfo(alertType, new(giftAudioFilePath, giftAudioOutputPath), giftLoadedImgPath, giftLoadedPrefix, giftLoadedChatMessage, giftLoadedIsEnabled, giftLoadedChatMessageIsEnabled);
-            }
-        }
-
-        internal void InitializeSettings(IniFile settings)
-        {
-            //TODO Move to Twitch plugin
-            //Chat
-            IniSection chatSection = settings.GetOrAdd("chat");
-            StreamChatPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(chatSection.GetOrAdd("display_type", "0")));
-            StreamChatPanel.SetContentFontSize(double.Parse(chatSection.GetOrAdd("message_font_size", "14")));
-            chatSection.Add("do_welcome", "true");
-            chatSection.Add("welcome_message", "Hello World! Je suis un bot connecté via StreamGlass!");
-
-            //TODO Move to Twitch plugin
-            //Alert
-            IniSection alertSection = settings.GetOrAdd("alert");
-            StreamAlertPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(alertSection.GetOrAdd("display_type", "0")));
-            StreamAlertPanel.SetContentFontSize(double.Parse(alertSection.GetOrAdd("message_font_size", "20")));
-            InitializeAlertSetting(settings, AlertScrollPanel.AlertType.INCOMMING_RAID, false, null, "../Assets/parachute.png", "${e.From.DisplayName} is raiding you with ${e.NbViewers} viewers", null);
-            InitializeAlertSetting(settings, AlertScrollPanel.AlertType.OUTGOING_RAID, false, null, "../Assets/parachute.png", "You are raiding ${e.To.DisplayName} with ${e.NbViewers} viewers", null);
-            InitializeAlertSetting(settings, AlertScrollPanel.AlertType.DONATION, false, null, "../Assets/take-my-money.png", "${e.User.DisplayName} as donated ${e.Amount} ${e.Currency}: ", null);
-            InitializeAlertSetting(settings, AlertScrollPanel.AlertType.REWARD, false, new("Assets/alert-sound.wav", string.Empty), "../Assets/chest.png", "${e.From.DisplayName} retrieve ${e.Reward}: ${e.Input}", null);
-            InitializeAlertSetting(settings, AlertScrollPanel.AlertType.FOLLOW, false, null, "../Assets/hearts.png", "${e.User.DisplayName} is now following you: ", null);
-            InitializeAlertSetting(settings, AlertScrollPanel.AlertType.TIER1, true, null, "../Assets/stars-stack-1.png", "${e.User.DisplayName} as subscribed to you with a tier 1: ", null);
-            InitializeAlertSetting(settings, AlertScrollPanel.AlertType.TIER2, true, null, "../Assets/stars-stack-2.png", "${e.User.DisplayName} as subscribed to you with a tier 2: ", null);
-            InitializeAlertSetting(settings, AlertScrollPanel.AlertType.TIER3, true, null, "../Assets/stars-stack-3.png", "${e.User.DisplayName} as subscribed to you with a tier 3: ", null);
-            InitializeAlertSetting(settings, AlertScrollPanel.AlertType.TIER4, true, null, "../Assets/chess-queen.png", "${e.User.DisplayName} as subscribed to you with a prime: ", null);
-            InitializeAlertSetting(settings, AlertScrollPanel.AlertType.SHOUTOUT, false, null, "../Assets/megaphone.png", "${e.Moderator.DisplayName} gave a shoutout to ${e.User.DisplayName}", "Go check ${DisplayName(Lower(e.User.DisplayName))}, who's playing ${Game(e.User.DisplayName)} on https://twitch.tv/${e.User.Name}");
-            InitializeAlertSetting(settings, AlertScrollPanel.AlertType.BEING_SHOUTOUT, false, null, "../Assets/megaphone.png", "${e.DisplayName} gave you a shoutout", null);
-
-            //TODO Move to Twitch plugin
-            //Held message
-            IniSection moderationSection = settings.GetOrAdd("moderation");
-            HeldMessagePanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(moderationSection.GetOrAdd("display_type", "0")));
-            HeldMessagePanel.SetSenderFontSize(double.Parse(moderationSection.GetOrAdd("sender_font_size", "14")));
-            HeldMessagePanel.SetSenderWidth(double.Parse(moderationSection.GetOrAdd("sender_size", "200")));
-            HeldMessagePanel.SetContentFontSize(double.Parse(moderationSection.GetOrAdd("message_font_size", "14")));
-
-            //Settings
-            IniSection settingsSection = settings.GetOrAdd("settings");
-            Translator.SetLanguage(CultureInfo.GetCultureInfo(settingsSection.GetOrAdd("language", "en-US")));
         }
 
         public MainWindow(SplashScreen splashScreen) : base(new())
@@ -131,18 +60,21 @@ namespace StreamGlass
             m_SplashScreen = splashScreen;
             StreamGlassContext.Init();
             StreamGlassContext.LOGGER.Start();
-            StreamGlassCanals.Register<string>("profile_changed_menu_item", (profileID) => m_MenuItemsRadioGroup.Select(profileID!));
+            StreamGlassCanals.Register<string>(StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM, (profileID) => m_MenuItemsRadioGroup.Select(profileID!));
 
             InitializeComponent();
             m_SplashScreen.UpdateProgressBar(10);
             InitializeBrushPalette();
             m_SplashScreen.UpdateProgressBar(30);
-            m_Manager = new(splashScreen, this);
+            m_Manager = new(splashScreen);
+            //TODO Temporary code : To remove
+            TwitchPlugin twitchPlugin = m_Manager.TwitchPlugin;
+            StreamChatBorder.Child = twitchPlugin.CreateUserMessageScrollPanel();
+            StreamAlertBorder.Child = twitchPlugin.CreateAlertScrollPanel();
+            HeldMessageBorder.Child = twitchPlugin.CreateHeldMessageScrollPanel();
+            //
             UpdateProfilesMenuList();
 
-            HeldMessagePanel.Init();
-            StreamChatPanel.Init();
-            StreamAlertPanel.Init(m_Manager.ConnectionManager);
             m_SplashScreen.UpdateProgressBar(100);
         }
 
@@ -181,8 +113,6 @@ namespace StreamGlass
         {
             Core.Settings.Dialog dialog = new(this);
             dialog.AddTabItem(new GeneralSettingsItem(m_Manager.GetOrAddSettings("stream-chat"), GetBrushPalette()));
-            dialog.AddTabItem(new StreamChatSettingsItem(m_Manager.GetOrAddSettings("chat"), StreamChatPanel));
-            dialog.AddTabItem(new StreamAlertSettingsItem(m_Manager.GetOrAddSettings("alert"), StreamAlertPanel));
             m_Manager.FillSettingsDialog(dialog);
             dialog.ShowDialog();
         }
@@ -216,7 +146,7 @@ namespace StreamGlass
 
         private void EditProfilesButton_Click(object sender, RoutedEventArgs e)
         {
-            ProfilesDialog dialog = new(this, m_Manager.ProfileManager, m_Manager.ConnectionManager);
+            ProfilesDialog dialog = new(this, m_Manager.ProfileManager);
             dialog.ShowDialog();
             UpdateProfilesMenuList();
         }

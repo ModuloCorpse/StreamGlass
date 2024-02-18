@@ -1,36 +1,32 @@
 ﻿using CorpseLib;
-using CorpseLib.Ini;
+using StreamGlass.Core.Profile;
+using StreamGlass.Core;
+using StreamGlass.Twitch.Events;
+using TwitchCorpse;
 using CorpseLib.Network;
 using CorpseLib.Serialize;
-using CorpseLib.Web.WebSocket;
-using StreamGlass.Core;
-using StreamGlass.Core.Connections;
-using StreamGlass.Core.Controls;
-using StreamGlass.Core.Profile;
-using StreamGlass.Core.Settings;
-using StreamGlass.Twitch.Events;
 using System.Text;
-using TwitchCorpse;
+using CorpseLib.Web.WebSocket;
+using CorpseLib.Ini;
 using static TwitchCorpse.TwitchEventSub;
 
 namespace StreamGlass.Twitch
 {
-    public class Connection : AStreamConnection
+    public class TwitchCore
     {
         private static readonly string AUTHENTICATOR_PAGE_CONTENT = "<!DOCTYPE html><html><head><title>StreamGlass Twitch Auth</title></head><body><p>You can close this page</p></body></html>";
 
-        private readonly ProfileManager m_ProfileManager;
-        private readonly ConnectionManager m_ConnectionManager;
         private readonly RecurringAction m_GetViewerCount = new(500);
         private TwitchChannelInfo? m_OriginalBroadcasterChannelInfo = null;
-        private readonly TwitchAuthenticator m_Authenticator;
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+        private IniSection m_Settings = null;
         private TwitchHandler m_TwitchHandler = null;
         private TwitchPubSub m_PubSub = null;
         private TwitchEventSub m_EventSub = null;
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
         private readonly TwitchAPI m_API = new();
         private TwitchAPI m_IRCAPI = new();
+        private bool m_IsConnected = false;
         private readonly SubscriptionType[] m_SubscriptionTypes = [
             SubscriptionType.ChannelFollow,
             SubscriptionType.ChannelSubscribe,
@@ -48,29 +44,81 @@ namespace StreamGlass.Twitch
             SubscriptionType.ChannelChatNotification
         ];
 
-        public Connection(ProfileManager profileManager, ConnectionManager connectionManager, IniSection settings): base(settings)
+        public TwitchCore()
         {
-            m_ProfileManager = profileManager;
-            m_ConnectionManager = connectionManager;
-
             TwitchAPI.StartLogging();
             TwitchPubSub.StartLogging();
             TwitchEventSub.StartLogging();
             TwitchChat.StartLogging();
-            m_Authenticator = new(settings.Get("public_key"), settings.Get("secret_key"));
-            m_Authenticator.SetPageContent("<!DOCTYPE html><html><head><title>StreamGlass Twitch Auth</title></head><body><p>You can close this page</p></body></html>");
             m_GetViewerCount.OnUpdate += UpdateViewerCount;
         }
 
-        protected override void LoadSettings() { }
+        internal void SetSettings(IniSection settings) => m_Settings = settings;
 
-        protected override void BeforeConnect()
+        private bool Authenticate(string publicKey, string privateKey, string browser)
         {
-            StreamGlassCanals.Register<TwitchUser>("user_joined", OnUserJoinedChannel);
-            StreamGlassCanals.Register<UpdateStreamInfoArgs>("update_stream_info", SetStreamInfo);
-            StreamGlassCanals.Register<BanEventArgs>("ban", BanUser);
-            StreamGlassCanals.Register<MessageAllowedEventArgs>("allow_message", AllowMessage);
-            StreamGlassCanals.Register<uint>("start_ads", OnStartAds);
+            m_API.Authenticate(publicKey, privateKey, 3000, AUTHENTICATOR_PAGE_CONTENT);
+            if (string.IsNullOrWhiteSpace(browser))
+                m_IRCAPI = m_API;
+            else
+                m_IRCAPI.AuthenticateWithBrowser(publicKey, privateKey, 3000, AUTHENTICATOR_PAGE_CONTENT, browser);
+            return m_API.IsAuthenticated && m_IRCAPI.IsAuthenticated;
+        }
+
+        private bool Init()
+        {
+            if (!m_API.IsAuthenticated || !m_IRCAPI.IsAuthenticated)
+                return false;
+            m_TwitchHandler = new TwitchHandler(m_Settings, m_API);
+            m_API.SetHandler(m_TwitchHandler);
+            m_API.LoadGlobalEmoteSet();
+            m_API.LoadGlobalChatBadges();
+            TwitchUser? creator = m_API.GetUserInfoFromLogin("chaporon_");
+            if (creator != null)
+                m_API.LoadChannelEmoteSet(creator);
+
+            TwitchUser? userInfoOfToken = m_IRCAPI.GetSelfUserInfo();
+            if (userInfoOfToken != null)
+                m_API.LoadEmoteSetFromFollowedChannel(userInfoOfToken);
+            TwitchUser selfUserInfo = m_API.GetSelfUserInfo();
+            m_API.LoadChannelChatBadges(selfUserInfo);
+            if (!string.IsNullOrEmpty(selfUserInfo.Name))
+                m_TwitchHandler.SetIRCChannel(selfUserInfo.Name);
+
+            ResetStreamInfo();
+            m_OriginalBroadcasterChannelInfo = m_API.GetChannelInfo(selfUserInfo);
+
+            if (m_OriginalBroadcasterChannelInfo != null)
+            {
+                TwitchEventSub? eventSub = m_API.EventSubConnection(m_OriginalBroadcasterChannelInfo.Broadcaster.ID, m_SubscriptionTypes);
+                if (eventSub != null)
+                {
+                    m_EventSub = eventSub;
+                    m_EventSub.SetMonitor(new DebugLogMonitor(TwitchEventSub.LOGGER));
+                    m_EventSub.OnWelcome += (object? sender, EventArgs e) =>
+                    {
+                        if (m_Settings.Get("do_welcome") == "true")
+                            PostMessage(m_Settings.Get("welcome_message"));
+                    };
+                }
+                TwitchPubSub? pubSub = m_API.PubSubConnection(m_OriginalBroadcasterChannelInfo.Broadcaster.ID);
+                if (pubSub != null)
+                {
+                    m_PubSub = pubSub;
+                    m_PubSub.SetMonitor(new DebugLogMonitor(TwitchPubSub.PUBSUB));
+                }
+            }
+
+            return true;
+        }
+
+        public void OnPluginInit()
+        {
+            StreamGlassCanals.Register<string>(StreamGlassCanals.SEND_MESSAGE, PostMessage);
+            StreamGlassCanals.Register<TwitchUser>(TwitchPlugin.USER_JOINED, OnUserJoinedChannel);
+            StreamGlassCanals.Register<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
+            StreamGlassCanals.Register<BanEventArgs>(TwitchPlugin.BAN, BanUser);
+            StreamGlassCanals.Register<MessageAllowedEventArgs>(TwitchPlugin.ALLOW_MESSAGE, AllowMessage);
 
             StreamGlassContext.RegisterFunction("Game", (string[] variables) => {
                 var channelInfo = m_API.GetChannelInfo(variables[0]);
@@ -92,122 +140,59 @@ namespace StreamGlass.Twitch
             });
         }
 
-        protected override void AfterConnect()
+        public bool Connect()
         {
-            m_GetViewerCount.Start();
-        }
-
-        protected override bool Authenticate()
-        {
-            m_API.Authenticate(Settings.Get("public_key"), Settings.Get("secret_key"), 3000, AUTHENTICATOR_PAGE_CONTENT);
-            string browser = GetSetting("browser");
-            if (string.IsNullOrWhiteSpace(browser))
-                m_IRCAPI = m_API;
-            else
-                m_IRCAPI.AuthenticateWithBrowser(Settings.Get("public_key"), Settings.Get("secret_key"), 3000, AUTHENTICATOR_PAGE_CONTENT, browser);
-            return m_API.IsAuthenticated && m_IRCAPI.IsAuthenticated;
-        }
-
-        protected override bool Init()
-        {
-            if (!m_API.IsAuthenticated || !m_IRCAPI.IsAuthenticated)
-                return false;
-            m_TwitchHandler = new TwitchHandler(Settings, m_API);
-            m_API.SetHandler(m_TwitchHandler);
-            m_API.LoadGlobalEmoteSet();
-            m_API.LoadGlobalChatBadges();
-            TwitchUser? creator = m_API.GetUserInfoFromLogin("chaporon_");
-            if (creator != null)
-                m_API.LoadChannelEmoteSet(creator);
-
-            TwitchUser? userInfoOfToken = m_IRCAPI.GetSelfUserInfo();
-            if (userInfoOfToken != null)
-                m_API.LoadEmoteSetFromFollowedChannel(userInfoOfToken);
-            TwitchUser selfUserInfo = m_API.GetSelfUserInfo();
-            m_API.LoadChannelChatBadges(selfUserInfo);
-            if (!string.IsNullOrEmpty(selfUserInfo.Name))
-                m_TwitchHandler.SetIRCChannel(selfUserInfo.Name);
-
-            ResetStreamInfo();
-            m_OriginalBroadcasterChannelInfo = m_API.GetChannelInfo(selfUserInfo);
-
-            m_ProfileManager.UpdateStreamInfo();
-
-            if (m_OriginalBroadcasterChannelInfo != null)
+            if (!m_IsConnected)
             {
-                TwitchEventSub? eventSub = m_API.EventSubConnection(m_OriginalBroadcasterChannelInfo.Broadcaster.ID, m_SubscriptionTypes);
-                if (eventSub != null)
+                if (!Authenticate(m_Settings.Get("public_key"), m_Settings.Get("secret_key"), m_Settings.Get("browser")))
+                    return false;
+                if (Init())
                 {
-                    m_EventSub = eventSub;
-                    m_EventSub.SetMonitor(new DebugLogMonitor(TwitchEventSub.LOGGER));
-                    m_EventSub.OnWelcome += (object? sender, EventArgs e) =>
-                    {
-                        if (Settings.Get("do_welcome") == "true")
-                            m_ConnectionManager.SendMessage(Settings.Get("welcome_message"));
-                    };
-                }
-                TwitchPubSub? pubSub = m_API.PubSubConnection(m_OriginalBroadcasterChannelInfo.Broadcaster.ID);
-                if (pubSub != null)
-                {
-                    m_PubSub = pubSub;
-                    m_PubSub.SetMonitor(new DebugLogMonitor(TwitchPubSub.PUBSUB));
+                    m_IsConnected = true;
+                    m_GetViewerCount.Start();
+                    return true;
                 }
             }
-
-            return true;
+            return false;
         }
 
-
-
-        protected override bool OnReconnect() => true;
-
-        protected override void BeforeDisconnect()
+        public void Disconnect()
         {
-            m_GetViewerCount.Stop();
+            if (m_IsConnected)
+            {
+                m_GetViewerCount.Stop();
+                ResetStreamInfo();
+                m_PubSub?.Disconnect();
+                m_EventSub?.Disconnect();
+                m_IsConnected = false;
+                StreamGlassCanals.Unregister<string>(StreamGlassCanals.SEND_MESSAGE, PostMessage);
+                StreamGlassCanals.Unregister<TwitchUser>(TwitchPlugin.USER_JOINED, OnUserJoinedChannel);
+                StreamGlassCanals.Unregister<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
+                StreamGlassCanals.Unregister<BanEventArgs>(TwitchPlugin.BAN, BanUser);
+                StreamGlassCanals.Unregister<MessageAllowedEventArgs>(TwitchPlugin.ALLOW_MESSAGE, AllowMessage);
+                StreamGlassContext.UnregisterFunction("Game");
+                StreamGlassContext.UnregisterFunction("DisplayName");
+                StreamGlassContext.UnregisterFunction("Channel");
+            }
         }
 
-        protected override void Unauthenticate()
+        private void UpdateViewerCount(object? sender, EventArgs e)
         {
-            m_PubSub?.Disconnect();
-            m_EventSub?.Disconnect();
-        }
-
-        protected override void Clean()
-        {
-            ResetStreamInfo();
-        }
-
-        protected override void AfterDisconnect()
-        {
-            StreamGlassCanals.Unregister<TwitchUser>("user_joined", OnUserJoinedChannel);
-            StreamGlassCanals.Unregister<UpdateStreamInfoArgs>("update_stream_info", SetStreamInfo);
-            StreamGlassCanals.Unregister<BanEventArgs>("ban", BanUser);
-            StreamGlassCanals.Unregister<MessageAllowedEventArgs>("allow_message", AllowMessage);
-            StreamGlassContext.UnregisterFunction("Game");
-            StreamGlassContext.UnregisterFunction("DisplayName");
-            StreamGlassContext.UnregisterFunction("Channel");
-        }
-
-        public override TabItemContent[] GetSettings() => new TabItemContent[] { new TwitchSettingsItem(Settings, this) };
-
-        protected override void OnUpdate(long deltaTime) { }
-
-        private void OnUserJoinedChannel(TwitchUser? user)
-        {
-            if (user == null)
-                return;
-            m_API.LoadEmoteSetFromFollowedChannel(user);
-        }
-
-        public override void SendMessage(string message)
-        {
-            m_IRCAPI.PostMessage(m_API.GetSelfUserInfo(), message);
+            if (m_OriginalBroadcasterChannelInfo != null)
+                m_TwitchHandler.UpdateViewerCountOf(m_OriginalBroadcasterChannelInfo.Broadcaster);
         }
 
         private void ResetStreamInfo()
         {
             if (m_OriginalBroadcasterChannelInfo != null)
                 m_API.SetChannelInfo(m_OriginalBroadcasterChannelInfo.Broadcaster, m_OriginalBroadcasterChannelInfo.Title, m_OriginalBroadcasterChannelInfo.GameID, m_OriginalBroadcasterChannelInfo.BroadcasterLanguage);
+        }
+
+        private void OnUserJoinedChannel(TwitchUser? user)
+        {
+            if (user == null)
+                return;
+            m_API.LoadEmoteSetFromFollowedChannel(user);
         }
 
         private void SetStreamInfo(UpdateStreamInfoArgs? arg)
@@ -221,13 +206,6 @@ namespace StreamGlass.Twitch
                 string language = (string.IsNullOrWhiteSpace(arg.Language)) ? m_OriginalBroadcasterChannelInfo.BroadcasterLanguage : arg.Language;
                 m_API.SetChannelInfo(m_OriginalBroadcasterChannelInfo.Broadcaster, title, category, language);
             }
-        }
-
-        public override CategoryInfo? SearchCategoryInfo(Window parent, CategoryInfo? info)
-        {
-            CategorySearchDialog dialog = new(parent, info, m_API);
-            dialog.ShowDialog();
-            return dialog.CategoryInfo;
         }
 
         private void BanUser(BanEventArgs? arg)
@@ -244,43 +222,50 @@ namespace StreamGlass.Twitch
             m_API.ManageHeldMessage(arg.MessageID, arg.IsAllowed);
         }
 
-        private void UpdateViewerCount(object? sender, System.EventArgs e)
+        internal void StartAds(uint duration) => m_API.StartCommercial(duration);
+
+        private void PostMessage(string? message)
         {
-            if (m_OriginalBroadcasterChannelInfo != null)
-                m_TwitchHandler.UpdateViewerCountOf(m_OriginalBroadcasterChannelInfo.Broadcaster);
+            if (!string.IsNullOrWhiteSpace(message))
+                m_IRCAPI.PostMessage(m_API.GetSelfUserInfo(), message);
         }
 
-        private void OnStartAds(uint duration) => m_API.StartCommercial(duration);
-
-        protected override void OnTest()
+        /*public override CategoryInfo? SearchCategoryInfo(Window parent, CategoryInfo? info)
         {
-            if (!IsConnected)
+            CategorySearchDialog dialog = new(parent, info, m_API);
+            dialog.ShowDialog();
+            return dialog.CategoryInfo;
+        }*/
+
+        public void Test()
+        {
+            if (!m_IsConnected)
                 return;
             TwitchUser m_StreamGlass = m_IRCAPI.GetSelfUserInfo();
             TwitchUser m_Self = m_API.GetSelfUserInfo();
             StreamGlassContext.LOGGER.Log("Testing Twitch");
             StreamGlassContext.LOGGER.Log("Testing follow");
-            StreamGlassCanals.Emit("follow", new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 0, 69, 42));
+            StreamGlassCanals.Emit(TwitchPlugin.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 0, 69, 42));
             StreamGlassContext.LOGGER.Log("Testing sub tier 1");
-            StreamGlassCanals.Emit("follow", new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 1, 69, 42));
+            StreamGlassCanals.Emit(TwitchPlugin.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 1, 69, 42));
             StreamGlassContext.LOGGER.Log("Testing sub tier 2");
-            StreamGlassCanals.Emit("follow", new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 2, 69, 42));
+            StreamGlassCanals.Emit(TwitchPlugin.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 2, 69, 42));
             StreamGlassContext.LOGGER.Log("Testing sub tier 3");
-            StreamGlassCanals.Emit("follow", new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 3, 69, 42));
+            StreamGlassCanals.Emit(TwitchPlugin.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 3, 69, 42));
             StreamGlassContext.LOGGER.Log("Testing prime sub");
-            StreamGlassCanals.Emit("follow", new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 4, 69, 42));
+            StreamGlassCanals.Emit(TwitchPlugin.FOLLOW, new FollowEventArgs(m_StreamGlass, new("J'aime le Pop-Corn"), 4, 69, 42));
             StreamGlassContext.LOGGER.Log("Testing gift sub tier 1");
-            StreamGlassCanals.Emit("gift_follow", new GiftFollowEventArgs(m_Self, m_StreamGlass, new("Il aime le Pop-Corn"), 1, 69, 42, -1));
+            StreamGlassCanals.Emit(TwitchPlugin.GIFT_FOLLOW, new GiftFollowEventArgs(m_Self, m_StreamGlass, new("Il aime le Pop-Corn"), 1, 69, 42, -1));
             StreamGlassContext.LOGGER.Log("Testing bits donation");
-            StreamGlassCanals.Emit("donation", new DonationEventArgs(m_StreamGlass, 666, "bits", new("J'aime le Pop-Corn")));
+            StreamGlassCanals.Emit(TwitchPlugin.DONATION, new DonationEventArgs(m_StreamGlass, 666, "bits", new("J'aime le Pop-Corn")));
             StreamGlassContext.LOGGER.Log("Testing incomming raid");
-            StreamGlassCanals.Emit("raid", new RaidEventArgs(m_StreamGlass, m_Self, 40, true));
+            StreamGlassCanals.Emit(TwitchPlugin.RAID, new RaidEventArgs(m_StreamGlass, m_Self, 40, true));
             StreamGlassContext.LOGGER.Log("Testing reward");
-            StreamGlassCanals.Emit("reward", new RewardEventArgs(m_StreamGlass, "Chante", "J'aime le Pop-Corn"));
+            StreamGlassCanals.Emit(TwitchPlugin.REWARD, new RewardEventArgs(m_StreamGlass, "Chante", "J'aime le Pop-Corn"));
             StreamGlassContext.LOGGER.Log("Testing shoutout");
-            StreamGlassCanals.Emit("shoutout", new ShoutoutEventArgs(m_StreamGlass, m_Self));
+            StreamGlassCanals.Emit(TwitchPlugin.SHOUTOUT, new ShoutoutEventArgs(m_StreamGlass, m_Self));
             StreamGlassContext.LOGGER.Log("Testing incomming shoutout");
-            StreamGlassCanals.Emit("being_shoutout", m_StreamGlass);
+            StreamGlassCanals.Emit(TwitchPlugin.BEING_SHOUTOUT, m_StreamGlass);
             StreamGlassContext.LOGGER.Log("Twitch tested");
 
             BytesWriter bytesWriter = m_EventSub.CreateBytesWriter();

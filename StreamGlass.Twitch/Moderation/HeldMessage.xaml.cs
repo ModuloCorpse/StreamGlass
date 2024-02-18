@@ -1,4 +1,5 @@
 ﻿using StreamGlass.Core;
+using StreamGlass.Core.Profile;
 using StreamGlass.Twitch.Events;
 using System.Globalization;
 using System.Windows;
@@ -10,7 +11,7 @@ namespace StreamGlass.Twitch.Moderation
     public partial class HeldMessage : Core.Controls.UserControl
     {
         private readonly HeldMessageScrollPanel m_Parent;
-        private readonly UserMessage m_HeldMessage;
+        private readonly TwitchMessage m_HeldMessage;
         private double m_MaxFontSize;
 
         internal string ID => m_HeldMessage.ID;
@@ -32,7 +33,7 @@ namespace StreamGlass.Twitch.Moderation
             return fontSize;
         }
 
-        public HeldMessage(HeldMessageScrollPanel parent, UserMessage message, double senderWidth, double senderFontSize, double fontSize)
+        public HeldMessage(HeldMessageScrollPanel parent, TwitchMessage message, double senderWidth, double senderFontSize, double fontSize)
         {
             m_Parent = parent;
             m_HeldMessage = message;
@@ -69,13 +70,13 @@ namespace StreamGlass.Twitch.Moderation
 
         private void AllowButton_Click(object sender, RoutedEventArgs e)
         {
-            StreamGlassCanals.Emit("allow_message", new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, true));
+            StreamGlassCanals.Emit(TwitchPlugin.ALLOW_MESSAGE, new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, true));
             m_Parent.Remove(this);
         }
 
         private void DenyButton_Click(object sender, RoutedEventArgs e)
         {
-            StreamGlassCanals.Emit("allow_message", new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, false));
+            StreamGlassCanals.Emit(TwitchPlugin.ALLOW_MESSAGE, new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, false));
             m_Parent.Remove(this);
         }
     }

@@ -1,8 +1,6 @@
 ﻿using CorpseLib.Json;
 using CorpseLib.Placeholder;
-using StreamGlass.Core.Connections;
 using System.Collections.ObjectModel;
-using TwitchCorpse;
 
 namespace StreamGlass.Core.Profile
 {
@@ -13,7 +11,7 @@ namespace StreamGlass.Core.Profile
         private readonly int m_AwaitTime = 0;
         private readonly int m_NbMessage = 0;
         private readonly string m_Content = string.Empty;
-        private readonly TwitchUser.Type m_UserType = TwitchUser.Type.NONE;
+        private readonly uint m_UserType = 0;
         private readonly List<string> m_Commands = [];
         //Variables use for command that trigger after a certain amount of time
         private readonly bool m_AutoTrigger = false;
@@ -30,7 +28,7 @@ namespace StreamGlass.Core.Profile
         public int AwaitTime => m_AwaitTime;
         public int NbMessage => m_NbMessage;
         public string Content => m_Content;
-        public TwitchUser.Type UserType => m_UserType;
+        public uint UserType => m_UserType;
         public ReadOnlyCollection<string> Commands => m_Commands.AsReadOnly();
         public bool AutoTrigger => m_AutoTrigger;
         public int AutoTriggerTime => m_AutoTriggerTime;
@@ -44,7 +42,7 @@ namespace StreamGlass.Core.Profile
             m_AwaitTime = json.GetOrDefault("time", 0);
             m_NbMessage = json.GetOrDefault("messages", 0);
             m_Content = json.GetOrDefault("content", string.Empty)!;
-            m_UserType = json.GetOrDefault("user", TwitchUser.Type.SELF);
+            m_UserType = json.GetOrDefault("user", uint.MaxValue);
             m_Commands = json.GetList<string>("commands");
             //AutoTrigger
             m_AutoTrigger = json.GetOrDefault("auto_trigger", false);
@@ -58,7 +56,7 @@ namespace StreamGlass.Core.Profile
             int awaitTime,
             int nbMessage,
             string content,
-            TwitchUser.Type userType,
+            uint userType,
             List<string> commands,
             bool autoTrigger,
             int autoTriggerTime,
@@ -92,7 +90,7 @@ namespace StreamGlass.Core.Profile
                 json.Add("messages", m_NbMessage);
             if (!string.IsNullOrWhiteSpace(m_Content))
                 json.Add("content", m_Content);
-            if (m_UserType != TwitchUser.Type.SELF)
+            if (m_UserType != uint.MaxValue)
                 json.Add("user", m_UserType);
             if (m_Commands.Count != 0)
                 json.Add("commands", m_Commands);
@@ -111,14 +109,14 @@ namespace StreamGlass.Core.Profile
         private void RandomizeDeltaTime()
         {
             if (m_AutoTriggerDeltaTime > 0)
-                m_DeltaTime = new Random().Next(-(int)m_AutoTriggerDeltaTime, (int)m_AutoTriggerDeltaTime) * 1000;
+                m_DeltaTime = new Random().Next(-m_AutoTriggerDeltaTime, m_AutoTriggerDeltaTime) * 1000;
             else if (m_AutoTriggerDeltaTime == 0)
                 m_DeltaTime = 0;
             else
-                m_DeltaTime = new Random().Next((int)m_AutoTriggerDeltaTime, -(int)m_AutoTriggerDeltaTime) * 1000;
+                m_DeltaTime = new Random().Next(m_AutoTriggerDeltaTime, -m_AutoTriggerDeltaTime) * 1000;
         }
 
-        public bool CanTrigger(TwitchUser.Type type) => m_MessageSinceLastTrigger >= m_NbMessage && m_TimeSinceLastTrigger >= (m_AwaitTime * 1000) && m_UserType <= type;
+        public bool CanTrigger(uint type) => m_MessageSinceLastTrigger >= m_NbMessage && m_TimeSinceLastTrigger >= (m_AwaitTime * 1000) && m_UserType <= type;
         public bool CanAutoTrigger() => m_AutoTrigger && m_MessageSinceLastTrigger >= m_NbMessage && (m_TimeSinceLastTrigger + m_DeltaTime) >= (m_AutoTriggerTime * 1000);
 
         internal void Update(long elapsedTime, int nbMessage)
@@ -134,7 +132,7 @@ namespace StreamGlass.Core.Profile
             m_MessageSinceLastTrigger = 0;
         }
 
-        internal void Trigger(string[] arguments, ConnectionManager connectionManager)
+        internal void Trigger(string[] arguments)
         {
             if (!string.IsNullOrWhiteSpace(m_Content))
             {
@@ -142,8 +140,8 @@ namespace StreamGlass.Core.Profile
                 for (int i = 1; i < arguments.Length; ++i)
                     context.AddVariable("$" + i.ToString(), arguments[i]);
                 string contentToSend = Converter.Convert(m_Content, context);
-                connectionManager.SendMessage(contentToSend);
-                StreamGlassCanals.Emit("profile_commands", new ProfileCommandEventArgs(m_Name, arguments));
+                StreamGlassCanals.Emit(StreamGlassCanals.SEND_MESSAGE, contentToSend);
+                StreamGlassCanals.Emit(StreamGlassCanals.PROFILE_COMMANDS, new ProfileCommandEventArgs(m_Name, arguments));
                 Reset();
             }
         }

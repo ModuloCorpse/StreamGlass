@@ -1,8 +1,6 @@
 ﻿using CorpseLib.ManagedObject;
 using System.Collections.ObjectModel;
-using StreamGlass.Core.Connections;
 using CorpseLib.Json;
-using TwitchCorpse;
 
 namespace StreamGlass.Core.Profile
 {
@@ -33,56 +31,56 @@ namespace StreamGlass.Core.Profile
             m_Commands.Add(command);
         }
 
-        private void TriggerCommand(ConnectionManager connectionManager, string command, TwitchUser.Type userType, bool isForced)
+        private void TriggerCommand(string command, uint userType, bool isForced)
         {
             string[] arguments = command.Split(' ');
             if (m_CommandLocation.TryGetValue(arguments[0], out var contentIdx))
             {
                 ChatCommand content = m_Commands[contentIdx];
                 if (isForced || content.CanTrigger(userType))
-                    content.Trigger(arguments, connectionManager);
+                    content.Trigger(arguments);
                 foreach (string child in content.Commands)
-                    TriggerCommand(connectionManager, child, userType, isForced);
+                    TriggerCommand(child, userType, isForced);
             }
             else
-                Parent?.TriggerCommand(connectionManager, command, userType, isForced);
+                Parent?.TriggerCommand(command, userType, isForced);
         }
 
-        private void ForceOnMessage(UserMessage message, ConnectionManager connectionManager)
+        private void ForceOnMessage(UserMessage message)
         {
-            string messageContent = message.Message.ToString();
+            string messageContent = message.Message;
             if (messageContent.Length > 0 && messageContent[0] == '!')
-                TriggerCommand(connectionManager, messageContent[1..], message.SenderType, false);
+                TriggerCommand(messageContent[1..], message.SenderType, false);
         }
 
-        internal void OnMessage(UserMessage message, ConnectionManager connectionManager)
+        internal void OnMessage(UserMessage message)
         {
             lock (m_Lock)
             {
-                ForceOnMessage(message, connectionManager);
+                ForceOnMessage(message);
             }
         }
 
-        private void ForceUpdate(long deltaTime, int nbMessage, ConnectionManager connectionManager)
+        private void ForceUpdate(long deltaTime, int nbMessage)
         {
             foreach (ChatCommand command in m_Commands)
             {
                 command.Update(deltaTime, nbMessage);
                 if (command.CanAutoTrigger())
                 {
-                    command.Trigger(command.AutoTriggerArguments, connectionManager);
+                    command.Trigger(command.AutoTriggerArguments);
                     foreach (string child in command.Commands)
-                        TriggerCommand(connectionManager, child, TwitchUser.Type.SELF, true);
+                        TriggerCommand(child, uint.MaxValue, true);
                 }
             }
-            Parent?.ForceUpdate(deltaTime, nbMessage, connectionManager);
+            Parent?.ForceUpdate(deltaTime, nbMessage);
         }
 
-        internal void Update(long deltaTime, int nbMessage, ConnectionManager connectionManager)
+        internal void Update(long deltaTime, int nbMessage)
         {
             lock (m_Lock)
             {
-                ForceUpdate(deltaTime, nbMessage, connectionManager);
+                ForceUpdate(deltaTime, nbMessage);
             }
         }
 
@@ -137,7 +135,7 @@ namespace StreamGlass.Core.Profile
         public string GetStreamLanguage() => m_StreamInfo.GetStreamLanguage();
         public void SaveStreamInfo(string title, string description, CategoryInfo category, string language) => m_StreamInfo.SaveStreamInfo(title, description, category, language);
 
-        internal void UpdateStreamInfo() => StreamGlassCanals.Emit("update_stream_info", new UpdateStreamInfoArgs(GetStreamTitleOrParent(), GetStreamDescriptionOrParent(), GetStreamCategoryOrParent(), GetStreamLanguageOrParent()));
+        internal void UpdateStreamInfo() => StreamGlassCanals.Emit(StreamGlassCanals.UPDATE_STREAM_INFO, new UpdateStreamInfoArgs(GetStreamTitleOrParent(), GetStreamDescriptionOrParent(), GetStreamCategoryOrParent(), GetStreamLanguageOrParent()));
 
         protected override void Save(ref JObject json)
         {

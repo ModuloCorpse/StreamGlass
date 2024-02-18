@@ -1,21 +1,16 @@
 ﻿using CorpseLib.Json;
 using CorpseLib.ManagedObject;
-using StreamGlass.Core.Connections;
-using TwitchCorpse;
 
 namespace StreamGlass.Core.Profile
 {
     public class ProfileManager: Manager<Profile>
     {
-        private readonly ConnectionManager m_ConnectionManager;
         private int m_NbMessage = 0;
 
-        public ProfileManager(ConnectionManager client) : base("./profiles")
+        public ProfileManager() : base("./profiles")
         {
-            m_ConnectionManager = client;
-            StreamGlassCanals.Register<UserMessage>("chat_message", OnChatMessage);
-            StreamGlassCanals.Register("stream_start", ResetCurrentProfile);
-            StreamGlassCanals.Register("chat_clear", ResetCurrentProfile);
+            StreamGlassCanals.Register<UserMessage>(StreamGlassCanals.CHAT_MESSAGE, OnChatMessage);
+            StreamGlassCanals.Register(StreamGlassCanals.PROFILE_RESET, ResetCurrentProfile);
         }
 
         public Profile NewProfile(string name)
@@ -45,23 +40,23 @@ namespace StreamGlass.Core.Profile
         {
             if (SetCurrentObject(id))
                 CurrentObject?.Reset();
-            StreamGlassCanals.Emit("profile_changed_menu_item", id);
+            StreamGlassCanals.Emit(StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM, id);
         }
 
         private void OnChatMessage(UserMessage? message)
         {
             if (message == null)
                 return;
-            if (message.SenderType != TwitchUser.Type.SELF)
+            if (message.SenderType != uint.MaxValue)
             {
                 ++m_NbMessage;
-                CurrentObject?.OnMessage(message, m_ConnectionManager);
+                CurrentObject?.OnMessage(message);
             }
         }
 
         public void Update(long deltaTime)
         {
-            CurrentObject?.Update(deltaTime, m_NbMessage, m_ConnectionManager);
+            CurrentObject?.Update(deltaTime, m_NbMessage);
             m_NbMessage = 0;
         }
 

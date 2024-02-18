@@ -1,18 +1,15 @@
 ﻿using StreamGlass.Core.Controls;
 using System.Windows;
-using StreamGlass.Core.Connections;
 
 namespace StreamGlass.Core.Profile
 {
     public partial class ProfilesDialog : Dialog
     {
         private readonly ProfileManager m_ProfileManager;
-        private readonly ConnectionManager m_ConnectionManager;
 
-        public ProfilesDialog(Controls.Window parent, ProfileManager manager, ConnectionManager connectionManager): base(parent)
+        public ProfilesDialog(Controls.Window parent, ProfileManager manager): base(parent)
         {
             m_ProfileManager = manager;
-            m_ConnectionManager = connectionManager;
             InitializeComponent();
             ProfileList.ItemAdded += ProfileList_AddProfile;
             ProfileList.ItemRemoved += ProfileList_RemoveProfile;
@@ -40,7 +37,7 @@ namespace StreamGlass.Core.Profile
 
         private void ProfileList_AddProfile(object? sender, EventArgs _)
         {
-            StatisticFileEditor dialog = new(this, m_ProfileManager, m_ConnectionManager);
+            StatisticFileEditor dialog = new(this, m_ProfileManager);
             dialog.ShowDialog();
             Profile? newProfile = dialog.Profile;
             if (newProfile != null)
@@ -55,7 +52,7 @@ namespace StreamGlass.Core.Profile
         
         private void ProfileList_EditProfile(object? sender, object args)
         {
-            StatisticFileEditor dialog = new(this, m_ProfileManager, m_ConnectionManager, (Profile)args);
+            StatisticFileEditor dialog = new(this, m_ProfileManager, (Profile)args);
             dialog.ShowDialog();
             Profile? editedProfile = dialog.Profile;
             if (editedProfile != null)

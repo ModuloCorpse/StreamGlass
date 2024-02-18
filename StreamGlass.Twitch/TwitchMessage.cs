@@ -3,13 +3,13 @@ using CorpseLib.Json;
 using CorpseLib.StructuredText;
 using TwitchCorpse;
 
-namespace StreamGlass.Core
+namespace StreamGlass.Twitch
 {
-    public class UserMessage
+    public class TwitchMessage
     {
-        public class JSerializer : AJSerializer<UserMessage>
+        public class JSerializer : AJSerializer<TwitchMessage>
         {
-            protected override OperationResult<UserMessage> Deserialize(JObject reader)
+            protected override OperationResult<TwitchMessage> Deserialize(JObject reader)
             {
                 if (reader.TryGet("message", out Text? message) &&
                     reader.TryGet("user", out TwitchUser? user) &&
@@ -22,7 +22,7 @@ namespace StreamGlass.Core
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(UserMessage obj, JObject writer)
+            protected override void Serialize(TwitchMessage obj, JObject writer)
             {
                 writer["message"] = obj.m_Message;
                 writer["user"] = obj.m_User;
@@ -42,7 +42,7 @@ namespace StreamGlass.Core
         private readonly string m_Channel;
         private readonly bool m_IsHighlighted;
 
-        public UserMessage(TwitchUser user, bool ishighlighted, string channel, string message)
+        public TwitchMessage(TwitchUser user, bool ishighlighted, string channel, string message)
         {
             m_IsHighlighted = ishighlighted;
             m_ID = Guid.NewGuid().ToString();
@@ -53,7 +53,7 @@ namespace StreamGlass.Core
             m_Message = new(message);
         }
 
-        public UserMessage(TwitchUser user, bool ishighlighted, string id, string announcementColor, string color, string channel, Text displayableMessage)
+        public TwitchMessage(TwitchUser user, bool ishighlighted, string id, string announcementColor, string color, string channel, Text displayableMessage)
         {
             m_User = user;
             m_IsHighlighted = ishighlighted;

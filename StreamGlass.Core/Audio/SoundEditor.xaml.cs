@@ -1,6 +1,6 @@
-﻿using System.Windows;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using StreamGlass.Core.Controls;
+using System.Windows;
 
 namespace StreamGlass.Core.Audio
 {
