@@ -12,10 +12,12 @@ namespace StreamGlass.Twitch.StreamChat
         private readonly double m_OriginalContentFontSize;
         private readonly ScrollPanelDisplayType m_OriginalDisplayType;
 
-        public StreamChatSettingsItem(IniSection settings, UserMessageScrollPanel streamChat) : base("/Assets/chat-bubble.png", settings)
+        public StreamChatSettingsItem(IniSection settings, UserMessageScrollPanel streamChat) : base("${ExeDir}/Assets/chat-bubble.png", settings)
         {
             m_StreamChat = streamChat;
             InitializeComponent();
+            ChatMessageFontLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_CHAT_FONT);
+            ChatModeComboBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_CHAT_MODE);
             m_OriginalDisplayType = m_StreamChat.GetDisplayType();
             m_OriginalContentFontSize = m_StreamChat.MessageContentFontSize;
 

@@ -17,7 +17,7 @@
             <CheckBox x:Name="CategorySelection" VerticalAlignment="Center" Checked="CategorySelection_Checked" Unchecked="CategorySelection_Unchecked"/>
         </ui:DockPanel>
         <ui:DockPanel Width="50" Height="Auto" Grid.Column="1">
-            <Image x:Name="CategoryImage" Margin="5, 0, 5, 0" Source="../Assets/stream-glass-logo.png" Height="30" VerticalAlignment="Center" />
+            <ui:Image x:Name="CategoryImage" Margin="5, 0, 5, 0" SourcePath="${ExeDir}/Assets/stream-glass-logo.png" Height="30" VerticalAlignment="Center" />
         </ui:DockPanel>
         <ui:DockPanel Height="Auto" Grid.Column="2">
             <ui:Label x:Name="CategoryNameLabel" Text="Category" FontSize="20" VerticalAlignment="Center"/>

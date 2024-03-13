@@ -7,9 +7,9 @@ namespace StreamGlass.Twitch.Events
 {
     public class FollowEventArgs(TwitchUser? user, Text message, int tier, int monthTotal, int monthStreak) : FollowEventArgsBase(user, message, tier)
     {
-        public class JSerializer : AJSerializer<FollowEventArgs>
+        public class JSerializer : AJsonSerializer<FollowEventArgs>
         {
-            protected override OperationResult<FollowEventArgs> Deserialize(JObject reader)
+            protected override OperationResult<FollowEventArgs> Deserialize(JsonObject reader)
             {
                 if (reader.TryGet("message", out Text? message) &&
                     reader.TryGet("user", out TwitchUser? user) &&
@@ -20,7 +20,7 @@ namespace StreamGlass.Twitch.Events
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(FollowEventArgs obj, JObject writer)
+            protected override void Serialize(FollowEventArgs obj, JsonObject writer)
             {
                 writer["message"] = obj.Message;
                 writer["user"] = obj.User;

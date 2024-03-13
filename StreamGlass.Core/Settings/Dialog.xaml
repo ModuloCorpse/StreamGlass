@@ -23,7 +23,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <ui:StackPanel HorizontalAlignment="Center" Grid.Column="1" Orientation="Horizontal">
-                    <Image Source="../Assets/stream-glass-logo.ico" Width="15" Height="15" />
+                    <ui:Image SourcePath="${ExeDir}/Assets/stream-glass-logo.ico" Width="15" Height="15" />
                     <ui:Label BrushPaletteKey="top_bar_text" TranslationKey="menu_settings" Margin="2,2,0,0" Text="Settings" />
                 </ui:StackPanel>
                 <ui:StackPanel Grid.Column="2" Orientation="Horizontal">

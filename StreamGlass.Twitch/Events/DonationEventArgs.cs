@@ -7,9 +7,9 @@ namespace StreamGlass.Twitch.Events
 {
     public class DonationEventArgs(TwitchUser user, float amount, string currency, Text message)
     {
-        public class JSerializer : AJSerializer<DonationEventArgs>
+        public class JSerializer : AJsonSerializer<DonationEventArgs>
         {
-            protected override OperationResult<DonationEventArgs> Deserialize(JObject reader)
+            protected override OperationResult<DonationEventArgs> Deserialize(JsonObject reader)
             {
                 if (reader.TryGet("message", out Text? message) &&
                     reader.TryGet("user", out TwitchUser? user) &&
@@ -19,7 +19,7 @@ namespace StreamGlass.Twitch.Events
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(DonationEventArgs obj, JObject writer)
+            protected override void Serialize(DonationEventArgs obj, JsonObject writer)
             {
                 writer["message"] = obj.m_Message;
                 writer["user"] = obj.m_User;

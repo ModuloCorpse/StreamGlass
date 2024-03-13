@@ -81,7 +81,7 @@ namespace StreamGlass
         internal void UpdateProfilesMenuList()
         {
             ProfilesMenu.Items.Clear();
-            ProfilesMenu.Items.Add(StatisticsMenuEdit);
+            ProfilesMenu.Items.Add(StringSourcesMenuEdit);
             ProfilesMenu.Items.Add(ProfileMenuEdit);
             ProfilesMenu.Items.Add(ProfilesMenuSeparator);
 
@@ -138,9 +138,9 @@ namespace StreamGlass
             SystemCommands.CloseWindow(this);
         }
 
-        private void EditStatisticsButton_Click(object sender, RoutedEventArgs e)
+        private void EditStringSourcesButton_Click(object sender, RoutedEventArgs e)
         {
-            StatisticFileDialog dialog = new(this);
+            StringSourceFileDialog dialog = new(this);
             dialog.ShowDialog();
         }
 

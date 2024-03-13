@@ -10,18 +10,16 @@
     <ui:Grid x:Name="MessagePanel" ShowGridLines="False">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="60"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <ui:StackPanel Orientation="Horizontal" Grid.Column="0">
             <ui:Button x:Name="AllowButton" Width="25" Height="25" Margin="5,0,0,0" Click="AllowButton_Click" Background="Transparent" BorderBrush="Transparent">
-                <Image Height="21" Width="21" Source="/Assets/confirmed.png" />
+                <ui:Image Height="21" Width="21" SourcePath="${ExeDir}/Assets/confirmed.png" />
             </ui:Button>
             <ui:Button x:Name="DenyButton" Width="25" Height="25" Margin="0,0,5,0" Click="DenyButton_Click" Background="Transparent" BorderBrush="Transparent">
-                <Image Height="21" Width="21" Source="/Assets/cancel.png" />
+                <ui:Image Height="21" Width="21" SourcePath="${ExeDir}/Assets/cancel.png" />
             </ui:Button>
         </ui:StackPanel>
-        <ui:Label x:Name="HeldSenderLabel" Grid.Column="1" Text="StreamGlass" TextAlignment="Right" Foreground="#FF6441A5" FontWeight="Bold" FontSize="14" Margin="0,4,0,0" BrushPaletteKey="" Width="100" Height="Auto"/>
-        <ui:StructuredLabel x:Name="HeldMessageLabel" Grid.Column="2" Margin="5,5,0,0" BrushPaletteKey="chat_background" BorderThickness="0"/>
+        <ui:StructuredLabel x:Name="HeldMessageLabel" Grid.Column="1" Margin="5,5,0,0" BrushPaletteKey="chat_background" BorderThickness="0"/>
     </ui:Grid>
 </ui:UserControl>

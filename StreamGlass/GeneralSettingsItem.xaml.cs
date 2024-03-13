@@ -20,7 +20,7 @@ namespace StreamGlass.StreamChat
         private readonly CultureInfo m_OriginalLanguage;
         private readonly string m_OriginalBrushPaletteID;
 
-        public GeneralSettingsItem(IniSection settings, BrushPaletteManager brushPalette) : base("/Assets/tinker.png", settings)
+        public GeneralSettingsItem(IniSection settings, BrushPaletteManager brushPalette) : base("${ExeDir}/Assets/tinker.png", settings)
         {
             m_BrushPalette = brushPalette;
             InitializeComponent();

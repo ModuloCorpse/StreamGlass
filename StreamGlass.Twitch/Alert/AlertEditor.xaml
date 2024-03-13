@@ -1,4 +1,4 @@
-﻿<ui:Dialog x:Class="StreamGlass.Twitch.Alert.AlertEditor"
+﻿<ui:Dialog x:Class="StreamGlass.Twitch.Alerts.AlertEditor"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -22,7 +22,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <ui:StackPanel HorizontalAlignment="Center" Grid.Column="1" Orientation="Horizontal">
-                    <Image Source="../Assets/stream-glass-logo.ico" Width="15" Height="15" />
+                    <ui:Image SourcePath="${ExeDir}/Assets/stream-glass-logo.ico" Width="15" Height="15" />
                     <ui:Label BrushPaletteKey="top_bar_text" Margin="2,2,0,0" Text="StreamGlass" />
                 </ui:StackPanel>
                 <ui:StackPanel Grid.Column="2" Orientation="Horizontal">
@@ -43,11 +43,11 @@
                     </Grid.ColumnDefinitions>
                     <ui:StackPanel Margin="0,5,0,0" Grid.Column="0">
                         <ui:StackPanel Orientation="Horizontal">
-                            <ui:Label x:Name="AlertEnableTextBoxLabel" TranslationKey="alert_editor_enable" VerticalAlignment="Center" TextAlignment="Right" Text="Enable:" Width="100"/>
+                            <ui:Label x:Name="AlertEnableTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Enable:" Width="100"/>
                             <CheckBox Margin="5,0,0,0" x:Name="AlertEnableCheckBox"/>
                         </ui:StackPanel>
                         <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                            <ui:Label x:Name="AlertAudioFileLabelLabel" TranslationKey="alert_editor_audio_file" Margin="0,0,5,0" Text="Audio File:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="100"/>
+                            <ui:Label x:Name="AlertAudioFileLabelLabel" Margin="0,0,5,0" Text="Audio File:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="100"/>
                             <ui:Label x:Name="AlertAudioFileLabel" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="163" Height="25"/>
                             <ui:Button x:Name="AlertAudioTestButton" Margin="3,0,0,0" Width="35" HorizontalAlignment="Left" VerticalAlignment="Top" Click="AlertAudioTest_Click">
                                 <ui:Button.Resources>
@@ -55,7 +55,7 @@
                                         <Setter Property="CornerRadius" Value="8"/>
                                     </Style>
                                 </ui:Button.Resources>
-                                <Image Height="20" Width="20" Source="/Assets/play-button.png" />
+                                <ui:Image Height="20" Width="20" SourcePath="${ExeDir}/Assets/play-button.png" />
                             </ui:Button>
                             <ui:Button x:Name="AlertAudioFileLabelButton" Margin="3,0,0,0" Width="35" HorizontalAlignment="Left" VerticalAlignment="Top" Click="AlertAudioFileDialog_Click">
                                 <ui:Button.Resources>
@@ -63,11 +63,11 @@
                                         <Setter Property="CornerRadius" Value="8"/>
                                     </Style>
                                 </ui:Button.Resources>
-                                <Image Height="20" Width="20" Source="/Assets/magnifying-glass.png" />
+                                <ui:Image Height="20" Width="20" SourcePath="${ExeDir}/Assets/magnifying-glass.png" />
                             </ui:Button>
                         </ui:StackPanel>
                         <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                            <ui:Label x:Name="AlertImageTextBoxLabel" TranslationKey="alert_editor_image" Margin="0,0,5,0" Text="Image:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="100"/>
+                            <ui:Label x:Name="AlertImageTextBoxLabel" Margin="0,0,5,0" Text="Image:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="100"/>
                             <ui:TextBox x:Name="AlertImageTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="200" Height="25" TextChanged="AlertImageTextBox_TextChanged"/>
                             <ui:Button x:Name="AlertImageTextBoxButton" Margin="3,0,0,0" Width="35" HorizontalAlignment="Left" VerticalAlignment="Top" Click="AlertImageFileDialog_Click">
                                 <ui:Button.Resources>
@@ -75,21 +75,21 @@
                                         <Setter Property="CornerRadius" Value="8"/>
                                     </Style>
                                 </ui:Button.Resources>
-                                <Image Height="20" Width="20" Source="/Assets/magnifying-glass.png" />
+                                <ui:Image Height="20" Width="20" SourcePath="${ExeDir}/Assets/magnifying-glass.png" />
                             </ui:Button>
                         </ui:StackPanel>
                         <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                            <ui:Label x:Name="AlertContentTextBoxLabel" TranslationKey="alert_editor_prefix" VerticalAlignment="Center" TextAlignment="Right" Text="Content:" Width="100"/>
+                            <ui:Label x:Name="AlertContentTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Content:" Width="100"/>
                             <ui:TextBox Margin="5,0,0,0" x:Name="AlertContentTextBox" Height="52" Width="200" TextWrapping="Wrap" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                         </ui:StackPanel>
-                        <ui:GroupBox TranslationKey="alert_chat_message" Header="Chat Message">
+                        <ui:GroupBox x:Name="AlertChatMessageGroup" Header="Chat Message">
                             <ui:StackPanel>
                                 <ui:StackPanel Orientation="Horizontal">
-                                    <ui:Label x:Name="ChatMessageEnableTextBoxLabel" TranslationKey="alert_editor_enable" VerticalAlignment="Center" TextAlignment="Right" Text="Enable:" Width="100"/>
+                                    <ui:Label x:Name="ChatMessageEnableTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Enable:" Width="100"/>
                                     <CheckBox Margin="5,0,0,0" x:Name="ChatMessageEnableCheckBox"/>
                                 </ui:StackPanel>
                                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                    <ui:Label x:Name="ChatMessageContentTextBoxLabel" TranslationKey="alert_editor_prefix" VerticalAlignment="Center" TextAlignment="Right" Text="Content:" Width="100"/>
+                                    <ui:Label x:Name="ChatMessageContentTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Content:" Width="100"/>
                                     <ui:TextBox Margin="5,0,0,0" x:Name="ChatMessageContentTextBox" Height="52" Width="200" TextWrapping="Wrap" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                                 </ui:StackPanel>
                             </ui:StackPanel>
@@ -100,14 +100,14 @@
                     </ui:DockPanel>
                 </ui:Grid>
                 <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35">
-                    <ui:Button TranslationKey="close_button" Margin="5,0,0,0" Content="Close" Height="25" Width="75" Click="CloseButton_Click">
+                    <ui:Button x:Name="CloseButton" Margin="5,0,0,0" Content="Close" Height="25" Width="75" Click="CloseButton_Click">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="10"/>
                             </Style>
                         </Button.Resources>
                     </ui:Button>
-                    <ui:Button TranslationKey="save_button" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">
+                    <ui:Button x:Name="SaveButton" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="10"/>

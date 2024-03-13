@@ -5,9 +5,9 @@ namespace StreamGlass.Core.Profile
 {
     public class CategoryInfo(string id, string name)
     {
-        public class JSerializer : AJSerializer<CategoryInfo>
+        public class JSerializer : AJsonSerializer<CategoryInfo>
         {
-            protected override OperationResult<CategoryInfo> Deserialize(JObject reader)
+            protected override OperationResult<CategoryInfo> Deserialize(JsonObject reader)
             {
                 if (reader.TryGet("id", out string? id) &&
                     reader.TryGet("name", out string? name))
@@ -15,7 +15,7 @@ namespace StreamGlass.Core.Profile
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(CategoryInfo obj, JObject writer)
+            protected override void Serialize(CategoryInfo obj, JsonObject writer)
             {
                 writer["id"] = obj.m_ID;
                 writer["name"] = obj.m_Name;

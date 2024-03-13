@@ -1,11 +1,11 @@
 ﻿using StreamGlass.Core.Controls;
 using CorpseLib.Wpf;
 
-namespace StreamGlass.Twitch.Alert
+namespace StreamGlass.Twitch.Alerts
 {
     public partial class AlertControl : UserControl
     {
-        public AlertControl(Alert alert, double contentFontSize)
+        public AlertControl(VisualAlert alert, double contentFontSize)
         {
             InitializeComponent();
             AlertImage.Source = ImageLoader.LoadStaticImage(alert.ImagePath)?.Source;

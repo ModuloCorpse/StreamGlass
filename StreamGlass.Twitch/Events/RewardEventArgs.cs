@@ -6,9 +6,9 @@ namespace StreamGlass.Twitch.Events
 {
     public class RewardEventArgs(TwitchUser from, string reward, string input)
     {
-        public class JSerializer : AJSerializer<RewardEventArgs>
+        public class JSerializer : AJsonSerializer<RewardEventArgs>
         {
-            protected override OperationResult<RewardEventArgs> Deserialize(JObject reader)
+            protected override OperationResult<RewardEventArgs> Deserialize(JsonObject reader)
             {
                 if (reader.TryGet("from", out TwitchUser? from) &&
                     reader.TryGet("reward", out string? reward) &&
@@ -17,7 +17,7 @@ namespace StreamGlass.Twitch.Events
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(RewardEventArgs obj, JObject writer)
+            protected override void Serialize(RewardEventArgs obj, JsonObject writer)
             {
                 writer["from"] = obj.m_From;
                 writer["reward"] = obj.m_Reward;

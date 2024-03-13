@@ -35,10 +35,10 @@
     <Compile Update="Settings\Dialog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Stat\StatisticFileDialog.xaml.cs">
+    <Compile Update="Stat\StringSourceFileDialog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Stat\StatisticFileEditor.xaml.cs">
+    <Compile Update="Stat\StringSourceFileEditor.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

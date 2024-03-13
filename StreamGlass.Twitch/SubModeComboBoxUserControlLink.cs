@@ -23,8 +23,8 @@ namespace StreamGlass.Twitch
         {
             int selectedIndex = m_ComboBox.SelectedIndex;
             m_ComboBox.Items.Clear();
-            m_ComboBox.Items.Add(Translator.Translate("${sub_mode_claimed}"));
-            m_ComboBox.Items.Add(Translator.Translate("${sub_mode_all}"));
+            m_ComboBox.Items.Add(TwitchPlugin.TranslationKeys.SETTINGS_TWITCH_SUB_MODE_CLAIMED.ToString());
+            m_ComboBox.Items.Add(TwitchPlugin.TranslationKeys.SETTINGS_TWITCH_SUB_MODE_ALL.ToString());
             m_ComboBox.SelectedIndex = selectedIndex;
         }
 

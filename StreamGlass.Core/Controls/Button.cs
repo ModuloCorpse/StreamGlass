@@ -28,6 +28,7 @@ namespace StreamGlass.Core.Controls
 
         private TranslationKey m_TranslationKey = new(string.Empty);
         private void UpdateTranslationKey(string key) => m_TranslationKey = new(key);
+        public void SetTranslationKey(TranslationKey key) => m_TranslationKey = key;
 
         public Button() => Translator.CurrentLanguageChanged += Translator_CurrentLanguageChanged;
 

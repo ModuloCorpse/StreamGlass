@@ -5,6 +5,9 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using TwitchCorpse.API;
+using TwitchCorpse;
+using CorpseLib.StructuredText;
 
 namespace StreamGlass.Twitch.Moderation
 {
@@ -12,58 +15,62 @@ namespace StreamGlass.Twitch.Moderation
     {
         private readonly HeldMessageScrollPanel m_Parent;
         private readonly TwitchMessage m_HeldMessage;
-        private double m_MaxFontSize;
+        private readonly bool m_ShowBadges;
 
         internal string ID => m_HeldMessage.ID;
 
-        private static double GetFontSize(TextBlock textBlock, double textBlockFontSize)
+        private Text ConvertUserMessage(TwitchMessage message)
         {
-            Typeface typeFace = new(textBlock.FontFamily, textBlock.FontStyle, textBlock.FontWeight, textBlock.FontStretch);
-            Brush foreground = textBlock.Foreground;
-            double dpi = VisualTreeHelper.GetDpi(textBlock).PixelsPerDip;
-            double fontSize = textBlockFontSize;
-            FormattedText ft = new(textBlock.Text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeFace, fontSize, foreground, dpi);
-            while (textBlock.Width < ft.Width)
+            Text displayedMessage = new();
+            TwitchUser user = message.Sender;
+            if (m_ShowBadges)
             {
-                fontSize -= 1;
-                if (fontSize < 0)
-                    return textBlockFontSize;
-                ft = new(textBlock.Text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeFace, fontSize, foreground, dpi);
+                Dictionary<string, object> badgeProperties = new() {
+                    { "Ratio", 0.85 },
+                    { "Margin-Right", 3.0 }
+                };
+                foreach (TwitchBadgeInfo badgeInfo in user.Badges)
+                    displayedMessage.AddImage(badgeInfo.URL4x, badgeProperties);
             }
-            return fontSize;
+            Dictionary<string, object> properties = [];
+            if (!string.IsNullOrWhiteSpace(message.Color))
+                properties["Color"] = message.Color;
+            properties["Bold"] = true;
+            displayedMessage.AddText(user.DisplayName, properties);
+            displayedMessage.AddText(": ");
+
+            Dictionary<string, object> emoteProperties = new() { { "Ratio", 1.5 } };
+            foreach (Section section in message.Message)
+            {
+                switch (section.SectionType)
+                {
+                    case Section.Type.TEXT:
+                    {
+                        displayedMessage.AddText(section.Content);
+                        break;
+                    }
+                    case Section.Type.IMAGE:
+                    {
+                        displayedMessage.AddImage(section.Content, section.Alt, emoteProperties);
+                        break;
+                    }
+                    case Section.Type.ANIMATED_IMAGE:
+                    {
+                        displayedMessage.AddAnimatedImage(section.Content, section.Alt, emoteProperties);
+                        break;
+                    }
+                }
+            }
+            return displayedMessage;
         }
 
-        public HeldMessage(HeldMessageScrollPanel parent, TwitchMessage message, double senderWidth, double senderFontSize, double fontSize)
+        public HeldMessage(HeldMessageScrollPanel parent, TwitchMessage message, double fontSize)
         {
             m_Parent = parent;
             m_HeldMessage = message;
             InitializeComponent();
-            HeldMessageLabel.SetText(message.Message);
+            HeldMessageLabel.SetText(ConvertUserMessage(message));
             HeldMessageLabel.SetFontSize(fontSize);
-            HeldSenderLabel.Text = message.UserDisplayName;
-            HeldSenderLabel.Width = senderWidth;
-            SetSenderNameFontSize(senderFontSize);
-            BrushConverter converter = new();
-            if (!string.IsNullOrWhiteSpace(message.Color))
-            {
-                SolidColorBrush? color = (SolidColorBrush?)converter.ConvertFrom(message.Color);
-                if (color != null)
-                    HeldSenderLabel.Foreground = color;
-            }
-        }
-
-        public double MessageFontSize { get => HeldMessageLabel.FontSize; }
-
-        public void SetSenderNameWidth(double width)
-        {
-            HeldSenderLabel.Width = width;
-            HeldSenderLabel.FontSize = GetFontSize(HeldSenderLabel, m_MaxFontSize);
-        }
-
-        public void SetSenderNameFontSize(double fontSize)
-        {
-            m_MaxFontSize = fontSize;
-            HeldSenderLabel.FontSize = GetFontSize(HeldSenderLabel, fontSize);
         }
 
         public void SetMessageFontSize(double fontSize) => HeldMessageLabel.FontSize = fontSize;

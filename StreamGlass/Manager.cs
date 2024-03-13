@@ -6,7 +6,6 @@ using StreamGlass.API;
 using StreamGlass.API.Event;
 using StreamGlass.API.Overlay;
 using StreamGlass.Core;
-using StreamGlass.Core.Plugin;
 using StreamGlass.Core.Profile;
 using StreamGlass.Twitch;
 using System;
@@ -22,7 +21,7 @@ namespace StreamGlass
         private readonly CorpseLib.Web.API.API m_API = new(15007);
         private readonly Stopwatch m_Watch = new();
         private readonly DispatcherTimer m_DispatcherTimer = new();
-        private readonly IniFile m_Settings = new();
+        private readonly IniFile m_Settings = [];
         private readonly ProfileManager m_ProfileManager;
         private readonly PluginManager m_PluginManager;
 
@@ -43,12 +42,14 @@ namespace StreamGlass
             m_ProfileManager.Load();
             splashScreen.UpdateProgressBar(60);
 
+            PluginManager.PLUGIN_LOGGER.Start();
             m_PluginManager = new();
             m_PluginManager.LoadPlugins();
             //TODO Temporary code : To replace with "new TwitchPlugin()"
-            m_PluginManager.LoadPlugin(m_TwitchPlugin);
+            m_PluginManager.LoadPlugin(TwitchPlugin.PluginMetadata, m_TwitchPlugin);
             splashScreen.UpdateProgressBar(70);
 
+            Translator.LoadDirectory("./locals");
             m_ProfileManager.UpdateStreamInfo();
 
             InitAPI();
@@ -68,21 +69,21 @@ namespace StreamGlass
         {
             if (File.Exists("settings.ini"))
             {
-                IniFile iniFile = IniFile.ParseFile("settings.ini");
+                IniFile iniFile = IniParser.LoadFromFile("settings.ini");
                 if (!iniFile.HaveEmptySection)
                     m_Settings.Merge(iniFile);
             }
             else if (File.Exists("settings.json"))
             {
-                JFile response = JFile.LoadFromFile("settings.json");
+                JsonObject response = JsonParser.LoadFromFile("settings.json");
                 foreach (var item in response)
                 {
                     string key = item.Key;
-                    JObject value = item.Value.Cast<JObject>()!;
+                    JsonObject value = item.Value.Cast<JsonObject>()!;
                     IniSection section = new(key);
                     foreach (var item2 in value)
                         section.Add(item2.Key, item2.Value.Cast<string>()!);
-                    m_Settings.AddSection(section);
+                    m_Settings.Add(section);
                 }
                 File.Delete("settings.json");
             }
@@ -97,7 +98,7 @@ namespace StreamGlass
                 { "menu_file", "File" },
                 { "menu_settings", "Settings" },
                 { "menu_profile", "Profiles" },
-                { "menu_edit_statistics", "Edit statistics..." },
+                { "menu_edit_string_sources", "Edit string sources..." },
                 { "menu_edit_profile", "Edit profiles..." },
                 { "menu_help", "Help" },
                 { "menu_about", "About" },
@@ -127,14 +128,55 @@ namespace StreamGlass
                 { "profile_editor_user", "User:" },
                 { "profile_editor_enable", "Enable:" },
                 { "profile_editor_time_delta", "Time Delta:" },
-                { "section_statistics", "Statistics" },
-                { "statistic_editor_path", "Path:" },
-                { "statistic_editor_content", "Content:" },
+                { "section_string_sources", "String Sources" },
+                { "string_source_editor_path", "Path:" },
+                { "string_source_editor_content", "Content:" },
                 { "sound_editor_audio_file", "File:" },
                 { "sound_editor_audio_output", "Output:" },
             };
             Translator.AddTranslation(translation);
-            Translator.LoadDirectory("./locals");
+            Translation translationFR = new(new CultureInfo("fr-FR"), true)
+            {
+                { "menu_file", "Fichier" },
+                { "menu_settings", "Paramètres" },
+                { "menu_profile", "Profiles" },
+                { "menu_edit_string_sources", "Éditer les sources de texte..." },
+                { "menu_edit_profile", "Éditer les profiles..." },
+                { "menu_help", "Aide" },
+                { "menu_about", "À Propos" },
+                { "app_name", "Stream Glass" },
+                { "settings_general_color", "Thème :" },
+                { "settings_general_language", "Language :" },
+                { "save_button", "Sauvegarder" },
+                { "close_button", "Quitter" },
+                { "test_button", "Test" },
+                { "section_profiles", "Profiles" },
+                { "section_stream_info", "Info de Stream" },
+                { "section_commands", "Commandes" },
+                { "section_aliases", "Alias" },
+                { "section_sub_commands", "Sous-Commandes" },
+                { "section_auto_trigger", "Activation Auto" },
+                { "section_default_arguments", "Arguments par Défaut" },
+                { "profile_editor_name", "Nom :" },
+                { "profile_editor_parent", "Parent :" },
+                { "profile_editor_is_selectable", "Séléctionable :" },
+                { "profile_editor_title", "Titre :" },
+                { "profile_editor_category", "Catégorie :" },
+                { "profile_editor_description", "Description :" },
+                { "profile_editor_language", "Language :" },
+                { "profile_editor_content", "Contenu :" },
+                { "profile_editor_time", "Temp :" },
+                { "profile_editor_messages", "Nombre de Message :" },
+                { "profile_editor_user", "Utilisateur :" },
+                { "profile_editor_enable", "Activer :" },
+                { "profile_editor_time_delta", "Delta de Temps :" },
+                { "section_string_sources", "Source de texte" },
+                { "string_source_editor_path", "Chemin :" },
+                { "string_source_editor_content", "Contenu :" },
+                { "sound_editor_audio_file", "Fichier :" },
+                { "sound_editor_audio_output", "Sortie :" },
+            };
+            Translator.AddTranslation(translationFR);
             Translator.CurrentLanguageChanged += () => m_Settings.GetOrAdd("settings").Set("language", Translator.CurrentLanguage.Name);
         }
 

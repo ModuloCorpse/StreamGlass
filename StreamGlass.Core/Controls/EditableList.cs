@@ -66,7 +66,7 @@ namespace StreamGlass.Core.Controls
             {
                 SearchButton.Content = new Image
                 {
-                    Source = ImageLoader.LoadStaticImage(source)?.Source,
+                    SourcePath = source,
                     Height = 20,
                     Width = 20
                 };
@@ -84,7 +84,7 @@ namespace StreamGlass.Core.Controls
             {
                 EditButton.Content = new Image
                 {
-                    Source = ImageLoader.LoadStaticImage(source)?.Source,
+                    SourcePath = source,
                     Height = 20,
                     Width = 20
                 };

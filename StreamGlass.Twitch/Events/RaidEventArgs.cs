@@ -6,9 +6,9 @@ namespace StreamGlass.Twitch.Events
 {
     public class RaidEventArgs(TwitchUser? from, TwitchUser? to, int nbViewers, bool isIncomming)
     {
-        public class JSerializer : AJSerializer<RaidEventArgs>
+        public class JSerializer : AJsonSerializer<RaidEventArgs>
         {
-            protected override OperationResult<RaidEventArgs> Deserialize(JObject reader)
+            protected override OperationResult<RaidEventArgs> Deserialize(JsonObject reader)
             {
                 reader.TryGet("from", out TwitchUser? from);
                 reader.TryGet("to", out TwitchUser? to);
@@ -19,7 +19,7 @@ namespace StreamGlass.Twitch.Events
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(RaidEventArgs obj, JObject writer)
+            protected override void Serialize(RaidEventArgs obj, JsonObject writer)
             {
                 writer["from"] = obj.m_From;
                 writer["to"] = obj.m_To;

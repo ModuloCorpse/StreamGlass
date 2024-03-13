@@ -7,9 +7,9 @@ namespace StreamGlass.Twitch
 {
     public class TwitchMessage
     {
-        public class JSerializer : AJSerializer<TwitchMessage>
+        public class JSerializer : AJsonSerializer<TwitchMessage>
         {
-            protected override OperationResult<TwitchMessage> Deserialize(JObject reader)
+            protected override OperationResult<TwitchMessage> Deserialize(JsonObject reader)
             {
                 if (reader.TryGet("message", out Text? message) &&
                     reader.TryGet("user", out TwitchUser? user) &&
@@ -22,7 +22,7 @@ namespace StreamGlass.Twitch
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(TwitchMessage obj, JObject writer)
+            protected override void Serialize(TwitchMessage obj, JsonObject writer)
             {
                 writer["message"] = obj.m_Message;
                 writer["user"] = obj.m_User;

@@ -5,9 +5,9 @@ namespace StreamGlass.Core.Profile
 {
     public class UserMessage(uint user, string displayableMessage)
     {
-        public class JSerializer : AJSerializer<UserMessage>
+        public class JSerializer : AJsonSerializer<UserMessage>
         {
-            protected override OperationResult<UserMessage> Deserialize(JObject reader)
+            protected override OperationResult<UserMessage> Deserialize(JsonObject reader)
             {
                 if (reader.TryGet("message", out string? message) &&
                     reader.TryGet("user", out uint? user))
@@ -15,7 +15,7 @@ namespace StreamGlass.Core.Profile
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(UserMessage obj, JObject writer)
+            protected override void Serialize(UserMessage obj, JsonObject writer)
             {
                 writer["message"] = obj.m_Message;
                 writer["user"] = obj.m_User;

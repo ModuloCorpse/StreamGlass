@@ -5,16 +5,16 @@ namespace StreamGlass.Core.Profile
 {
     public class ProfileCommandEventArgs(string command, string[] arguments)
     {
-        public class JSerializer : AJSerializer<ProfileCommandEventArgs>
+        public class JSerializer : AJsonSerializer<ProfileCommandEventArgs>
         {
-            protected override OperationResult<ProfileCommandEventArgs> Deserialize(JObject reader)
+            protected override OperationResult<ProfileCommandEventArgs> Deserialize(JsonObject reader)
             {
                 if (reader.TryGet("command", out string? command))
                     return new(new(command!, [.. reader.GetList<string>("arguments")]));
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(ProfileCommandEventArgs obj, JObject writer)
+            protected override void Serialize(ProfileCommandEventArgs obj, JsonObject writer)
             {
                 writer["arguments"] = obj.m_Arguments;
                 writer["command"] = obj.m_Command;

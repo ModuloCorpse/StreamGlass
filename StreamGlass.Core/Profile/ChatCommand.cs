@@ -35,7 +35,7 @@ namespace StreamGlass.Core.Profile
         public int AutoTriggerDeltaTime => m_AutoTriggerDeltaTime;
         public string[] AutoTriggerArguments => m_AutoTriggerArguments;
 
-        internal ChatCommand(JObject json)
+        internal ChatCommand(JsonObject json)
         {
             m_Name = json.GetOrDefault("name", string.Empty)!;
             m_Aliases = [.. json.GetList<string>("aliases")];
@@ -77,9 +77,9 @@ namespace StreamGlass.Core.Profile
             Reset();
         }
 
-        internal JObject Serialize()
+        internal JsonObject Serialize()
         {
-            JObject json = [];
+            JsonObject json = [];
             if (!string.IsNullOrWhiteSpace(m_Name))
                 json.Add("name", m_Name);
             if (m_Aliases.Length > 0)

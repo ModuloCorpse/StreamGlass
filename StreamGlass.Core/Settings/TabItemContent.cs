@@ -10,6 +10,8 @@ namespace StreamGlass.Core.Settings
         private readonly List<UserControlLink> m_Links = [];
         private readonly string m_HeaderSource = headerSource;
 
+        protected IniSection Settings => m_Settings;
+
         internal void SetSettingDialog(Dialog dialog)
         {
             m_SettingsDialog = dialog;

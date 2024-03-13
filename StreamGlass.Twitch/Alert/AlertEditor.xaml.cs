@@ -5,16 +5,26 @@ using Microsoft.Win32;
 using StreamGlass.Core.Audio;
 using StreamGlass.Core.Controls;
 
-namespace StreamGlass.Twitch.Alert
+namespace StreamGlass.Twitch.Alerts
 {
     public partial class AlertEditor : Dialog
     {
-        private AlertScrollPanel.AlertInfo? m_CreatedAlertInfo = null;
+        private AlertSettings? m_CreatedAlertSettings = null;
         private Sound? m_CreatedSound = null;
 
-        internal AlertEditor(Core.Controls.Window parent, AlertScrollPanel.AlertInfo alertInfo) : base(parent)
+        internal AlertEditor(Core.Controls.Window parent, AlertSettings alertInfo) : base(parent)
         {
             InitializeComponent();
+            AlertEnableTextBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.ALERT_EDITOR_ENABLE);
+            ChatMessageEnableTextBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.ALERT_EDITOR_ENABLE);
+            AlertImageTextBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.ALERT_EDITOR_IMAGE);
+            AlertContentTextBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.ALERT_EDITOR_PREFIX);
+            ChatMessageContentTextBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.ALERT_EDITOR_PREFIX);
+            AlertAudioFileLabelLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.ALERT_EDITOR_AUDIO_FILE);
+            AlertChatMessageGroup.SetTranslationKey(TwitchPlugin.TranslationKeys.ALERT_CHAT_MESSAGE);
+            CloseButton.TranslationKey = "close_button";
+            SaveButton.TranslationKey = "save_button";
+
             AlertEnableCheckBox.IsChecked = alertInfo.IsEnabled;
             ChatMessageEnableCheckBox.IsChecked = alertInfo.HaveChatMessage;
             AlertImageTextBox.Text = alertInfo.ImgPath;
@@ -27,17 +37,17 @@ namespace StreamGlass.Twitch.Alert
             }
         }
 
-        internal AlertScrollPanel.AlertInfo? AlertInfo => m_CreatedAlertInfo;
+        internal AlertSettings? AlertSettings => m_CreatedAlertSettings;
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            m_CreatedAlertInfo = new(m_CreatedSound, AlertImageTextBox.Text, AlertContentTextBox.Text, ChatMessageContentTextBox.Text, AlertEnableCheckBox.IsChecked ?? false, ChatMessageEnableCheckBox.IsChecked ?? false);
+            m_CreatedAlertSettings = new(m_CreatedSound, AlertImageTextBox.Text, AlertContentTextBox.Text, ChatMessageContentTextBox.Text, AlertEnableCheckBox.IsChecked ?? false, ChatMessageEnableCheckBox.IsChecked ?? false);
             OnOkClick();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            m_CreatedAlertInfo = null;
+            m_CreatedAlertSettings = null;
             m_CreatedSound = null;
             OnCancelClick();
         }

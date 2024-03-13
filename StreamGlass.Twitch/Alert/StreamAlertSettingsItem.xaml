@@ -1,4 +1,4 @@
-﻿<settings:TabItemContent x:Class="StreamGlass.Twitch.Alert.StreamAlertSettingsItem"
+﻿<settings:TabItemContent x:Class="StreamGlass.Twitch.Alerts.StreamAlertSettingsItem"
         xmlns:settings="clr-namespace:StreamGlass.Core.Settings;assembly=StreamGlass.Core"
         xmlns:ui="clr-namespace:StreamGlass.Core.Controls;assembly=StreamGlass.Core"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -10,18 +10,15 @@
         d:DesignWidth="450">
     <ui:StackPanel BrushPaletteKey="background_2">
         <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
-            <ui:Label x:Name="ChatModeComboBoxLabel" TranslationKey="settings_chat_mode" VerticalAlignment="Center" TextAlignment="Right" Text="Chat Mode:" Width="150"/>
+            <ui:Label x:Name="ChatModeComboBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Chat Mode:" Width="150"/>
             <ui:ScrollPanelDisplayTypeComboBox Margin="5,0,0,0" x:Name="ChatModeComboBox" Height="26" Width="200" SelectionChanged="ChatModeComboBox_SelectionChanged"/>
         </ui:StackPanel>
         <ui:StackPanel BrushPaletteKey="background_2" Orientation="Horizontal" Margin="0,5,0,0">
-            <ui:Label x:Name="ChatMessageFontLabel" TranslationKey="settings_chat_font" VerticalAlignment="Center" TextAlignment="Right" Text="Chat Font Size:" Width="150"/>
+            <ui:Label x:Name="ChatMessageFontLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Chat Font Size:" Width="150"/>
             <ui:NumericUpDown Margin="5,0,0,0" x:Name="ChatMessageFont" Height="26" Width="200" Value="10" MinValue="10" MaxValue="28" ValueChanged="ChatMessageFont_ValueChanged"/>
         </ui:StackPanel>
-        <ui:GroupBox BrushPaletteKey="background_2" x:Name="AlertInfosGroupBox" TranslationKey="settings_alert_alerts" Header="Alerts">
-            <ui:EditableList x:Name="AlertInfosList" Height="65" IsEditOnly="True" IsSearchable="False" EditImageSource="../Assets/pencil.png" ItemEdited="AlertInfosList_ItemEdited" BrushPaletteKey="background_2"/>
-        </ui:GroupBox>
-        <ui:GroupBox BrushPaletteKey="background_2" x:Name="GiftAlertInfosGroupBox" TranslationKey="settings_gift_alert_alerts" Header="Gift Alerts">
-            <ui:EditableList x:Name="GiftAlertInfosList" Height="65" IsEditOnly="True" IsSearchable="False" EditImageSource="../Assets/pencil.png" ItemEdited="GiftAlertInfosList_ItemEdited" BrushPaletteKey="background_2"/>
+        <ui:GroupBox BrushPaletteKey="background_2" x:Name="AlertInfosGroupBox" Header="Alerts">
+            <ui:EditableList x:Name="AlertInfosList" Height="65" IsEditOnly="True" IsSearchable="False" EditImageSource="${ExeDir}/Assets/pencil.png" ItemEdited="AlertInfosList_ItemEdited" BrushPaletteKey="background_2"/>
         </ui:GroupBox>
     </ui:StackPanel>
 </settings:TabItemContent>

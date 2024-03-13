@@ -12,7 +12,7 @@ namespace StreamGlass.API.Event
         {
             try
             {
-                return m_WebsocketEndpoint.Emit(request.Path.Paths[^1], new JFile(request.Body));
+                return m_WebsocketEndpoint.Emit(request.Path.Paths[^1], JsonParser.Parse(request.Body));
             } catch
             {
                 return new(400, "Bad Request", "Body is not a valid json");

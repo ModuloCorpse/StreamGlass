@@ -22,22 +22,6 @@ namespace StreamGlass.Twitch.Moderation
             StreamGlassCanals.Register<string>(TwitchPlugin.Canals.HELD_MESSAGE_MODERATED, RemoveHeldMessage);
         }
 
-        public void SetSenderWidth(double width)
-        {
-            m_MessageSenderWidth = width;
-            foreach (HeldMessage message in Controls)
-                message.SetSenderNameWidth(m_MessageSenderWidth);
-            UpdateControlsPosition();
-        }
-
-        public void SetSenderFontSize(double fontSize)
-        {
-            m_MessageSenderFontSize = fontSize;
-            foreach (HeldMessage message in Controls)
-                message.SetSenderNameFontSize(m_MessageSenderFontSize);
-            UpdateControlsPosition();
-        }
-
         public void SetContentFontSize(double fontSize)
         {
             m_MessageContentFontSize = fontSize;
@@ -52,7 +36,7 @@ namespace StreamGlass.Twitch.Moderation
                 return;
             Dispatcher.Invoke((Delegate)(() =>
             {
-                HeldMessage chatMessage = new(this, message, m_MessageSenderWidth, m_MessageSenderFontSize, m_MessageContentFontSize);
+                HeldMessage chatMessage = new(this, message, m_MessageContentFontSize);
                 chatMessage.HeldMessageLabel.Loaded += (sender, e) => UpdateControlsPosition();
                 AddControl(chatMessage);
             }));

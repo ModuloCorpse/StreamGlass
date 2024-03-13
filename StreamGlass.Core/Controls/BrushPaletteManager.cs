@@ -23,7 +23,7 @@ namespace StreamGlass.Core.Controls
             return palette;
         }
 
-        public bool TryGetColor(string name, [MaybeNullWhen(false)] out Brush? color)
+        public bool TryGetColor(string name, [NotNullWhen(true)] out Brush? color)
         {
             if (CurrentObject != null)
                 return CurrentObject.TryGetColor(name, out color);
@@ -40,6 +40,6 @@ namespace StreamGlass.Core.Controls
 
         public void SetCurrentPalette(string id) => SetCurrentObject(id);
 
-        protected override BrushPalette? DeserializeObject(JFile obj) => new(obj);
+        protected override BrushPalette? DeserializeObject(JsonObject obj) => new(obj);
     }
 }

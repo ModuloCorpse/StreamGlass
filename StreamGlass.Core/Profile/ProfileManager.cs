@@ -60,6 +60,6 @@ namespace StreamGlass.Core.Profile
             m_NbMessage = 0;
         }
 
-        protected override Profile? DeserializeObject(JFile obj) => new(obj);
+        protected override Profile? DeserializeObject(JsonObject obj) => new(obj);
     }
 }

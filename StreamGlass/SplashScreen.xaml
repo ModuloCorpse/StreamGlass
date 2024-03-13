@@ -14,7 +14,7 @@
         Background="Transparent">
     <Grid>
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Image Source="Assets/stream-glass-logo.png" Width="300" Height="300" />
+            <ui:Image SourcePath="${ExeDir}/Assets/stream-glass-logo.png" Width="300" Height="300" />
             <ProgressBar Margin="0,5,0,0" x:Name="SplashProgressBar" Value="100" Height="20" Width="300" Foreground="LightGray">
                 <ProgressBar.Background>
                     <LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">

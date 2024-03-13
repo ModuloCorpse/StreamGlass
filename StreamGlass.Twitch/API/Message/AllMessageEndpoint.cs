@@ -24,7 +24,7 @@ namespace StreamGlass.Twitch.API.Message
                 while (messages.Count > 0 && keepPaging)
                 {
                     TwitchMessage message = messages.First();
-                    JObject node = (JObject)JHelper.Cast(message);
+                    JsonObject node = (JsonObject)JsonHelper.Cast(message);
                     long nodeLength = node.ToNetworkString().Length;
                     if (length == 0 || length + nodeLength < 2000)
                     {
@@ -45,12 +45,12 @@ namespace StreamGlass.Twitch.API.Message
                 }
             }
 
-            public JObject ToJObject()
+            public JsonObject ToJObject()
             {
                 if (m_NextPage == null)
-                    return new JObject() { { "messages", m_Messages } };
+                    return new JsonObject() { { "messages", m_Messages } };
                 else
-                    return new JObject() { { "messages", m_Messages }, { "page", m_NextPage.m_ID.ToString() } };
+                    return new JsonObject() { { "messages", m_Messages }, { "page", m_NextPage.m_ID.ToString() } };
             }
         }
 

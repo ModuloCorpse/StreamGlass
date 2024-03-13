@@ -6,9 +6,9 @@ namespace StreamGlass.Twitch.Events
 {
     public class BanEventArgs
     {
-        public class JSerializer : AJSerializer<BanEventArgs>
+        public class JSerializer : AJsonSerializer<BanEventArgs>
         {
-            protected override OperationResult<BanEventArgs> Deserialize(JObject reader)
+            protected override OperationResult<BanEventArgs> Deserialize(JsonObject reader)
             {
                 if (reader.TryGet("user", out TwitchUser? user) &&
                     reader.TryGet("reason", out string? reason) &&
@@ -17,7 +17,7 @@ namespace StreamGlass.Twitch.Events
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(BanEventArgs obj, JObject writer)
+            protected override void Serialize(BanEventArgs obj, JsonObject writer)
             {
                 writer["user"] = obj.m_User;
                 writer["reason"] = obj.m_Reason;

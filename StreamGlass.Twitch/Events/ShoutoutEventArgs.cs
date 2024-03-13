@@ -6,9 +6,9 @@ namespace StreamGlass.Twitch.Events
 {
     public class ShoutoutEventArgs(TwitchUser moderator, TwitchUser user)
     {
-        public class JSerializer : AJSerializer<ShoutoutEventArgs>
+        public class JSerializer : AJsonSerializer<ShoutoutEventArgs>
         {
-            protected override OperationResult<ShoutoutEventArgs> Deserialize(JObject reader)
+            protected override OperationResult<ShoutoutEventArgs> Deserialize(JsonObject reader)
             {
                 if (reader.TryGet("moderator", out TwitchUser? moderator) &&
                     reader.TryGet("user", out TwitchUser? user))
@@ -16,7 +16,7 @@ namespace StreamGlass.Twitch.Events
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(ShoutoutEventArgs obj, JObject writer)
+            protected override void Serialize(ShoutoutEventArgs obj, JsonObject writer)
             {
                 writer["moderator"] = obj.m_Moderator;
                 writer["user"] = obj.m_User;

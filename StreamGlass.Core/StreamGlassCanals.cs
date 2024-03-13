@@ -8,13 +8,13 @@ namespace StreamGlass.Core
     {
         public class ACanalManager(string type)
         {
-            private readonly Canal<JNode> m_JCanal = new();
+            private readonly Canal<JsonNode> m_JCanal = new();
             private readonly string m_Type = type;
 
-            public Canal<JNode> JCanal => m_JCanal;
+            public Canal<JsonNode> JCanal => m_JCanal;
             public string Type => m_Type;
 
-            protected void Emit(JNode node) => m_JCanal.Emit(node);
+            protected void Emit(JsonNode node) => m_JCanal.Emit(node);
         }
 
         public class TriggerCanalManager(string type, Canal canal) : ACanalManager(type)
@@ -26,7 +26,7 @@ namespace StreamGlass.Core
             public void Trigger()
             {
                 m_Canal.Trigger();
-                Emit(new JNull());
+                Emit(new JsonNull());
             }
         }
 
@@ -39,7 +39,7 @@ namespace StreamGlass.Core
             public void Emit(T? obj)
             {
                 m_Canal.Emit(obj);
-                Emit(JHelper.Cast(obj));
+                Emit(JsonHelper.Cast(obj));
             }
         }
 
@@ -90,10 +90,12 @@ namespace StreamGlass.Core
                 canalManager is TriggerCanalManager triggerCanalManager)
                 triggerCanalManager.Canal.Register(action);
         }
-        public static void Register(string type, Action<JNode?> action)
+        public static void Register(string type, Action<JsonNode?> action)
         {
             if (ms_Managers.TryGetValue(type, out ACanalManager? canalManager))
                 canalManager.JCanal.Register(action);
+            else
+                StreamGlassContext.LOGGER.Log(string.Format("Cannot find valid canal {0} to register to", type));
         }
 
         public static void Register<T>(string type, Action<T?> action)
@@ -101,6 +103,8 @@ namespace StreamGlass.Core
             if (ms_Managers.TryGetValue(type, out ACanalManager? canalManager) &&
                 canalManager is CanalManager<T> triggerCanalManager)
                 triggerCanalManager.Canal.Register(action);
+            else
+                StreamGlassContext.LOGGER.Log(string.Format("Cannot find valid canal {0} to register to", type));
         }
 
         public static void Unregister(string type, Action action)
@@ -110,7 +114,7 @@ namespace StreamGlass.Core
                 triggerCanalManager.Canal.Unregister(action);
         }
 
-        public static void Unregister(string type, Action<JNode?> action)
+        public static void Unregister(string type, Action<JsonNode?> action)
         {
             if (ms_Managers.TryGetValue(type, out ACanalManager? canalManager))
                 canalManager.JCanal.Unregister(action);
@@ -128,12 +132,16 @@ namespace StreamGlass.Core
             if (ms_Managers.TryGetValue(type, out ACanalManager? canalManager) &&
                 canalManager is TriggerCanalManager triggerCanalManager)
                 triggerCanalManager.Trigger();
+            else
+                StreamGlassContext.LOGGER.Log(string.Format("Cannot find valid canal {0} to trigger", type));
         }
         public static void Emit<T>(string type, T? arg)
         {
             if (ms_Managers.TryGetValue(type, out ACanalManager? canalManager) &&
                 canalManager is CanalManager<T> triggerCanalManager)
                 triggerCanalManager.Emit(arg);
+            else
+                StreamGlassContext.LOGGER.Log(string.Format("Cannot find valid canal {0} to emit to", type));
         }
 
         static StreamGlassCanals()

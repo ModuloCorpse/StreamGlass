@@ -1,8 +1,4 @@
-﻿using CorpseLib.Wpf;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media.Imaging;
-using TabItem = StreamGlass.Core.Controls.TabItem;
+﻿using System.Windows;
 
 namespace StreamGlass.Core.Settings
 {
@@ -19,15 +15,15 @@ namespace StreamGlass.Core.Settings
         {
             item.SetSettingDialog(this);
             item.UpdateTabItemColorPalette(GetBrushPalette());
-            TabItem tabItem = new()
+            Controls.TabItem tabItem = new()
             {
-                Header = new Image()
+                Header = new Controls.Image()
                 {
-                    Source = ImageLoader.LoadStaticImage(item.GetHeaderSource())?.Source,
+                    SourcePath = item.GetHeaderSource(),
                     Width = 35,
                     Height = 35
                 },
-                Content = item
+                Content = new Controls.ScrollViewer() { Content = item }
             };
             m_TabItems.Add(item);
             SettingsTabControl.Items.Add(tabItem);

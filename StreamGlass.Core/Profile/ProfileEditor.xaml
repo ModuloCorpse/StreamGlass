@@ -22,7 +22,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <ui:StackPanel HorizontalAlignment="Center" Grid.Column="1" Orientation="Horizontal">
-                    <Image Source="../Assets/stream-glass-logo.ico" Width="15" Height="15" />
+                    <ui:Image SourcePath="${ExeDir}/Assets/stream-glass-logo.ico" Width="15" Height="15" />
                     <ui:Label BrushPaletteKey="top_bar_text" Margin="2,2,0,0" Text="StreamGlass" />
                 </ui:StackPanel>
                 <ui:StackPanel Grid.Column="2" Orientation="Horizontal">
@@ -58,7 +58,7 @@
                             <ui:Label x:Name="StreamInfoCategoryTextBoxLabel" TranslationKey="profile_editor_category" VerticalAlignment="Center" TextAlignment="Right" Text="Category:" Width="150"/>
                             <ui:TextBox Margin="5,0,0,0" x:Name="StreamInfoCategoryTextBox" Height="26" Width="213" IsReadOnly="True"/>
                             <ui:Button x:Name="StreamInfoCategorySearchButton" Margin="3,0,0,0" Width="34" HorizontalAlignment="Left" VerticalAlignment="Top" Click="StreamInfoCategorySearchButton_Click">
-                                <Image Height="20" Width="20" Source="/Assets/magnifying-glass.png" />
+                                <ui:Image Height="20" Width="20" SourcePath="${ExeDir}/Assets/magnifying-glass.png" />
                                 <Button.Resources>
                                     <Style TargetType="Border">
                                         <Setter Property="CornerRadius" Value="8"/>
@@ -77,7 +77,7 @@
                     </ui:StackPanel>
                 </ui:GroupBox>
                 <ui:GroupBox x:Name="CommandGroupBox" TranslationKey="section_commands" Header="Commands">
-                    <ui:EditableList x:Name="ChatCommandsList" Height="197" EditImageSource="../Assets/pencil.png" SearchImageSource="../Assets/magnifying-glass.png"/>
+                    <ui:EditableList x:Name="ChatCommandsList" Height="197" EditImageSource="${ExeDir}/Assets/pencil.png" SearchImageSource="${ExeDir}/Assets/magnifying-glass.png"/>
                 </ui:GroupBox>
                 <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35">
                     <ui:Button TranslationKey="save_button" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">

@@ -11,43 +11,52 @@ namespace StreamGlass.Core
     {
         public static readonly Logger LOGGER = new("[${d}-${M}-${y} ${h}:${m}:${s}.${ms}] ${log}") { new LogInFile("./log/${y}${M}${d}${h}.log") };
 
-        private static readonly StatisticManager ms_Statistics = new();
+        private static readonly StringSourceManager ms_StringSources = new();
         private static readonly Dictionary<string, Function> ms_Functions = [];
+        private static readonly Dictionary<string, string> ms_Variables = [];
 
-        public static StatisticManager Statistics => ms_Statistics;
+        public static StringSourceManager StringSources => ms_StringSources;
 
         public static void RegisterFunction(string functionName, Function fct) => ms_Functions[functionName] = fct;
         public static void UnregisterFunction(string functionName) => ms_Functions.Remove(functionName);
 
-        public static void CreateStatistic(string statistic) => ms_Statistics.CreateStatistic(statistic);
-        public static void UpdateStatistic(string statistic, object value) => ms_Statistics.UpdateStatistic(statistic, value);
-        public static T? GetStatistic<T>(string statistic) => ms_Statistics.Get<T>(statistic);
-        public static T GetStatistic<T>(string statistic, T defaultValue) => ms_Statistics.GetOr(statistic, defaultValue);
+        public static void RegisterVariable(string variableName, string variable) => ms_Variables[variableName] = variable;
+        public static void UnregisterVariable(string variableName) => ms_Variables.Remove(variableName);
+
+
+        public static void CreateStringSource(string source) => ms_StringSources.CreateStringSource(source);
+        public static void UpdateStringSource(string source, string value) => ms_StringSources.UpdateStringSource(source, value);
+        public static string GetStringSource(string source, string defaultValue) => ms_StringSources.GetOr(source, defaultValue);
 
         public static void Init()
         {
-            JHelper.RegisterSerializer(new Text.JSerializer());
-            JHelper.RegisterSerializer(new Section.JSerializer());
-            JHelper.RegisterSerializer(new UserMessage.JSerializer());
-            JHelper.RegisterSerializer(new ProfileCommandEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new CategoryInfo.JSerializer());
-            JHelper.RegisterSerializer(new UpdateStreamInfoArgs.JSerializer());
+            JsonHelper.RegisterSerializer(new Text.JSerializer());
+            JsonHelper.RegisterSerializer(new Section.JSerializer());
+            JsonHelper.RegisterSerializer(new UserMessage.JSerializer());
+            JsonHelper.RegisterSerializer(new ProfileCommandEventArgs.JSerializer());
+            JsonHelper.RegisterSerializer(new CategoryInfo.JSerializer());
+            JsonHelper.RegisterSerializer(new UpdateStreamInfoArgs.JSerializer());
 
-            ms_Statistics.Load();
+            ms_StringSources.Load();
         }
 
         public static void Delete()
         {
-            ms_Statistics.Save();
+            ms_StringSources.Save();
         }
 
-        public override string? Call(string functionName, string[] args)
+        public override string? Call(string functionName, string[] args, Cache cache)
         {
             if (ms_Functions.TryGetValue(functionName, out Function? func))
-                return func(args);
-            return base.Call(functionName, args);
+                return func(args, cache);
+            return base.Call(functionName, args, cache);
         }
 
-        public override string? GetVariable(string name) => ms_Statistics.Get(name)?.ToString() ?? base.GetVariable(name);
+        public override string? GetVariable(string name)
+        {
+            if (ms_Variables.TryGetValue(name, out string? variable))
+                return variable;
+            return ms_StringSources.Get(name) ?? base.GetVariable(name);
+        }
     }
 }

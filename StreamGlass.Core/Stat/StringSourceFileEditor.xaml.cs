@@ -4,42 +4,44 @@ using System.Windows;
 
 namespace StreamGlass.Core.Stat
 {
-    public partial class StatisticFileEditor : Dialog
+    public partial class StringSourceFileEditor : Dialog
     {
-        private StatisticFile? m_CreatedStatisticFile = null;
+        private StringSourceFile? m_CreatedStringSourceFile = null;
         private readonly string m_ID = Guid.NewGuid().ToString();
 
-        public StatisticFileEditor(Controls.Window parent): base(parent)
+
+        //TODO Use placeholder analytics tool to extract all variables from content
+        public StringSourceFileEditor(Controls.Window parent): base(parent)
         {
             InitializeComponent();
-            StatisticsList.ItemAdded += EditableList_AddString;
-            StatisticsList.ItemEdited += EditableList_EditString;
+            StringSourcesList.ItemAdded += EditableList_AddString;
+            StringSourcesList.ItemEdited += EditableList_EditString;
         }
 
-        public StatisticFileEditor(Controls.Window parent, StatisticFile statisticFile): this(parent)
+        public StringSourceFileEditor(Controls.Window parent, StringSourceFile statisticFile): this(parent)
         {
             m_ID = statisticFile.ID;
             PathTextBox.Text = statisticFile.Path;
             ContentTextBox.Text = statisticFile.Content;
-            StatisticsList.AddObjects(statisticFile.Statistics);
+            StringSourcesList.AddObjects(statisticFile.Sources);
         }
 
-        internal StatisticFile? StatisticFile => m_CreatedStatisticFile;
+        internal StringSourceFile? StringSourceFile => m_CreatedStringSourceFile;
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            StatisticFile newStatisticFile = new(m_ID, PathTextBox.Text);
+            StringSourceFile newStatisticFile = new(m_ID, PathTextBox.Text);
             newStatisticFile.SetContent(ContentTextBox.Text);
-            string[] statistics = StatisticsList.GetItems().Cast<string>().ToArray();
+            string[] statistics = StringSourcesList.GetItems().Cast<string>().ToArray();
             foreach (string statistic in statistics)
-                newStatisticFile.AddStatistic(statistic);
-            m_CreatedStatisticFile = newStatisticFile;
+                newStatisticFile.AddSource(statistic);
+            m_CreatedStringSourceFile = newStatisticFile;
             OnOkClick();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            m_CreatedStatisticFile = null;
+            m_CreatedStringSourceFile = null;
             OnCancelClick();
         }
 

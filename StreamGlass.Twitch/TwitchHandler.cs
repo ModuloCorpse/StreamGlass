@@ -13,23 +13,31 @@ namespace StreamGlass.Twitch
         private readonly TwitchAPI m_API = api;
         private string m_IRCChannel = string.Empty;
 
-        internal void UpdateViewerCountOf(TwitchUser user)
+        internal bool UpdateViewerCountOf(TwitchUser user)
         {
-            List<TwitchStreamInfo> streamInfos = m_API.GetStreamInfoByID(user);
-            if (streamInfos.Count == 1)
-                StreamGlassContext.UpdateStatistic("viewer_count", streamInfos[0].ViewerCount);
+            TwitchStreamInfo? streamInfo = m_API.GetStreamInfoByID(user);
+            if (streamInfo != null)
+            {
+                StreamGlassContext.UpdateStringSource("viewer_count", streamInfo.ViewerCount.ToString());
+                return true;
+            }
+            return false;
         }
 
         public void SetIRCChannel(string channel) => m_IRCChannel = channel;
 
         public void OnBits(TwitchUser user, int bits, Text message)
         {
-            StreamGlassContext.UpdateStatistic("last_bits_donor", user.DisplayName);
-            StreamGlassContext.UpdateStatistic("last_bits_donation", bits);
-            if (bits >= StreamGlassContext.GetStatistic("top_bits_donation", 0))
+            StreamGlassContext.UpdateStringSource("last_bits_donor", user.DisplayName);
+            StreamGlassContext.UpdateStringSource("last_bits_donation", bits.ToString());
+            string topBitsDonationStr = StreamGlassContext.GetStringSource("top_bits_donation", "0");
+            if (int.TryParse(topBitsDonationStr, out int topBitsDonation))
             {
-                StreamGlassContext.UpdateStatistic("top_bits_donor", user.DisplayName);
-                StreamGlassContext.UpdateStatistic("top_bits_donation", bits);
+                if (bits >= topBitsDonation)
+                {
+                    StreamGlassContext.UpdateStringSource("top_bits_donor", user.DisplayName);
+                    StreamGlassContext.UpdateStringSource("top_bits_donation", bits.ToString());
+                }
             }
             StreamGlassCanals.Emit(TwitchPlugin.Canals.DONATION, new DonationEventArgs(user, bits, "Bits", message));
         }
@@ -80,14 +88,14 @@ namespace StreamGlass.Twitch
 
         public void OnFollow(TwitchUser user)
         {
-            StreamGlassContext.UpdateStatistic("last_follow", user.DisplayName);
+            StreamGlassContext.UpdateStringSource("last_follow", user.DisplayName);
             StreamGlassCanals.Emit(TwitchPlugin.Canals.FOLLOW, new FollowEventArgs(user, new(string.Empty), 0, -1, -1));
         }
 
         public void OnRaided(TwitchUser user, int nbViewer)
         {
             TwitchUser self = m_API.GetSelfUserInfo();
-            StreamGlassContext.UpdateStatistic("last_raider", user.DisplayName);
+            StreamGlassContext.UpdateStringSource("last_raider", user.DisplayName);
             StreamGlassCanals.Emit(TwitchPlugin.Canals.RAID, new RaidEventArgs(user, self, nbViewer, true));
         }
 
@@ -113,12 +121,16 @@ namespace StreamGlass.Twitch
                 return;
             if (user != null)
             {
-                StreamGlassContext.UpdateStatistic("last_gifter", user.DisplayName);
-                StreamGlassContext.UpdateStatistic("last_nb_gift", nbGift);
-                if (nbGift >= StreamGlassContext.GetStatistic("top_nb_gift", 0))
+                StreamGlassContext.UpdateStringSource("last_gifter", user.DisplayName);
+                StreamGlassContext.UpdateStringSource("last_nb_gift", nbGift.ToString());
+                string topNbGiftStr = StreamGlassContext.GetStringSource("top_nb_gift", "0");
+                if (int.TryParse(topNbGiftStr, out int topNbGift))
                 {
-                    StreamGlassContext.UpdateStatistic("top_gifter", user.DisplayName);
-                    StreamGlassContext.UpdateStatistic("top_nb_gift", nbGift);
+                    if (nbGift >= topNbGift)
+                    {
+                        StreamGlassContext.UpdateStringSource("top_gifter", user.DisplayName);
+                        StreamGlassContext.UpdateStringSource("top_nb_gift", nbGift.ToString());
+                    }
                 }
             }
             StreamGlassCanals.Emit(TwitchPlugin.Canals.GIFT_FOLLOW, new GiftFollowEventArgs(null, user, new(string.Empty), tier, -1, -1, nbGift!));
@@ -135,7 +147,7 @@ namespace StreamGlass.Twitch
         {
             if (m_Settings.Get("sub_mode") == "claimed")
                 return;
-            StreamGlassContext.UpdateStatistic("last_sub", user.DisplayName);
+            StreamGlassContext.UpdateStringSource("last_sub", user.DisplayName);
             if (isGift)
                 StreamGlassCanals.Emit(TwitchPlugin.Canals.GIFT_FOLLOW, new GiftFollowEventArgs(null, user, new(string.Empty), tier, -1, -1, -1));
             else
@@ -146,7 +158,7 @@ namespace StreamGlass.Twitch
         {
             if (m_Settings.Get("sub_mode") == "all")
                 return;
-            StreamGlassContext.UpdateStatistic("last_sub", user.DisplayName);
+            StreamGlassContext.UpdateStringSource("last_sub", user.DisplayName);
             StreamGlassCanals.Emit(TwitchPlugin.Canals.FOLLOW, new FollowEventArgs(user, message, tier, monthTotal, monthStreak));
         }
 

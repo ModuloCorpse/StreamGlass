@@ -6,9 +6,9 @@ namespace StreamGlass.Twitch.Events
 {
     public class MessageAllowedEventArgs(TwitchUser sender, string messageID, bool isAllowed)
     {
-        public class JSerializer : AJSerializer<MessageAllowedEventArgs>
+        public class JSerializer : AJsonSerializer<MessageAllowedEventArgs>
         {
-            protected override OperationResult<MessageAllowedEventArgs> Deserialize(JObject reader)
+            protected override OperationResult<MessageAllowedEventArgs> Deserialize(JsonObject reader)
             {
                 if (reader.TryGet("sender", out TwitchUser? sender) &&
                     reader.TryGet("message_id", out string? messageID) &&
@@ -17,7 +17,7 @@ namespace StreamGlass.Twitch.Events
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(MessageAllowedEventArgs obj, JObject writer)
+            protected override void Serialize(MessageAllowedEventArgs obj, JsonObject writer)
             {
                 writer["sender"] = obj.m_Sender;
                 writer["message_id"] = obj.m_MessageID;

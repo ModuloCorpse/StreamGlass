@@ -1,4 +1,4 @@
-﻿<ui:Dialog x:Class="StreamGlass.Core.Stat.StatisticFileEditor"
+﻿<ui:Dialog x:Class="StreamGlass.Core.Stat.StringSourceFileEditor"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -22,7 +22,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <ui:StackPanel HorizontalAlignment="Center" Grid.Column="1" Orientation="Horizontal">
-                    <Image Source="../Assets/stream-glass-logo.ico" Width="15" Height="15" />
+                    <ui:Image SourcePath="${ExeDir}/Assets/stream-glass-logo.ico" Width="15" Height="15" />
                     <ui:Label BrushPaletteKey="top_bar_text" Margin="2,2,0,0" Text="StreamGlass" />
                 </ui:StackPanel>
                 <ui:StackPanel Grid.Column="2" Orientation="Horizontal">
@@ -37,10 +37,10 @@
             </ui:Grid>
             <ui:StackPanel Margin="0,5,0,0">
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <ui:Label x:Name="PathTextBoxLabel" TranslationKey="statistic_editor_path" VerticalAlignment="Center" TextAlignment="Right" Text="Path:" Width="150"/>
+                    <ui:Label x:Name="PathTextBoxLabel" TranslationKey="string_source_editor_path" VerticalAlignment="Center" TextAlignment="Right" Text="Path:" Width="150"/>
                     <ui:TextBox Margin="5,0,0,0" x:Name="PathTextBox" Height="26" Width="213"/>
                     <ui:Button x:Name="PathClipboardButton" Margin="3,0,0,0" Width="34" HorizontalAlignment="Left" VerticalAlignment="Top" Click="PathClipboardButton_Click">
-                        <Image Height="20" Width="20" Source="/Assets/notebook.png" />
+                        <ui:Image Height="20" Width="20" SourcePath="${ExeDir}/Assets/notebook.png" />
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="8"/>
@@ -49,11 +49,11 @@
                     </ui:Button>
                 </ui:StackPanel>
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <ui:Label x:Name="ContentTextBoxLabel" TranslationKey="statistic_editor_content" VerticalAlignment="Center" TextAlignment="Right" Text="Content:" Width="150"/>
+                    <ui:Label x:Name="ContentTextBoxLabel" TranslationKey="string_source_editor_content" VerticalAlignment="Center" TextAlignment="Right" Text="Content:" Width="150"/>
                     <ui:TextBox Margin="5,0,0,0" x:Name="ContentTextBox" Height="26" Width="250"/>
                 </ui:StackPanel>
-                <ui:GroupBox x:Name="StatisticGroupBox" TranslationKey="section_statistics" Header="Statistics">
-                    <ui:EditableList x:Name="StatisticsList" Height="197" EditImageSource="../Assets/pencil.png" SearchImageSource="../Assets/magnifying-glass.png"/>
+                <ui:GroupBox x:Name="StringSourceGroupBox" TranslationKey="section_string_sources" Header="String Sources">
+                    <ui:EditableList x:Name="StringSourcesList" Height="197" EditImageSource="${ExeDir}/Assets/pencil.png" SearchImageSource="${ExeDir}/Assets/magnifying-glass.png"/>
                 </ui:GroupBox>
                 <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35">
                     <ui:Button TranslationKey="save_button" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">

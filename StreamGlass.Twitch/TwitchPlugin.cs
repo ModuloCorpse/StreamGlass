@@ -1,21 +1,19 @@
 ﻿using CorpseLib.Ini;
 using CorpseLib.Json;
 using CorpseLib.Translation;
+using CorpseLib.Web.API;
 using StreamGlass.Core;
-using StreamGlass.Core.Audio;
 using StreamGlass.Core.Controls;
 using StreamGlass.Core.Plugin;
 using StreamGlass.Core.Profile;
 using StreamGlass.Core.Settings;
-using StreamGlass.Twitch.Alert;
+using StreamGlass.Twitch.Alerts;
 using StreamGlass.Twitch.API.Message;
-using StreamGlass.Twitch.API.Timer;
 using StreamGlass.Twitch.Commands;
 using StreamGlass.Twitch.Events;
 using StreamGlass.Twitch.Moderation;
 using StreamGlass.Twitch.StreamChat;
 using System.Globalization;
-using System.IO;
 using TwitchCorpse;
 using TwitchCorpse.API;
 
@@ -44,9 +42,9 @@ namespace StreamGlass.Twitch
             public static readonly string CHAT_CLEAR = "twitch_chat_clear";
             public static readonly string STREAM_START = "twitch_stream_start";
             public static readonly string STREAM_STOP = "twitch_stream_stop";
+            public static readonly string ALERT = "twitch_stream_alert";
         }
 
-        //TODO Replace in all XAML use of TranslationKey attribute by the SetTranslationKey to keep track of used key
         public static class TranslationKeys
         {
             public static readonly TranslationKey SETTINGS_CHAT_MODE = new("settings_chat_mode");
@@ -67,41 +65,66 @@ namespace StreamGlass.Twitch
             public static readonly TranslationKey SETTINGS_TWITCH_SEARCH = new("settings_twitch_search");
             public static readonly TranslationKey SETTINGS_TWITCH_DO_WELCOME = new("settings_twitch_do_welcome");
             public static readonly TranslationKey SETTINGS_TWITCH_WELCOME_MESSAGE = new("settings_twitch_welcome_message");
+            public static readonly TranslationKey SETTINGS_TWITCH_SUB_MODE_CLAIMED = new("settings_twitch_sub_mode");
+            public static readonly TranslationKey SETTINGS_TWITCH_SUB_MODE_ALL = new("settings_twitch_sub_mode");
+            public static readonly TranslationKey DISPLAY_TYPE_TTB = new("display_type_ttb");
+            public static readonly TranslationKey DISPLAY_TYPE_RTTB = new("display_type_rttb");
+            public static readonly TranslationKey DISPLAY_TYPE_BTT = new("display_type_btt");
+            public static readonly TranslationKey DISPLAY_TYPE_RBTT = new("display_type_rbtt");
+            public static readonly TranslationKey ALERT_NAME_INC_RAID = new("alert_name_inc_raid");
+            public static readonly TranslationKey ALERT_NAME_OUT_RAID = new("alert_name_out_raid");
+            public static readonly TranslationKey ALERT_NAME_DONATION = new("alert_name_donation");
+            public static readonly TranslationKey ALERT_NAME_REWARD = new("alert_name_reward");
+            public static readonly TranslationKey ALERT_NAME_FOLLOW = new("alert_name_follow");
+            public static readonly TranslationKey ALERT_NAME_SUB_TIER1 = new("alert_name_sub_tier1");
+            public static readonly TranslationKey ALERT_NAME_SUB_TIER2 = new("alert_name_sub_tier2");
+            public static readonly TranslationKey ALERT_NAME_SUB_TIER3 = new("alert_name_sub_tier3");
+            public static readonly TranslationKey ALERT_NAME_GIFT_SUB_TIER1 = new("alert_name_gift_sub_tier1");
+            public static readonly TranslationKey ALERT_NAME_GIFT_SUB_TIER2 = new("alert_name_gift_sub_tier2");
+            public static readonly TranslationKey ALERT_NAME_GIFT_SUB_TIER3 = new("alert_name_gift_sub_tier3");
+            public static readonly TranslationKey ALERT_NAME_PRIME = new("alert_name_prime");
+            public static readonly TranslationKey ALERT_NAME_SHOUTOUT = new("alert_name_shoutout");
+            public static readonly TranslationKey ALERT_NAME_BEING_SHOUTOUT = new("alert_name_being_shoutout");
+            public static readonly TranslationKey ALERT_EDITOR_AUDIO_FILE = new("alert_editor_audio_file");
+            public static readonly TranslationKey ALERT_CHAT_MESSAGE = new("alert_chat_message");
         }
+
+        private static readonly Metadata ms_PluginMetadata;
+
+        public static Metadata PluginMetadata => ms_PluginMetadata;
 
         static TwitchPlugin()
         {
-            JHelper.RegisterSerializer(new TwitchUser.JSerializer());
-            JHelper.RegisterSerializer(new TwitchBadgeInfo.JSerializer());
-            JHelper.RegisterSerializer(new BanEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new DonationEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new FollowEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new GiftFollowEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new MessageAllowedEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new RaidEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new RewardEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new ShoutoutEventArgs.JSerializer());
-            JHelper.RegisterSerializer(new TwitchMessage.JSerializer());
+            ms_PluginMetadata = Metadata.CreateNativeMetadata<TwitchPlugin>("StreamGlass.Twitch.dll");
+
+            JsonHelper.RegisterSerializer(new TwitchUser.JSerializer());
+            JsonHelper.RegisterSerializer(new TwitchBadgeInfo.JSerializer());
+            JsonHelper.RegisterSerializer(new BanEventArgs.JSerializer());
+            JsonHelper.RegisterSerializer(new DonationEventArgs.JSerializer());
+            JsonHelper.RegisterSerializer(new FollowEventArgs.JSerializer());
+            JsonHelper.RegisterSerializer(new GiftFollowEventArgs.JSerializer());
+            JsonHelper.RegisterSerializer(new MessageAllowedEventArgs.JSerializer());
+            JsonHelper.RegisterSerializer(new RaidEventArgs.JSerializer());
+            JsonHelper.RegisterSerializer(new RewardEventArgs.JSerializer());
+            JsonHelper.RegisterSerializer(new ShoutoutEventArgs.JSerializer());
+            JsonHelper.RegisterSerializer(new TwitchMessage.JSerializer());
+            JsonHelper.RegisterSerializer(new VisualAlert.JSerializer());
         }
 
         private readonly TwitchCore m_Core = new();
+        private readonly AlertManager m_AlertManager = new();
         private readonly UserMessageScrollPanel m_StreamChatPanel;
         private readonly AlertScrollPanel m_StreamAlertPanel;
         private readonly HeldMessageScrollPanel m_HeldMessagePanel;
-        private readonly IniFile m_Settings = new();
 
-        public TwitchPlugin() : base("twitch")
+        public TwitchPlugin() : base("Twitch", "twitch_settings.ini")
         {
             m_StreamChatPanel = new();
             m_StreamAlertPanel = new();
             m_HeldMessagePanel = new();
-            if (File.Exists("twitch_settings.ini"))
-            {
-                IniFile iniFile = IniFile.ParseFile("twitch_settings.ini");
-                if (!iniFile.HaveEmptySection)
-                    m_Settings.Merge(iniFile);
-            }
         }
+
+        protected override PluginInfo GeneratePluginInfo() => new("1.0.0-beta", "ModuloCorpse<https://www.twitch.tv/chaporon_>");
 
         protected override void InitTranslation()
         {
@@ -124,33 +147,75 @@ namespace StreamGlass.Twitch
                 { TranslationKeys.SETTINGS_TWITCH_SUB_MODE, "Sub Mode:" },
                 { TranslationKeys.SETTINGS_TWITCH_SEARCH, "Search:" },
                 { TranslationKeys.SETTINGS_TWITCH_DO_WELCOME, "Do Welcome:" },
-                { TranslationKeys.SETTINGS_TWITCH_WELCOME_MESSAGE, "Welcome Message:" }
+                { TranslationKeys.SETTINGS_TWITCH_WELCOME_MESSAGE, "Welcome Message:" },
+                { TranslationKeys.SETTINGS_TWITCH_SUB_MODE_CLAIMED, "Claimed" },
+                { TranslationKeys.SETTINGS_TWITCH_SUB_MODE_ALL, "All" },
+                { TranslationKeys.DISPLAY_TYPE_TTB, "Top to bottom" },
+                { TranslationKeys.DISPLAY_TYPE_RTTB, "Top to bottom reversed" },
+                { TranslationKeys.DISPLAY_TYPE_BTT, "Bottom to top" },
+                { TranslationKeys.DISPLAY_TYPE_RBTT, "Bottom to top reversed" },
+                { TranslationKeys.ALERT_NAME_INC_RAID, "Incomming raid" },
+                { TranslationKeys.ALERT_NAME_OUT_RAID, "Outgoing raid" },
+                { TranslationKeys.ALERT_NAME_DONATION, "Donation" },
+                { TranslationKeys.ALERT_NAME_REWARD, "Reward" },
+                { TranslationKeys.ALERT_NAME_FOLLOW, "Follow" },
+                { TranslationKeys.ALERT_NAME_SUB_TIER1, "Tier 1" },
+                { TranslationKeys.ALERT_NAME_SUB_TIER2, "Tier 2" },
+                { TranslationKeys.ALERT_NAME_SUB_TIER3, "Tier 3" },
+                { TranslationKeys.ALERT_NAME_GIFT_SUB_TIER1, "Gift tier 1" },
+                { TranslationKeys.ALERT_NAME_GIFT_SUB_TIER2, "Gift tier 2" },
+                { TranslationKeys.ALERT_NAME_GIFT_SUB_TIER3, "Gift tier 3" },
+                { TranslationKeys.ALERT_NAME_PRIME, "Prime" },
+                { TranslationKeys.ALERT_NAME_SHOUTOUT, "Shoutout" },
+                { TranslationKeys.ALERT_NAME_BEING_SHOUTOUT, "Being shoutout" },
+                { TranslationKeys.ALERT_EDITOR_AUDIO_FILE, "Audio file:" },
+                { TranslationKeys.ALERT_CHAT_MESSAGE, "Chat message" }
             };
             Translator.AddTranslation(translation);
-        }
-
-        private void InitializeAlertSetting(IniSection alertSection, AlertScrollPanel.AlertType alertType, bool hasGift, Sound? audio, string imgPath, string prefix, string? chatMessage)
-        {
-            string audioFilePath = alertSection.GetOrAdd(string.Format("{0}_audio_file", alertType), audio?.File ?? string.Empty);
-            string audioOutputPath = alertSection.GetOrAdd(string.Format("{0}_audio_output", alertType), audio?.Output ?? string.Empty);
-            string loadedImgPath = alertSection.GetOrAdd(string.Format("{0}_path", alertType), imgPath);
-            string loadedPrefix = alertSection.GetOrAdd(string.Format("{0}_prefix", alertType), prefix);
-            string loadedChatMessage = alertSection.GetOrAdd(string.Format("{0}_chat_message", alertType), chatMessage ?? string.Empty);
-            bool loadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_enabled", alertType), "true") == "true";
-            bool loadedChatMessageIsEnabled = alertSection.GetOrAdd(string.Format("{0}_chat_message_enabled", alertType), (chatMessage != null) ? "true" : "false") == "true";
-            m_StreamAlertPanel.SetAlertInfo(alertType, new(audioFilePath, audioOutputPath), loadedImgPath, loadedPrefix, loadedChatMessage, loadedIsEnabled, loadedChatMessageIsEnabled);
-
-            if (hasGift)
+            Translation translationFR = new(new CultureInfo("fr-FR"), true)
             {
-                string giftAudioFilePath = alertSection.GetOrAdd(string.Format("{0}_gift_audio_file", alertType), audio?.File ?? string.Empty);
-                string giftAudioOutputPath = alertSection.GetOrAdd(string.Format("{0}_gift_audio_output", alertType), audio?.Output ?? string.Empty);
-                string giftLoadedImgPath = alertSection.GetOrAdd(string.Format("{0}_gift_path", alertType), imgPath);
-                string giftLoadedPrefix = alertSection.GetOrAdd(string.Format("{0}_gift_prefix", alertType), prefix);
-                string giftLoadedChatMessage = alertSection.GetOrAdd(string.Format("{0}_gift_chat_message", alertType), chatMessage ?? string.Empty);
-                bool giftLoadedIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_enabled", alertType), "true") == "true";
-                bool giftLoadedChatMessageIsEnabled = alertSection.GetOrAdd(string.Format("{0}_gift_chat_message_enabled", alertType), (chatMessage != null) ? "true" : "false") == "true";
-                m_StreamAlertPanel.SetGiftAlertInfo(alertType, new(giftAudioFilePath, giftAudioOutputPath), giftLoadedImgPath, giftLoadedPrefix, giftLoadedChatMessage, giftLoadedIsEnabled, giftLoadedChatMessageIsEnabled);
-            }
+                { TranslationKeys.SETTINGS_CHAT_MODE, "Mode du Chat :" },
+                { TranslationKeys.SETTINGS_CHAT_FONT, "Taille du Chat :" },
+                { TranslationKeys.ALERT_EDITOR_ENABLE, "Activer :" },
+                { TranslationKeys.ALERT_EDITOR_IMAGE, "Image :" },
+                { TranslationKeys.ALERT_EDITOR_PREFIX, "Alerte :" },
+                { TranslationKeys.SETTINGS_ALERT_ALERTS, "Alertes" },
+                { TranslationKeys.BAN_BUTTON, "Bannir" },
+                { TranslationKeys.BAN_TIME, "Durée (s) :" },
+                { TranslationKeys.BAN_REASON, "Raison :" },
+                { TranslationKeys.SETTINGS_TWITCH_AUTOCONNECT, "Connection Automatique :" },
+                { TranslationKeys.SETTINGS_TWITCH_CONNECT, "Connection" },
+                { TranslationKeys.SETTINGS_TWITCH_BROWSER, "Navigateur :" },
+                { TranslationKeys.SETTINGS_TWITCH_BOT_PUBLIC, "Clé Publique :" },
+                { TranslationKeys.SETTINGS_TWITCH_BOT_PRIVATE, "Clé Privée :" },
+                { TranslationKeys.SETTINGS_TWITCH_SUB_MODE, "Mode de sub :" },
+                { TranslationKeys.SETTINGS_TWITCH_SEARCH, "Rechercher :" },
+                { TranslationKeys.SETTINGS_TWITCH_DO_WELCOME, "Envoyer bienvenue :" },
+                { TranslationKeys.SETTINGS_TWITCH_WELCOME_MESSAGE, "Message de bienvenue :" },
+                { TranslationKeys.SETTINGS_TWITCH_SUB_MODE_CLAIMED, "Réclamé" },
+                { TranslationKeys.SETTINGS_TWITCH_SUB_MODE_ALL, "Tous" },
+                { TranslationKeys.DISPLAY_TYPE_TTB, "Vers le bas" },
+                { TranslationKeys.DISPLAY_TYPE_RTTB, "Vers le bas (inversé)" },
+                { TranslationKeys.DISPLAY_TYPE_BTT, "Vers le haut" },
+                { TranslationKeys.DISPLAY_TYPE_RBTT, "Vers le haut (inversé)" },
+                { TranslationKeys.ALERT_NAME_INC_RAID, "Raid entrant" },
+                { TranslationKeys.ALERT_NAME_OUT_RAID, "Raid sortant" },
+                { TranslationKeys.ALERT_NAME_DONATION, "Don" },
+                { TranslationKeys.ALERT_NAME_REWARD, "Récompense" },
+                { TranslationKeys.ALERT_NAME_FOLLOW, "Follow" },
+                { TranslationKeys.ALERT_NAME_SUB_TIER1, "Tier 1" },
+                { TranslationKeys.ALERT_NAME_SUB_TIER2, "Tier 2" },
+                { TranslationKeys.ALERT_NAME_SUB_TIER3, "Tier 3" },
+                { TranslationKeys.ALERT_NAME_GIFT_SUB_TIER1, "Don tier 1" },
+                { TranslationKeys.ALERT_NAME_GIFT_SUB_TIER2, "Don tier 2" },
+                { TranslationKeys.ALERT_NAME_GIFT_SUB_TIER3, "Don tier 3" },
+                { TranslationKeys.ALERT_NAME_PRIME, "Prime" },
+                { TranslationKeys.ALERT_NAME_SHOUTOUT, "Shoutout" },
+                { TranslationKeys.ALERT_NAME_BEING_SHOUTOUT, "Being shoutout" },
+                { TranslationKeys.ALERT_EDITOR_AUDIO_FILE, "Fichier audio:" },
+                { TranslationKeys.ALERT_CHAT_MESSAGE, "Message du chat" }
+            };
+            Translator.AddTranslation(translationFR);
         }
 
         protected override void InitSettings()
@@ -169,49 +234,36 @@ namespace StreamGlass.Twitch
             IniSection chatSection = m_Settings.GetOrAdd("chat");
             m_StreamChatPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(chatSection.GetOrAdd("display_type", "0")));
             m_StreamChatPanel.SetContentFontSize(double.Parse(chatSection.GetOrAdd("message_font_size", "14")));
-            chatSection.Add("do_welcome", "true");
-            chatSection.Add("welcome_message", "Hello World! Je suis un bot connecté via StreamGlass!");
 
             //Alert
             IniSection alertSection = m_Settings.GetOrAdd("alert");
             m_StreamAlertPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(alertSection.GetOrAdd("display_type", "0")));
             m_StreamAlertPanel.SetContentFontSize(double.Parse(alertSection.GetOrAdd("message_font_size", "20")));
-            InitializeAlertSetting(alertSection, AlertScrollPanel.AlertType.INCOMMING_RAID, false, null, "../Assets/parachute.png", "${e.From.DisplayName} is raiding you with ${e.NbViewers} viewers", null);
-            InitializeAlertSetting(alertSection, AlertScrollPanel.AlertType.OUTGOING_RAID, false, null, "../Assets/parachute.png", "You are raiding ${e.To.DisplayName} with ${e.NbViewers} viewers", null);
-            InitializeAlertSetting(alertSection, AlertScrollPanel.AlertType.DONATION, false, null, "../Assets/take-my-money.png", "${e.User.DisplayName} as donated ${e.Amount} ${e.Currency}: ", null);
-            InitializeAlertSetting(alertSection, AlertScrollPanel.AlertType.REWARD, false, new("Assets/alert-sound.wav", string.Empty), "../Assets/chest.png", "${e.From.DisplayName} retrieve ${e.Reward}: ${e.Input}", null);
-            InitializeAlertSetting(alertSection, AlertScrollPanel.AlertType.FOLLOW, false, null, "../Assets/hearts.png", "${e.User.DisplayName} is now following you: ", null);
-            InitializeAlertSetting(alertSection, AlertScrollPanel.AlertType.TIER1, true, null, "../Assets/stars-stack-1.png", "${e.User.DisplayName} as subscribed to you with a tier 1: ", null);
-            InitializeAlertSetting(alertSection, AlertScrollPanel.AlertType.TIER2, true, null, "../Assets/stars-stack-2.png", "${e.User.DisplayName} as subscribed to you with a tier 2: ", null);
-            InitializeAlertSetting(alertSection, AlertScrollPanel.AlertType.TIER3, true, null, "../Assets/stars-stack-3.png", "${e.User.DisplayName} as subscribed to you with a tier 3: ", null);
-            InitializeAlertSetting(alertSection, AlertScrollPanel.AlertType.TIER4, true, null, "../Assets/chess-queen.png", "${e.User.DisplayName} as subscribed to you with a prime: ", null);
-            InitializeAlertSetting(alertSection, AlertScrollPanel.AlertType.SHOUTOUT, false, null, "../Assets/megaphone.png", "${e.Moderator.DisplayName} gave a shoutout to ${e.User.DisplayName}", "Go check ${DisplayName(Lower(e.User.DisplayName))}, who's playing ${Game(e.User.DisplayName)} on https://twitch.tv/${e.User.Name}");
-            InitializeAlertSetting(alertSection, AlertScrollPanel.AlertType.BEING_SHOUTOUT, false, null, "../Assets/megaphone.png", "${e.DisplayName} gave you a shoutout", null);
+            m_AlertManager.InitSettings(alertSection);
 
             //Held message
             IniSection moderationSection = m_Settings.GetOrAdd("moderation");
             m_HeldMessagePanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(moderationSection.GetOrAdd("display_type", "0")));
-            m_HeldMessagePanel.SetSenderFontSize(double.Parse(moderationSection.GetOrAdd("sender_font_size", "14")));
-            m_HeldMessagePanel.SetSenderWidth(double.Parse(moderationSection.GetOrAdd("sender_size", "200")));
             m_HeldMessagePanel.SetContentFontSize(double.Parse(moderationSection.GetOrAdd("message_font_size", "14")));
         }
 
         protected override void InitPlugin()
         {
-            StreamGlassContext.CreateStatistic("viewer_count");
-            StreamGlassContext.CreateStatistic("last_bits_donor");
-            StreamGlassContext.CreateStatistic("last_bits_donation");
-            StreamGlassContext.CreateStatistic("top_bits_donor");
-            StreamGlassContext.CreateStatistic("top_bits_donation");
-            StreamGlassContext.CreateStatistic("last_follow");
-            StreamGlassContext.CreateStatistic("last_raider");
-            StreamGlassContext.CreateStatistic("last_gifter");
-            StreamGlassContext.CreateStatistic("last_nb_gift");
-            StreamGlassContext.CreateStatistic("top_gifter");
-            StreamGlassContext.CreateStatistic("top_nb_gift");
-            StreamGlassContext.CreateStatistic("last_sub");
+            StreamGlassContext.CreateStringSource("viewer_count");
+            StreamGlassContext.CreateStringSource("last_bits_donor");
+            StreamGlassContext.CreateStringSource("last_bits_donation");
+            StreamGlassContext.CreateStringSource("top_bits_donor");
+            StreamGlassContext.CreateStringSource("top_bits_donation");
+            StreamGlassContext.CreateStringSource("last_follow");
+            StreamGlassContext.CreateStringSource("last_raider");
+            StreamGlassContext.CreateStringSource("last_gifter");
+            StreamGlassContext.CreateStringSource("last_nb_gift");
+            StreamGlassContext.CreateStringSource("top_gifter");
+            StreamGlassContext.CreateStringSource("top_nb_gift");
+            StreamGlassContext.CreateStringSource("last_sub");
 
             m_Core.OnPluginInit();
+            m_AlertManager.Init();
             if (m_Settings.Get("settings")!.Get("auto_connect") == "true")
                 m_Core.Connect();
             m_HeldMessagePanel.Init();
@@ -247,28 +299,24 @@ namespace StreamGlass.Twitch
             StreamGlassCanals.NewCanal(Canals.CHAT_CLEAR);
             StreamGlassCanals.NewCanal(Canals.STREAM_START);
             StreamGlassCanals.NewCanal(Canals.STREAM_STOP);
+            StreamGlassCanals.NewCanal<VisualAlert>(Canals.ALERT);
         }
 
-        protected override void RegisterAPI(CorpseLib.Web.API.API api)
-        {
-            api.AddEndpoint(new AllMessageEndpoint());
-            api.AddEndpoint(new ClearMessageEndpoint());
-
-            //TODO Move in a dedicated plugin
-            api.AddEndpoint(new TimerEndpoint());
-        }
+        protected override AEndpoint[] GetEndpoints() => [
+            new AllMessageEndpoint(),
+            new ClearMessageEndpoint()
+        ];
 
         protected override void Unregister()
         {
             m_Core.Disconnect();
-            m_Settings.WriteToFile("twitch_settings.ini");
         }
 
         protected override void Update(long deltaTime) { }
 
         protected override TabItemContent[] GetSettings() => [
             new StreamChatSettingsItem(m_Settings.GetOrAdd("chat"), m_StreamChatPanel),
-            new StreamAlertSettingsItem(m_Settings.GetOrAdd("alert"), m_StreamAlertPanel),
+            new StreamAlertSettingsItem(m_Settings.GetOrAdd("alert"), m_AlertManager, m_StreamAlertPanel),
             new TwitchSettingsItem(m_Settings.GetOrAdd("settings"), m_Core)
         ];
 

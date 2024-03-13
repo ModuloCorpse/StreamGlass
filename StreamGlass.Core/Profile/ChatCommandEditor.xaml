@@ -22,7 +22,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <ui:StackPanel HorizontalAlignment="Center" Grid.Column="1" Orientation="Horizontal">
-                    <Image Source="../Assets/stream-glass-logo.ico" Width="15" Height="15" />
+                    <ui:Image SourcePath="${ExeDir}/Assets/stream-glass-logo.ico" Width="15" Height="15" />
                     <ui:Label BrushPaletteKey="top_bar_text" Margin="2,2,0,0" Text="StreamGlass" />
                 </ui:StackPanel>
                 <ui:StackPanel Grid.Column="2" Orientation="Horizontal">
@@ -57,10 +57,10 @@
                     <ui:NumericUpDown Margin="5,0,0,0" x:Name="UserUpDown" MinValue="0" Height="26" Width="250"/>
                 </ui:StackPanel>
                 <ui:GroupBox x:Name="AliasesGroupBox" TranslationKey="section_aliases" Header="Aliases">
-                    <ui:EditableList x:Name="AliasesList" Height="75" EditImageSource="../Assets/pencil.png" IsSearchable="False" />
+                    <ui:EditableList x:Name="AliasesList" Height="75" EditImageSource="${ExeDir}/Assets/pencil.png" IsSearchable="False" />
                 </ui:GroupBox>
                 <ui:GroupBox x:Name="SubCommandGroupBox" TranslationKey="section_sub_commands" Header="Sub commands">
-                    <ui:EditableList x:Name="SubCommandList" Height="75" EditImageSource="../Assets/pencil.png" IsSearchable="False" />
+                    <ui:EditableList x:Name="SubCommandList" Height="75" EditImageSource="${ExeDir}/Assets/pencil.png" IsSearchable="False" />
                 </ui:GroupBox>
                 <ui:GroupBox TranslationKey="section_auto_trigger" Header="Auto-trigger" >
                     <ui:StackPanel>
@@ -77,7 +77,7 @@
                             <ui:NumericUpDown Margin="5,0,0,0" x:Name="AutoTriggerTimeDeltaUpDown" MinValue="0" Height="26" Width="250"/>
                         </ui:StackPanel>
                         <ui:GroupBox x:Name="AutoTriggerDefaultArgumentGroupBox" TranslationKey="section_default_arguments" Header="Default arguments">
-                            <ui:EditableList x:Name="AutoTriggerArguments" Height="75" EditImageSource="../Assets/pencil.png" IsSearchable="False" />
+                            <ui:EditableList x:Name="AutoTriggerArguments" Height="75" EditImageSource="${ExeDir}/Assets/pencil.png" IsSearchable="False" />
                         </ui:GroupBox>
                     </ui:StackPanel>
                 </ui:GroupBox>

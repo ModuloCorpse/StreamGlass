@@ -13,6 +13,10 @@ namespace StreamGlass.Twitch.StreamChat
         public BanDialog(Core.Controls.Window parent, TwitchUser userToBan) : base(parent)
         {
             InitializeComponent();
+            BanButton.SetTranslationKey(TwitchPlugin.TranslationKeys.BAN_BUTTON);
+            TimeTextBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.BAN_TIME);
+            ReasonTextBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.BAN_REASON);
+
             m_UserToBan = userToBan;
             UserBannedLabel.Text = userToBan.DisplayName;
         }

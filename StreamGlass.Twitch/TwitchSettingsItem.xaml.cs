@@ -11,9 +11,18 @@ namespace StreamGlass.Twitch
         private readonly TwitchCore m_Core;
         private readonly SubModeComboBoxUserControlLink m_SubModeComboBoxUserControlLink;
 
-        public TwitchSettingsItem(IniSection settings, TwitchCore core): base("/Assets/twitch-logo.png", settings)
+        public TwitchSettingsItem(IniSection settings, TwitchCore core) : base("${ExeDir}/Assets/twitch-logo.png", settings)
         {
             InitializeComponent();
+            ConnectButton.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_TWITCH_CONNECT);
+            TwitchAutoConnectCheckBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_TWITCH_AUTOCONNECT);
+            TwitchBrowserTextBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_TWITCH_BROWSER);
+            TwitchBotPublicTextBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_TWITCH_BOT_PUBLIC);
+            TwitchBotSecretPasswordBoxLbel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_TWITCH_BOT_PRIVATE);
+            TwitchSubModeComboBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_TWITCH_SUB_MODE);
+            DoWelcomeLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_TWITCH_DO_WELCOME);
+            WelcomeMessageLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_TWITCH_WELCOME_MESSAGE);
+
             m_Core = core;
             m_SubModeComboBoxUserControlLink = new SubModeComboBoxUserControlLink(TwitchSubModeComboBox);
 

@@ -1,4 +1,5 @@
-﻿using NAudio.CoreAudioApi;
+﻿using CorpseLib.Placeholder;
+using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
@@ -35,6 +36,17 @@ namespace StreamGlass.Core.Audio
 
         private class CachedSound
         {
+            private static readonly Context ms_SoundContext = new();
+
+            static CachedSound()
+            {
+                string strExeFilePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                ms_SoundContext.AddVariable("ExePath", strExeFilePath);
+                string? strWorkPath = System.IO.Path.GetDirectoryName(strExeFilePath);
+                if (!string.IsNullOrEmpty(strWorkPath))
+                    ms_SoundContext.AddVariable("ExeDir", strWorkPath);
+            }
+
             private readonly WaveFormat m_WaveFormat;
             private readonly float[] m_AudioData;
             private volatile uint m_References = 1;
@@ -45,7 +57,7 @@ namespace StreamGlass.Core.Audio
 
             public CachedSound(string audioFileName)
             {
-                using var audioFileReader = new AudioFileReader(audioFileName);
+                using var audioFileReader = new AudioFileReader(Converter.Convert(audioFileName, ms_SoundContext));
                 m_WaveFormat = audioFileReader.WaveFormat;
                 List<float> wholeFile = new((int)(audioFileReader.Length / 4));
                 var readBuffer = new float[audioFileReader.WaveFormat.SampleRate * audioFileReader.WaveFormat.Channels];
@@ -85,7 +97,7 @@ namespace StreamGlass.Core.Audio
             int waveOutDevices = WaveOut.DeviceCount;
             if (waveOutDevices > 0)
             {
-                MMDeviceCollection renderDevices = enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All);
+                MMDeviceCollection renderDevices = enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active);
                 for (int waveOutDevice = 0; waveOutDevice < waveOutDevices; waveOutDevice++)
                 {
                     WaveOutCapabilities deviceInfo = WaveOut.GetCapabilities(waveOutDevice);
@@ -104,7 +116,7 @@ namespace StreamGlass.Core.Audio
             int waveInDevices = WaveIn.DeviceCount;
             if (waveInDevices > 0)
             {
-                MMDeviceCollection captureDevices = enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.All);
+                MMDeviceCollection captureDevices = enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active);
                 for (int waveInDevice = 0; waveInDevice < waveInDevices; waveInDevice++)
                 {
                     WaveInCapabilities deviceInfo = WaveIn.GetCapabilities(waveInDevice);

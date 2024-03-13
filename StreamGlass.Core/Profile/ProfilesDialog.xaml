@@ -22,7 +22,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <ui:StackPanel HorizontalAlignment="Center" Grid.Column="1" Orientation="Horizontal">
-                    <Image Source="../Assets/stream-glass-logo.ico" Width="15" Height="15" />
+                    <ui:Image SourcePath="${ExeDir}/Assets/stream-glass-logo.ico" Width="15" Height="15" />
                     <ui:Label BrushPaletteKey="top_bar_text" Margin="2,2,0,0" Text="StreamGlass" />
                 </ui:StackPanel>
                 <ui:StackPanel Grid.Column="2" Orientation="Horizontal">
@@ -38,7 +38,7 @@
             <ui:StackPanel Width="450">
                 <ui:StackPanel Margin="0,5,0,0">
                     <ui:GroupBox x:Name="ProfileGroupBox" TranslationKey="section_profiles" Header="Profiles">
-                        <ui:EditableList x:Name="ProfileList" Height="315" EditImageSource="../Assets/pencil.png" SearchImageSource="../Assets/magnifying-glass.png" />
+                        <ui:EditableList x:Name="ProfileList" Height="315" EditImageSource="${ExeDir}/Assets/pencil.png" SearchImageSource="${ExeDir}/Assets/magnifying-glass.png" />
                     </ui:GroupBox>
                 </ui:StackPanel>
             </ui:StackPanel>
