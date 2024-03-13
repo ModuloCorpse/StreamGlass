@@ -1,4 +1,5 @@
-﻿using CorpseLib.Logging;
+﻿using CorpseLib.Json;
+using CorpseLib.Logging;
 using CorpseLib.Web.API;
 using StreamGlass.Core.Plugin;
 using System;
@@ -12,8 +13,85 @@ namespace StreamGlass
     {
         public static readonly Logger PLUGIN_LOGGER = new("[${d}-${M}-${y} ${h}:${m}:${s}.${ms}] ${log}") { new LogInFile("./log/${y}${M}${d}${h}_Plugins.log") };
 
+        public class PluginLoader(string root)
+        {
+            private readonly Dictionary<string, Assembly> m_LoadedDependencies = [];
+            private readonly List<string> m_DependenciesPath = [];
+            private readonly List<string> m_PluginsPath = [];
+            private readonly string m_PluginRoot = root;
+
+            public void AddDependency(string dependency)
+            {
+                string pathToAdd = (Path.IsPathRooted(dependency)) ? dependency : Path.GetFullPath(Path.Combine(m_PluginRoot, dependency));
+                m_DependenciesPath.Add(pathToAdd);
+            }
+            public void AddPlugin(string plugin)
+            {
+                string pathToAdd = (Path.IsPathRooted(plugin)) ? plugin : Path.GetFullPath(Path.Combine(m_PluginRoot, plugin));
+                m_PluginsPath.Add(pathToAdd);
+            }
+
+            private Assembly MyResolve(object? sender, ResolveEventArgs e) => m_LoadedDependencies[e.Name];
+
+            private void LoadDependencies()
+            {
+                foreach (string dependencyFile in m_DependenciesPath)
+                {
+                    try
+                    {
+                        Assembly dependencyAssembly = Assembly.LoadFile(dependencyFile);
+                        m_LoadedDependencies[dependencyAssembly.FullName!] = dependencyAssembly;
+                    }
+                    catch (BadImageFormatException) { } //The file is not an assembly
+                    catch (FileLoadException) { } //The assembly has already been loaded
+                    catch (Exception ex)
+                    {
+                        PLUGIN_LOGGER.Log(string.Format("Cannot load dependency {0}", dependencyFile));
+                        PLUGIN_LOGGER.Log(ex.ToString());
+                    }
+                }
+            }
+
+            private List<Metadata> LoadPlugins()
+            {
+                List<Metadata> pluginMetadatas = [];
+                foreach (string file in m_PluginsPath)
+                {
+                    try
+                    {
+                        Assembly dllAssembly = Assembly.LoadFile(file);
+                        foreach (Type type in dllAssembly.GetExportedTypes())
+                        {
+                            if (type.IsAssignableTo(typeof(APlugin)))
+                                pluginMetadatas.Add(new(type, m_PluginRoot, Path.GetFileName(file), File.GetLastWriteTime(file)));
+                        }
+                    }
+                    catch (BadImageFormatException) { } //The file is not an assembly
+                    catch (FileLoadException) { } //The assembly has already been loaded
+                    catch (Exception ex)
+                    {
+                        PLUGIN_LOGGER.Log(string.Format("Cannot load {0}", file));
+                        PLUGIN_LOGGER.Log(ex.ToString());
+                    }
+                }
+                return pluginMetadatas;
+            }
+
+            public List<Metadata> Load()
+            {
+                AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += MyResolve;
+                AppDomain.CurrentDomain.AssemblyResolve += MyResolve;
+                LoadDependencies();
+                List<Metadata> ret = LoadPlugins();
+                AppDomain.CurrentDomain.AssemblyResolve -= MyResolve;
+                AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve -= MyResolve;
+                m_LoadedDependencies.Clear();
+                return ret;
+            }
+        }
+
+
         private readonly List<Plugin> m_Plugins = [];
-        private readonly Dictionary<string, Assembly> m_LoadedDependencies = [];
 
         public void RegisterToAPI(CorpseLib.Web.API.API api)
         {
@@ -69,7 +147,7 @@ namespace StreamGlass
             return null;
         }
 
-        private List<Metadata> ExtractPluginsMetadata()
+        private static List<Metadata> ExtractPluginsMetadata()
         {
             List<Metadata> pluginMetadatas = [];
             if (Directory.Exists("plugins/"))
@@ -78,65 +156,28 @@ namespace StreamGlass
                 foreach (string directory in directories)
                 {
                     string pluginDirectory = (directory[^1] == '/') ? directory : string.Format("{0}/", directory);
-
-                    //We load all dependencies first
-                    string dependencyDirectory = string.Format("{0}dep/", pluginDirectory);
-                    if (Directory.Exists(dependencyDirectory))
+                    string jsonFile = Path.GetFullPath(Path.Combine(pluginDirectory, "plugin.json"));
+                    if (File.Exists(jsonFile))
                     {
-                        string[] dependencyFiles = Directory.GetFiles(dependencyDirectory);
-                        foreach (string dependencyFile in dependencyFiles)
-                        {
-                            try
-                            {
-                                Assembly dependencyAssembly = Assembly.LoadFile(Path.GetFullPath(dependencyFile));
-                                m_LoadedDependencies[dependencyAssembly.FullName!] = dependencyAssembly;
-                            }
-                            catch (BadImageFormatException) { } //The file is not an assembly
-                            catch (FileLoadException) { } //The assembly has already been loaded
-                            catch (Exception ex)
-                            {
-                                PLUGIN_LOGGER.Log(string.Format("Cannot load dependency {0}", dependencyFile));
-                                PLUGIN_LOGGER.Log(ex.ToString());
-                            }
-                        }
+                        PluginLoader loader = new(pluginDirectory);
+                        JsonObject settings = JsonParser.LoadFromFile(jsonFile);
+                        List<string> dependencies = settings.GetList<string>("dependencies");
+                        foreach (string dependency in dependencies)
+                            loader.AddDependency(dependency);
+                        List<string> plugins = settings.GetList<string>("plugins");
+                        foreach (string plugin in plugins)
+                            loader.AddPlugin(plugin);
+                        pluginMetadatas.AddRange(loader.Load());
                     }
-
-                    string[] files = Directory.GetFiles(pluginDirectory);
-                    foreach (string file in files)
-                    {
-                        try
-                        {
-                            string fullPath = Path.GetFullPath(file);
-                            AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += MyResolve;
-                            AppDomain.CurrentDomain.AssemblyResolve += MyResolve;
-                            Assembly dllAssembly = Assembly.LoadFile(fullPath);
-                            foreach (Type type in dllAssembly.GetExportedTypes())
-                            {
-                                if (type.IsAssignableTo(typeof(APlugin)))
-                                    pluginMetadatas.Add(new(type, pluginDirectory, Path.GetFileName(file), File.GetLastWriteTime(fullPath)));
-                            }
-                        }
-                        catch (BadImageFormatException) { } //The file is not an assembly
-                        catch (FileLoadException) { } //The assembly has already been loaded
-                        catch (Exception ex)
-                        {
-                            PLUGIN_LOGGER.Log(string.Format("Cannot load {0}", file));
-                            PLUGIN_LOGGER.Log(ex.ToString());
-                        }
-                    }
-
-                    m_LoadedDependencies.Clear();
                 }
             }
             return pluginMetadatas;
         }
 
-        private Assembly MyResolve(object? sender, ResolveEventArgs e) => m_LoadedDependencies[e.Name];
-
-        private void SortReloadedPlugins(List<Metadata> loaded, ref List<Metadata> toLoad, ref List<Plugin> toRemove)
+        /*private void SortReloadedPlugins(List<Metadata> loaded, ref List<Metadata> toLoad, ref List<Plugin> toRemove)
         {
             //TODO
-        }
+        }*/
 
         public void LoadPlugins()
         {

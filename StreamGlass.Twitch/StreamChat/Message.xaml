@@ -9,7 +9,13 @@
              d:DesignHeight="30">
     <ui:Border x:Name="AnnouncementBorder" CornerRadius="5" BorderThickness="2" BorderBrush="Transparent">
         <ui:DockPanel x:Name="MessagePanel" LastChildFill="True">
-            <ui:StructuredLabel x:Name="MessageContent" Grid.Column="1" Margin="0" BorderThickness="0"/>
+            <ui:StructuredLabel x:Name="MessageContent" Grid.Column="1" Margin="0" BorderThickness="0">
+                <ui:StructuredLabel.ContextMenu>
+                    <ui:ContextMenu>
+                        <ui:MenuItem TranslationKey="message_menu_ban" Header="Ban User" Click="BanUser_Click"/>
+                    </ui:ContextMenu>
+                </ui:StructuredLabel.ContextMenu>
+            </ui:StructuredLabel>
         </ui:DockPanel>
     </ui:Border>
 </ui:UserControl>

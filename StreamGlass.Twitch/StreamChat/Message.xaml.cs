@@ -5,7 +5,6 @@ using TwitchCorpse;
 using StreamGlass.Core;
 using CorpseLib.StructuredText;
 using TwitchCorpse.API;
-using StreamGlass.Core.Profile;
 
 namespace StreamGlass.Twitch.StreamChat
 {
