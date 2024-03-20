@@ -1,5 +1,6 @@
 ﻿using CorpseLib.Ini;
 using CorpseLib.Translation;
+using StreamGlass.Core;
 using StreamGlass.Core.Controls;
 using StreamGlass.Core.Settings;
 using System;
@@ -24,6 +25,8 @@ namespace StreamGlass.StreamChat
         {
             m_BrushPalette = brushPalette;
             InitializeComponent();
+            ColorModeComboBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.SETTINGS_GENERAL_COLOR);
+            LanguageComboBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.SETTINGS_GENERAL_LANGUAGE);
             m_OriginalBrushPaletteID = brushPalette.CurrentObjectID;
             m_OriginalLanguage = Translator.CurrentLanguage;
         }

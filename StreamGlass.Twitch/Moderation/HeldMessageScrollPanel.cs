@@ -1,18 +1,11 @@
 ﻿using StreamGlass.Core;
 using StreamGlass.Core.Controls;
-using StreamGlass.Core.Profile;
 
 namespace StreamGlass.Twitch.Moderation
 {
     public class HeldMessageScrollPanel : ScrollPanel<HeldMessage>
     {
-        private double m_MessageSenderFontSize = 14;
-        private double m_MessageSenderWidth = 100;
         private double m_MessageContentFontSize = 14;
-
-        internal double MessageSenderFontSize => m_MessageSenderFontSize;
-        internal double MessageSenderWidth => m_MessageSenderWidth;
-        internal double MessageContentFontSize => m_MessageContentFontSize;
 
         public HeldMessageScrollPanel() : base() { }
 
@@ -20,6 +13,7 @@ namespace StreamGlass.Twitch.Moderation
         {
             StreamGlassCanals.Register<TwitchMessage>(TwitchPlugin.Canals.HELD_MESSAGE, OnHeldMessage);
             StreamGlassCanals.Register<string>(TwitchPlugin.Canals.HELD_MESSAGE_MODERATED, RemoveHeldMessage);
+            StreamGlassCanals.Register<bool>(TwitchPlugin.Canals.ALLOW_AUTOMOD, AllowLastMessage);
         }
 
         public void SetContentFontSize(double fontSize)
@@ -28,6 +22,15 @@ namespace StreamGlass.Twitch.Moderation
             foreach (HeldMessage message in Controls)
                 message.SetMessageFontSize(m_MessageContentFontSize);
             UpdateControlsPosition();
+        }
+
+        private void AllowLastMessage(bool allow)
+        {
+            Dispatcher.Invoke((Delegate)(() =>
+            {
+                if (Controls.Count > 0)
+                    Controls[0].AllowMessage(allow);
+            }));
         }
 
         private void OnHeldMessage(TwitchMessage? message)

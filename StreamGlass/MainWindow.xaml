@@ -32,22 +32,22 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <ui:Menu Grid.Column="0" x:Name="MenuBar" BrushPaletteKey="top_bar_background">
-                    <ui:MenuItem TranslationKey="menu_file" Header="File" BrushPaletteKey="top_bar_background"/>
-                    <ui:MenuItem TranslationKey="menu_settings" Header="Settings" Click="SettingsToolStripMenuItem_Click" BrushPaletteKey="top_bar_background"/>
-                    <ui:MenuItem x:Name="ProfilesMenu" TranslationKey="menu_profile" Header="Profiles" BrushPaletteKey="top_bar_background">
-                        <ui:MenuItem x:Name="StringSourcesMenuEdit" TranslationKey="menu_edit_string_sources" Header="Edit string sources..." Click="EditStringSourcesButton_Click" BrushPaletteKey="top_bar_background"/>
-                        <ui:MenuItem x:Name="ProfileMenuEdit" TranslationKey="menu_edit_profile" Header="Edit profiles..." Click="EditProfilesButton_Click" BrushPaletteKey="top_bar_background"/>
+                    <ui:MenuItem x:Name="FileMenuItem" Header="File" BrushPaletteKey="top_bar_background"/>
+                    <ui:MenuItem x:Name="SettingsMenuItem" Header="Settings" Click="SettingsToolStripMenuItem_Click" BrushPaletteKey="top_bar_background"/>
+                    <ui:MenuItem x:Name="ProfilesMenuItem" Header="Profiles" BrushPaletteKey="top_bar_background">
+                        <ui:MenuItem x:Name="StringSourcesMenuEdit" Header="Edit string sources..." Click="EditStringSourcesButton_Click" BrushPaletteKey="top_bar_background"/>
+                        <ui:MenuItem x:Name="ProfileMenuEdit" Header="Edit profiles..." Click="EditProfilesButton_Click" BrushPaletteKey="top_bar_background"/>
                         <Separator Name="ProfilesMenuSeparator"/>
                     </ui:MenuItem>
-                    <ui:MenuItem Header="Test" Click="MenuItem_Click" BrushPaletteKey="top_bar_background"/>
-                    <ui:MenuItem TranslationKey="menu_help" Header="Help" BrushPaletteKey="top_bar_background">
-                        <ui:MenuItem TranslationKey="menu_about" Header="About" BrushPaletteKey="top_bar_background"/>
+                    <ui:MenuItem x:Name="TestMenuItem" Header="Test" Click="TestMenuItem_Click" BrushPaletteKey="top_bar_background"/>
+                    <ui:MenuItem x:Name="HelpMenuItem" Header="Help" BrushPaletteKey="top_bar_background">
+                        <ui:MenuItem x:Name="HelpAboutMenuItem" Header="About" BrushPaletteKey="top_bar_background"/>
                     </ui:MenuItem>
                 </ui:Menu>
             </ui:Grid>
             <ui:StackPanel HorizontalAlignment="Center" Grid.Column="1" Orientation="Horizontal">
                 <ui:Image SourcePath="${ExeDir}/Assets/stream-glass-logo.ico" Width="15" Height="15" />
-                <ui:Label BrushPaletteKey="top_bar_text" TranslationKey="app_name" Margin="2,2,0,0" Text="StreamGlass" />
+                <ui:Label x:Name="AppNameLabel" BrushPaletteKey="top_bar_text" Margin="2,2,0,0" Text="StreamGlass" />
             </ui:StackPanel>
             <ui:StackPanel Margin="0,0,5,0" Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal">
                 <ui:Button BrushPaletteKey="top_bar_button_minimize" Click="MinimizeButton_Click" Width="15" Height="15" BorderThickness="0">

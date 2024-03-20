@@ -63,6 +63,16 @@ namespace StreamGlass
             StreamGlassCanals.Register<string>(StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM, (profileID) => m_MenuItemsRadioGroup.Select(profileID!));
 
             InitializeComponent();
+
+            FileMenuItem.SetTranslationKey(StreamGlassTranslationKeys.MENU_FILE);
+            SettingsMenuItem.SetTranslationKey(StreamGlassTranslationKeys.MENU_SETTINGS);
+            ProfilesMenuItem.SetTranslationKey(StreamGlassTranslationKeys.MENU_PROFILE);
+            StringSourcesMenuEdit.SetTranslationKey(StreamGlassTranslationKeys.MENU_EDIT_STRING_SOURCES);
+            ProfileMenuEdit.SetTranslationKey(StreamGlassTranslationKeys.MENU_EDIT_PROFILE);
+            HelpMenuItem.SetTranslationKey(StreamGlassTranslationKeys.MENU_HELP);
+            HelpAboutMenuItem.SetTranslationKey(StreamGlassTranslationKeys.MENU_ABOUT);
+            AppNameLabel.SetTranslationKey(StreamGlassTranslationKeys.APP_NAME);
+
             m_SplashScreen.UpdateProgressBar(10);
             InitializeBrushPalette();
             m_SplashScreen.UpdateProgressBar(30);
@@ -80,10 +90,10 @@ namespace StreamGlass
 
         internal void UpdateProfilesMenuList()
         {
-            ProfilesMenu.Items.Clear();
-            ProfilesMenu.Items.Add(StringSourcesMenuEdit);
-            ProfilesMenu.Items.Add(ProfileMenuEdit);
-            ProfilesMenu.Items.Add(ProfilesMenuSeparator);
+            ProfilesMenuItem.Items.Clear();
+            ProfilesMenuItem.Items.Add(StringSourcesMenuEdit);
+            ProfilesMenuItem.Items.Add(ProfileMenuEdit);
+            ProfilesMenuItem.Items.Add(ProfilesMenuSeparator);
 
             m_MenuItemsRadioGroup.Clear();
             var profiles = m_Manager.ProfileManager.Objects;
@@ -92,11 +102,11 @@ namespace StreamGlass
                 if (profile.IsSelectable)
                 {
                     ProfileMenuItem item = new(m_Manager.ProfileManager, profile.ID) { Header = profile.Name };
-                    ProfilesMenu.Items.Add(item);
+                    ProfilesMenuItem.Items.Add(item);
                     m_MenuItemsRadioGroup.AddItem(item);
                 }
             }
-            ProfilesMenu.Update(GetBrushPalette());
+            ProfilesMenuItem.Update(GetBrushPalette());
         }
 
         protected override void OnClosed(EventArgs e)
@@ -151,7 +161,7 @@ namespace StreamGlass
             UpdateProfilesMenuList();
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        private void TestMenuItem_Click(object sender, RoutedEventArgs e)
         {
             StreamGlassContext.LOGGER.Log("Testing");
             m_Manager.Test();

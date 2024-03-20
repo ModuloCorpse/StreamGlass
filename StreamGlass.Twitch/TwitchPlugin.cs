@@ -43,6 +43,7 @@ namespace StreamGlass.Twitch
             public static readonly string STREAM_START = "twitch_stream_start";
             public static readonly string STREAM_STOP = "twitch_stream_stop";
             public static readonly string ALERT = "twitch_stream_alert";
+            public static readonly string ALLOW_AUTOMOD = "twitch_allow_automod";
         }
 
         public static class TranslationKeys
@@ -53,6 +54,7 @@ namespace StreamGlass.Twitch
             public static readonly TranslationKey ALERT_EDITOR_IMAGE = new("alert_editor_image");
             public static readonly TranslationKey ALERT_EDITOR_PREFIX = new("alert_editor_prefix");
             public static readonly TranslationKey SETTINGS_ALERT_ALERTS = new("settings_alert_alerts");
+            public static readonly TranslationKey MENU_BAN = new("menu_ban");
             public static readonly TranslationKey BAN_BUTTON = new("ban_button");
             public static readonly TranslationKey BAN_TIME = new("ban_time");
             public static readonly TranslationKey BAN_REASON = new("ban_reason");
@@ -136,6 +138,7 @@ namespace StreamGlass.Twitch
                 { TranslationKeys.ALERT_EDITOR_IMAGE, "Image:" },
                 { TranslationKeys.ALERT_EDITOR_PREFIX, "Prefix:" },
                 { TranslationKeys.SETTINGS_ALERT_ALERTS, "Alerts" },
+                { TranslationKeys.MENU_BAN, "Ban User" },
                 { TranslationKeys.BAN_BUTTON, "Ban" },
                 { TranslationKeys.BAN_TIME, "Time (s):" },
                 { TranslationKeys.BAN_REASON, "Reason:" },
@@ -180,6 +183,7 @@ namespace StreamGlass.Twitch
                 { TranslationKeys.ALERT_EDITOR_IMAGE, "Image :" },
                 { TranslationKeys.ALERT_EDITOR_PREFIX, "Alerte :" },
                 { TranslationKeys.SETTINGS_ALERT_ALERTS, "Alertes" },
+                { TranslationKeys.MENU_BAN, "Bannir l'utilisateur" },
                 { TranslationKeys.BAN_BUTTON, "Bannir" },
                 { TranslationKeys.BAN_TIME, "Durée (s) :" },
                 { TranslationKeys.BAN_REASON, "Raison :" },
@@ -300,11 +304,13 @@ namespace StreamGlass.Twitch
             StreamGlassCanals.NewCanal(Canals.STREAM_START);
             StreamGlassCanals.NewCanal(Canals.STREAM_STOP);
             StreamGlassCanals.NewCanal<VisualAlert>(Canals.ALERT);
+            StreamGlassCanals.NewCanal<bool>(Canals.ALLOW_AUTOMOD);
         }
 
         protected override AEndpoint[] GetEndpoints() => [
             new AllMessageEndpoint(),
-            new ClearMessageEndpoint()
+            new ClearMessageEndpoint(),
+            new ModerateAutoModEndpoint()
         ];
 
         protected override void Unregister()

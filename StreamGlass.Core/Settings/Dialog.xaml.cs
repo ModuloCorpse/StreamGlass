@@ -9,6 +9,8 @@ namespace StreamGlass.Core.Settings
         public Dialog(Controls.Window window): base(window)
         {
             InitializeComponent();
+            MenuSettingsLabel.SetTranslationKey(StreamGlassTranslationKeys.MENU_SETTINGS);
+            SaveButton.SetTranslationKey(StreamGlassTranslationKeys.SAVE_BUTTON);
         }
 
         public void AddTabItem(TabItemContent item)

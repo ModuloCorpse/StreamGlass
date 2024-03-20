@@ -11,6 +11,9 @@ namespace StreamGlass.Core.Stat
         {
             m_StringSourceManager = StreamGlassContext.StringSources;
             InitializeComponent();
+
+            StringSourceFileGroupBox.SetTranslationKey(StreamGlassTranslationKeys.SECTION_STRING_SOURCES);
+
             StringSourceFileList.ItemAdded += StringSourceFileList_AddStringSourceFile;
             StringSourceFileList.ItemRemoved += StringSourceFileList_RemoveStringSourceFile;
             StringSourceFileList.ItemEdited += StringSourceFileList_EditStringSourceFile;

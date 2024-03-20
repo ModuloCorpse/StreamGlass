@@ -1,13 +1,9 @@
-﻿using StreamGlass.Core;
-using StreamGlass.Core.Profile;
+﻿using CorpseLib.StructuredText;
+using StreamGlass.Core;
 using StreamGlass.Twitch.Events;
-using System.Globalization;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using TwitchCorpse.API;
 using TwitchCorpse;
-using CorpseLib.StructuredText;
+using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch.Moderation
 {
@@ -75,16 +71,14 @@ namespace StreamGlass.Twitch.Moderation
 
         public void SetMessageFontSize(double fontSize) => HeldMessageLabel.FontSize = fontSize;
 
-        private void AllowButton_Click(object sender, RoutedEventArgs e)
+        public void AllowMessage(bool allow)
         {
-            StreamGlassCanals.Emit(TwitchPlugin.Canals.ALLOW_MESSAGE, new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, true));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.ALLOW_MESSAGE, new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, allow));
             m_Parent.Remove(this);
         }
 
-        private void DenyButton_Click(object sender, RoutedEventArgs e)
-        {
-            StreamGlassCanals.Emit(TwitchPlugin.Canals.ALLOW_MESSAGE, new MessageAllowedEventArgs(m_HeldMessage.Sender, m_HeldMessage.ID, false));
-            m_Parent.Remove(this);
-        }
+        private void AllowButton_Click(object sender, RoutedEventArgs e) => AllowMessage(true);
+
+        private void DenyButton_Click(object sender, RoutedEventArgs e) => AllowMessage(false);
     }
 }

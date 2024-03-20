@@ -12,7 +12,7 @@
             <ui:StructuredLabel x:Name="MessageContent" Grid.Column="1" Margin="0" BorderThickness="0">
                 <ui:StructuredLabel.ContextMenu>
                     <ui:ContextMenu>
-                        <ui:MenuItem TranslationKey="message_menu_ban" Header="Ban User" Click="BanUser_Click"/>
+                        <ui:MenuItem x:Name="BanMenuItem" Header="Ban User" Click="BanUser_Click"/>
                     </ui:ContextMenu>
                 </ui:StructuredLabel.ContextMenu>
             </ui:StructuredLabel>

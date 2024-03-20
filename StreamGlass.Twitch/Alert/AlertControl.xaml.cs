@@ -1,5 +1,5 @@
-﻿using StreamGlass.Core.Controls;
-using CorpseLib.Wpf;
+﻿using CorpseLib.Wpf;
+using StreamGlass.Core.Controls;
 
 namespace StreamGlass.Twitch.Alerts
 {

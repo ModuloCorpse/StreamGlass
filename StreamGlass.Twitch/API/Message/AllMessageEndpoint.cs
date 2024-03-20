@@ -2,7 +2,6 @@
 using CorpseLib.Web.API;
 using CorpseLib.Web.Http;
 using StreamGlass.Core;
-using StreamGlass.Core.Profile;
 
 namespace StreamGlass.Twitch.API.Message
 {
@@ -57,7 +56,7 @@ namespace StreamGlass.Twitch.API.Message
         private readonly Dictionary<Guid, Page> m_Pages = [];
         private readonly List<TwitchMessage> m_Messages = [];
 
-        public AllMessageEndpoint() : base("/all_message")
+        public AllMessageEndpoint() : base("/twitch/all_message")
         {
             StreamGlassCanals.Register<TwitchMessage>(TwitchPlugin.Canals.CHAT_MESSAGE, (message) => { if (message != null) m_Messages.Add(message); });
             StreamGlassCanals.Register(TwitchPlugin.Canals.CHAT_CLEAR, m_Messages.Clear);

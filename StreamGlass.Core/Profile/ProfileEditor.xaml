@@ -37,25 +37,25 @@
             </ui:Grid>
             <ui:StackPanel Margin="0,5,0,0">
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <ui:Label x:Name="NameTextBoxLabel" TranslationKey="profile_editor_name" VerticalAlignment="Center" TextAlignment="Right" Text="Name:" Width="150"/>
+                    <ui:Label x:Name="NameTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Name:" Width="150"/>
                     <ui:TextBox Margin="5,0,0,0" x:Name="NameTextBox" Height="26" Width="250"/>
                 </ui:StackPanel>
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <ui:Label x:Name="ParentComboBoxLabel" TranslationKey="profile_editor_parent" VerticalAlignment="Center" TextAlignment="Right" Text="Parent:" Width="150"/>
+                    <ui:Label x:Name="ParentComboBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Parent:" Width="150"/>
                     <ComboBox Margin="5,0,0,0" Name="ParentComboBox" Width="250"/>
                 </ui:StackPanel>
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <ui:Label x:Name="IsSelectableCheckBoxLabel" TranslationKey="profile_editor_is_selectable" VerticalAlignment="Center" TextAlignment="Right" Text="Is Selectable:" Width="150"/>
+                    <ui:Label x:Name="IsSelectableCheckBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Is Selectable:" Width="150"/>
                     <CheckBox Margin="5,0,0,0" Name="IsSelectableCheckBox"/>
                 </ui:StackPanel>
-                <ui:GroupBox TranslationKey="section_stream_info" Header="Stream Info">
+                <ui:GroupBox x:Name="StreamInfoGroupBox" Header="Stream Info">
                     <ui:StackPanel>
                         <ui:StackPanel Orientation="Horizontal" Margin="0,0,0,0">
-                            <ui:Label x:Name="StreamInfoTitleTextBoxLabel" TranslationKey="profile_editor_title" VerticalAlignment="Center" TextAlignment="Right" Text="Title:" Width="150"/>
+                            <ui:Label x:Name="StreamInfoTitleTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Title:" Width="150"/>
                             <ui:TextBox Margin="5,0,0,0" x:Name="StreamInfoTitleTextBox" Height="26" Width="250"/>
                         </ui:StackPanel>
                         <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                            <ui:Label x:Name="StreamInfoCategoryTextBoxLabel" TranslationKey="profile_editor_category" VerticalAlignment="Center" TextAlignment="Right" Text="Category:" Width="150"/>
+                            <ui:Label x:Name="StreamInfoCategoryTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Category:" Width="150"/>
                             <ui:TextBox Margin="5,0,0,0" x:Name="StreamInfoCategoryTextBox" Height="26" Width="213" IsReadOnly="True"/>
                             <ui:Button x:Name="StreamInfoCategorySearchButton" Margin="3,0,0,0" Width="34" HorizontalAlignment="Left" VerticalAlignment="Top" Click="StreamInfoCategorySearchButton_Click">
                                 <ui:Image Height="20" Width="20" SourcePath="${ExeDir}/Assets/magnifying-glass.png" />
@@ -67,20 +67,20 @@
                             </ui:Button>
                         </ui:StackPanel>
                         <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                            <ui:Label x:Name="StreamInfoDescriptionTextBoxLabel" TranslationKey="profile_editor_description" VerticalAlignment="Center" TextAlignment="Right" Text="Description:" Width="150"/>
+                            <ui:Label x:Name="StreamInfoDescriptionTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Description:" Width="150"/>
                             <ui:TextBox Margin="5,0,0,0" x:Name="StreamInfoDescriptionTextBox" Height="26" Width="250"/>
                         </ui:StackPanel>
                         <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                            <ui:Label x:Name="StreamInfoLanguageTextBoxLabel" TranslationKey="profile_editor_language" VerticalAlignment="Center" TextAlignment="Right" Text="Language:" Width="150"/>
+                            <ui:Label x:Name="StreamInfoLanguageTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Language:" Width="150"/>
                             <ui:TextBox Margin="5,0,0,0" x:Name="StreamInfoLanguageTextBox" Height="26" Width="250"/>
                         </ui:StackPanel>
                     </ui:StackPanel>
                 </ui:GroupBox>
-                <ui:GroupBox x:Name="CommandGroupBox" TranslationKey="section_commands" Header="Commands">
+                <ui:GroupBox x:Name="CommandGroupBox" Header="Commands">
                     <ui:EditableList x:Name="ChatCommandsList" Height="197" EditImageSource="${ExeDir}/Assets/pencil.png" SearchImageSource="${ExeDir}/Assets/magnifying-glass.png"/>
                 </ui:GroupBox>
                 <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35">
-                    <ui:Button TranslationKey="save_button" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">
+                    <ui:Button x:Name="SaveButton" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="10"/>

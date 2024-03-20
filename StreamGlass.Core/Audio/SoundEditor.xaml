@@ -38,7 +38,7 @@
             <ui:StackPanel>
                 <ui:StackPanel Margin="0,5,0,5" Grid.Column="0">
                     <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                        <ui:Label x:Name="AudioFileTextBoxLabel" TranslationKey="sound_editor_audio_file" Margin="0,0,5,0" Text="File:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="75"/>
+                        <ui:Label x:Name="AudioFileTextBoxLabel" Margin="0,0,5,0" Text="File:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="75"/>
                         <ui:TextBox x:Name="AudioFileTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="300" Height="25"/>
                         <ui:Button x:Name="AudioFileTextBoxButton" Margin="3,0,0,0" Width="34" HorizontalAlignment="Left" VerticalAlignment="Top" Click="AudioFileDialog_Click">
                             <ui:Button.Resources>
@@ -50,26 +50,26 @@
                         </ui:Button>
                     </ui:StackPanel>
                     <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                        <ui:Label x:Name="AudioOutputTextBoxLabel" TranslationKey="sound_editor_audio_output" Margin="0,0,5,0" Text="Output:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="75"/>
+                        <ui:Label x:Name="AudioOutputTextBoxLabel" Margin="0,0,5,0" Text="Output:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="75"/>
                         <ComboBox x:Name="AudioOutputComboBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="300" Height="25"/>
                     </ui:StackPanel>
                 </ui:StackPanel>
                 <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35">
-                    <ui:Button TranslationKey="close_button" Margin="5,0,0,0" Content="Close" Height="25" Width="75" Click="CloseButton_Click">
+                    <ui:Button x:Name="CloseButton" Margin="5,0,0,0" Content="Close" Height="25" Width="75" Click="CloseButton_Click">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="10"/>
                             </Style>
                         </Button.Resources>
                     </ui:Button>
-                    <ui:Button TranslationKey="save_button" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">
+                    <ui:Button x:Name="SaveButton" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="10"/>
                             </Style>
                         </Button.Resources>
                     </ui:Button>
-                    <ui:Button TranslationKey="test_button" Margin="5,0,0,0" Content="Test" Height="25" Width="75" Click="TestButton_Click">
+                    <ui:Button x:Name="TestButton" Margin="5,0,0,0" Content="Test" Height="25" Width="75" Click="TestButton_Click">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="10"/>

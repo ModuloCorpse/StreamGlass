@@ -1,5 +1,4 @@
-﻿using CorpseLib.Translation;
-using StreamGlass.Core.Settings;
+﻿using StreamGlass.Core.Settings;
 using System.Windows.Controls;
 
 namespace StreamGlass.Twitch

@@ -37,59 +37,59 @@
             </ui:Grid>
             <ui:StackPanel Margin="0,5,0,0">
                 <ui:StackPanel Orientation="Horizontal">
-                    <ui:Label x:Name="NameTextBoxLabel" TranslationKey="profile_editor_name" VerticalAlignment="Center" TextAlignment="Right" Text="Name:" Width="150"/>
+                    <ui:Label x:Name="NameTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Name:" Width="150"/>
                     <ui:TextBox Margin="5,0,0,0" x:Name="NameTextBox" Height="26" Width="250"/>
                 </ui:StackPanel>
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <ui:Label x:Name="ContentTextBoxLabel" TranslationKey="profile_editor_content" VerticalAlignment="Center" TextAlignment="Right" Text="Content:" Width="150"/>
+                    <ui:Label x:Name="ContentTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Content:" Width="150"/>
                     <ui:TextBox Margin="5,0,0,0" x:Name="ContentTextBox" Height="52" Width="250" TextWrapping="Wrap" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                 </ui:StackPanel>
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <ui:Label x:Name="TimeTextBoxLabel" TranslationKey="profile_editor_time" VerticalAlignment="Center" TextAlignment="Right" Text="Time:" Width="150"/>
+                    <ui:Label x:Name="TimeTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Time:" Width="150"/>
                     <ui:NumericUpDown Margin="5,0,0,0" x:Name="TimeUpDown" MinValue="0" Height="26" Width="250"/>
                 </ui:StackPanel>
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <ui:Label x:Name="NbMessageTextBoxLabel" TranslationKey="profile_editor_messages" VerticalAlignment="Center" TextAlignment="Right" Text="Messages Number:" Width="150"/>
+                    <ui:Label x:Name="NbMessageTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Messages Number:" Width="150"/>
                     <ui:NumericUpDown Margin="5,0,0,0" x:Name="NbMessageUpDown" MinValue="0" Height="26" Width="250"/>
                 </ui:StackPanel>
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <ui:Label x:Name="UserComboBoxLabel" TranslationKey="profile_editor_user" VerticalAlignment="Center" TextAlignment="Right" Text="User:" Width="150"/>
+                    <ui:Label x:Name="UserComboBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="User:" Width="150"/>
                     <ui:NumericUpDown Margin="5,0,0,0" x:Name="UserUpDown" MinValue="0" Height="26" Width="250"/>
                 </ui:StackPanel>
-                <ui:GroupBox x:Name="AliasesGroupBox" TranslationKey="section_aliases" Header="Aliases">
+                <ui:GroupBox x:Name="AliasesGroupBox" Header="Aliases">
                     <ui:EditableList x:Name="AliasesList" Height="75" EditImageSource="${ExeDir}/Assets/pencil.png" IsSearchable="False" />
                 </ui:GroupBox>
-                <ui:GroupBox x:Name="SubCommandGroupBox" TranslationKey="section_sub_commands" Header="Sub commands">
+                <ui:GroupBox x:Name="SubCommandGroupBox" Header="Sub commands">
                     <ui:EditableList x:Name="SubCommandList" Height="75" EditImageSource="${ExeDir}/Assets/pencil.png" IsSearchable="False" />
                 </ui:GroupBox>
-                <ui:GroupBox TranslationKey="section_auto_trigger" Header="Auto-trigger" >
+                <ui:GroupBox x:Name="AutoTriggerGroupBox" Header="Auto-trigger" >
                     <ui:StackPanel>
                         <ui:StackPanel Orientation="Horizontal">
-                            <ui:Label x:Name="AutoTriggerEnableTextBoxLabel" TranslationKey="profile_editor_enable" VerticalAlignment="Center" TextAlignment="Right" Text="Enable:" Width="150"/>
+                            <ui:Label x:Name="AutoTriggerEnableTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Enable:" Width="150"/>
                             <CheckBox Margin="5,0,0,0" x:Name="AutoTriggerEnableCheckBox" Checked="AutoTriggerEnableCheckBox_Checked" Unchecked="AutoTriggerEnableCheckBox_Checked"/>
                         </ui:StackPanel>
                         <ui:StackPanel x:Name="AutoTriggerTimePanel" Orientation="Horizontal" Margin="0,5,0,0">
-                            <ui:Label x:Name="AutoTriggerTimeTextBoxLabel" TranslationKey="profile_editor_time" VerticalAlignment="Center" TextAlignment="Right" Text="Time:" Width="150"/>
+                            <ui:Label x:Name="AutoTriggerTimeTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Time:" Width="150"/>
                             <ui:NumericUpDown Margin="5,0,0,0" x:Name="AutoTriggerTimeUpDown" MinValue="0" Height="26" Width="250"/>
                         </ui:StackPanel>
                         <ui:StackPanel x:Name="AutoTriggerDeltaTimePanel" Orientation="Horizontal" Margin="0,5,0,0">
-                            <ui:Label x:Name="AutoTriggerTimeDeltaTextBoxLabel" TranslationKey="profile_editor_time_delta" VerticalAlignment="Center" TextAlignment="Right" Text="Time Delta:" Width="150"/>
+                            <ui:Label x:Name="AutoTriggerTimeDeltaTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Time Delta:" Width="150"/>
                             <ui:NumericUpDown Margin="5,0,0,0" x:Name="AutoTriggerTimeDeltaUpDown" MinValue="0" Height="26" Width="250"/>
                         </ui:StackPanel>
-                        <ui:GroupBox x:Name="AutoTriggerDefaultArgumentGroupBox" TranslationKey="section_default_arguments" Header="Default arguments">
+                        <ui:GroupBox x:Name="AutoTriggerDefaultArgumentGroupBox" Header="Default arguments">
                             <ui:EditableList x:Name="AutoTriggerArguments" Height="75" EditImageSource="${ExeDir}/Assets/pencil.png" IsSearchable="False" />
                         </ui:GroupBox>
                     </ui:StackPanel>
                 </ui:GroupBox>
                 <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35">
-                    <ui:Button TranslationKey="close_button" Margin="5,0,0,0" Content="Close" Height="25" Width="75" Click="CloseButton_Click">
+                    <ui:Button x:Name="CloseButton" Margin="5,0,0,0" Content="Close" Height="25" Width="75" Click="CloseButton_Click">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="10"/>
                             </Style>
                         </Button.Resources>
                     </ui:Button>
-                    <ui:Button TranslationKey="save_button" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">
+                    <ui:Button x:Name="SaveButton" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="10"/>

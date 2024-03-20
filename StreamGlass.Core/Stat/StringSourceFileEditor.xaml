@@ -37,7 +37,7 @@
             </ui:Grid>
             <ui:StackPanel Margin="0,5,0,0">
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <ui:Label x:Name="PathTextBoxLabel" TranslationKey="string_source_editor_path" VerticalAlignment="Center" TextAlignment="Right" Text="Path:" Width="150"/>
+                    <ui:Label x:Name="PathTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Path:" Width="150"/>
                     <ui:TextBox Margin="5,0,0,0" x:Name="PathTextBox" Height="26" Width="213"/>
                     <ui:Button x:Name="PathClipboardButton" Margin="3,0,0,0" Width="34" HorizontalAlignment="Left" VerticalAlignment="Top" Click="PathClipboardButton_Click">
                         <ui:Image Height="20" Width="20" SourcePath="${ExeDir}/Assets/notebook.png" />
@@ -49,14 +49,14 @@
                     </ui:Button>
                 </ui:StackPanel>
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <ui:Label x:Name="ContentTextBoxLabel" TranslationKey="string_source_editor_content" VerticalAlignment="Center" TextAlignment="Right" Text="Content:" Width="150"/>
+                    <ui:Label x:Name="ContentTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Content:" Width="150"/>
                     <ui:TextBox Margin="5,0,0,0" x:Name="ContentTextBox" Height="26" Width="250"/>
                 </ui:StackPanel>
-                <ui:GroupBox x:Name="StringSourceGroupBox" TranslationKey="section_string_sources" Header="String Sources">
+                <ui:GroupBox x:Name="StringSourceGroupBox" Header="String Sources">
                     <ui:EditableList x:Name="StringSourcesList" Height="197" EditImageSource="${ExeDir}/Assets/pencil.png" SearchImageSource="${ExeDir}/Assets/magnifying-glass.png"/>
                 </ui:GroupBox>
                 <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35">
-                    <ui:Button TranslationKey="save_button" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">
+                    <ui:Button x:Name="SaveButton" Margin="5,0,0,0" Content="Save" Height="25" Width="75" Click="SaveButton_Click">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="10"/>

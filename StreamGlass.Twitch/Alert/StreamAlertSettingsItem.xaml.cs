@@ -1,7 +1,7 @@
-﻿using StreamGlass.Core.Settings;
+﻿using CorpseLib.Ini;
 using StreamGlass.Core.Controls;
+using StreamGlass.Core.Settings;
 using System.Windows.Controls;
-using CorpseLib.Ini;
 
 namespace StreamGlass.Twitch.Alerts
 {

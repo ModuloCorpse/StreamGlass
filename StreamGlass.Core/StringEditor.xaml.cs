@@ -10,6 +10,7 @@ namespace StreamGlass.Core
         public StringEditor(Controls.Window parent) : base(parent)
         {
             InitializeComponent();
+            SaveButton.SetTranslationKey(StreamGlassTranslationKeys.SAVE_BUTTON);
         }
 
         public StringEditor(Controls.Window parent, string str) : this(parent)

@@ -6,9 +6,9 @@ namespace StreamGlass.Twitch.API.Message
 {
     public class ClearMessageEndpoint : AHTTPEndpoint
     {
-        public ClearMessageEndpoint() : base("/clear_chat") { }
+        public ClearMessageEndpoint() : base("/twitch/clear_chat") { }
 
-        protected override Response OnDeleteRequest(Request request)
+        protected override Response OnPostRequest(Request request)
         {
             StreamGlassCanals.Trigger(TwitchPlugin.Canals.CHAT_CLEAR);
             StreamGlassCanals.Trigger(StreamGlassCanals.PROFILE_RESET);

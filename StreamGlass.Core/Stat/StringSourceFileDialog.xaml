@@ -37,7 +37,7 @@
             </ui:Grid>
             <ui:StackPanel Width="450">
                 <ui:StackPanel Margin="0,5,0,0">
-                    <ui:GroupBox x:Name="StringSourceFileGroupBox" TranslationKey="section_string_sources" Header="String Source">
+                    <ui:GroupBox x:Name="StringSourceFileGroupBox" Header="String Source">
                         <ui:EditableList x:Name="StringSourceFileList" Height="315" EditImageSource="${ExeDir}/Assets/pencil.png" SearchImageSource="${ExeDir}/Assets/magnifying-glass.png" />
                     </ui:GroupBox>
                 </ui:StackPanel>

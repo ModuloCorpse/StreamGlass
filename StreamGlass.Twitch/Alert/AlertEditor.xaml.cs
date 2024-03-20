@@ -1,9 +1,10 @@
-﻿using System.IO;
-using System.Windows;
-using System.Windows.Media.Imaging;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
+using StreamGlass.Core;
 using StreamGlass.Core.Audio;
 using StreamGlass.Core.Controls;
+using System.IO;
+using System.Windows;
+using System.Windows.Media.Imaging;
 
 namespace StreamGlass.Twitch.Alerts
 {
@@ -22,8 +23,8 @@ namespace StreamGlass.Twitch.Alerts
             ChatMessageContentTextBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.ALERT_EDITOR_PREFIX);
             AlertAudioFileLabelLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.ALERT_EDITOR_AUDIO_FILE);
             AlertChatMessageGroup.SetTranslationKey(TwitchPlugin.TranslationKeys.ALERT_CHAT_MESSAGE);
-            CloseButton.TranslationKey = "close_button";
-            SaveButton.TranslationKey = "save_button";
+            CloseButton.SetTranslationKey(StreamGlassTranslationKeys.CLOSE_BUTTON);
+            SaveButton.SetTranslationKey(StreamGlassTranslationKeys.SAVE_BUTTON);
 
             AlertEnableCheckBox.IsChecked = alertInfo.IsEnabled;
             ChatMessageEnableCheckBox.IsChecked = alertInfo.HaveChatMessage;

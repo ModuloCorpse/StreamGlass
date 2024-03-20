@@ -14,6 +14,12 @@ namespace StreamGlass.Core.Stat
         public StringSourceFileEditor(Controls.Window parent): base(parent)
         {
             InitializeComponent();
+
+            PathTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.STRING_SOURCE_EDITOR_PATH);
+            ContentTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.STRING_SOURCE_EDITOR_CONTENT);
+            StringSourceGroupBox.SetTranslationKey(StreamGlassTranslationKeys.SECTION_STRING_SOURCES);
+            SaveButton.SetTranslationKey(StreamGlassTranslationKeys.SAVE_BUTTON);
+
             StringSourcesList.ItemAdded += EditableList_AddString;
             StringSourcesList.ItemEdited += EditableList_EditString;
         }

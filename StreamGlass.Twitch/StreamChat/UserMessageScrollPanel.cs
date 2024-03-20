@@ -1,5 +1,5 @@
-﻿using StreamGlass.Core.Controls;
-using StreamGlass.Core;
+﻿using StreamGlass.Core;
+using StreamGlass.Core.Controls;
 
 namespace StreamGlass.Twitch.StreamChat
 {

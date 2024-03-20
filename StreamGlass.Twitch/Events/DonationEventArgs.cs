@@ -1,5 +1,5 @@
-﻿using CorpseLib.Json;
-using CorpseLib;
+﻿using CorpseLib;
+using CorpseLib.Json;
 using CorpseLib.StructuredText;
 using TwitchCorpse;
 

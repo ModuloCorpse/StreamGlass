@@ -10,6 +10,21 @@ namespace StreamGlass.Core.Profile
         public ChatCommandEditor(Controls.Window parent): base(parent)
         {
             InitializeComponent();
+
+            NameTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_NAME);
+            ContentTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_CONTENT);
+            TimeTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_TIME);
+            NbMessageTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_MESSAGES);
+            UserComboBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_USER);
+            AliasesGroupBox.SetTranslationKey(StreamGlassTranslationKeys.SECTION_ALIASES);
+            SubCommandGroupBox.SetTranslationKey(StreamGlassTranslationKeys.SECTION_SUB_COMMANDS);
+            AutoTriggerGroupBox.SetTranslationKey(StreamGlassTranslationKeys.SECTION_AUTO_TRIGGER);
+            AutoTriggerEnableTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_ENABLE);
+            AutoTriggerTimeTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_TIME);
+            AutoTriggerTimeDeltaTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_TIME_DELTA);
+            CloseButton.SetTranslationKey(StreamGlassTranslationKeys.CLOSE_BUTTON);
+            SaveButton.SetTranslationKey(StreamGlassTranslationKeys.SAVE_BUTTON);
+
             UserUpDown.Value = 0;
             AliasesList.ItemAdded += EditableList_AddString;
             AliasesList.ItemEdited += EditableList_EditString;

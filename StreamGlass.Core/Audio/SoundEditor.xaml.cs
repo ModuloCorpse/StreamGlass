@@ -11,6 +11,13 @@ namespace StreamGlass.Core.Audio
         public SoundEditor(Controls.Window parent, Sound? audio) : base(parent)
         {
             InitializeComponent();
+
+            AudioFileTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_FILE);
+            AudioOutputTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_OUTPUT);
+            CloseButton.SetTranslationKey(StreamGlassTranslationKeys.CLOSE_BUTTON);
+            SaveButton.SetTranslationKey(StreamGlassTranslationKeys.SAVE_BUTTON);
+            TestButton.SetTranslationKey(StreamGlassTranslationKeys.TEST_BUTTON);
+
             AudioFileTextBox.Text = audio?.File ?? string.Empty;
             string[] audioOutputs = SoundManager.GetOutputsNames();
             AudioOutputComboBox.Items.Clear();

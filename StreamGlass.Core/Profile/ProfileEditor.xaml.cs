@@ -17,6 +17,18 @@ namespace StreamGlass.Core.Profile
         public ProfileEditor(Controls.Window parent, ProfileManager profileManager): base(parent)
         {
             InitializeComponent();
+
+            NameTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_NAME);
+            ParentComboBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_PARENT);
+            IsSelectableCheckBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_IS_SELECTABLE);
+            StreamInfoGroupBox.SetTranslationKey(StreamGlassTranslationKeys.SECTION_STREAM_INFO);
+            StreamInfoTitleTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_TITLE);
+            StreamInfoCategoryTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_CATEGORY);
+            StreamInfoDescriptionTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_DESCRIPTION);
+            StreamInfoLanguageTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_LANGUAGE);
+            CommandGroupBox.SetTranslationKey(StreamGlassTranslationKeys.SECTION_COMMANDS);
+            SaveButton.SetTranslationKey(StreamGlassTranslationKeys.SAVE_BUTTON);
+
             ChatCommandsList.SetConversionDelegate(ConvertCommand);
             ChatCommandsList.ItemAdded += ChatCommandsList_AddChatCommand;
             ChatCommandsList.ItemRemoved += ChatCommandsList_RemoveChatCommand;

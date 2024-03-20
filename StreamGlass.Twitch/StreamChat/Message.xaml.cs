@@ -1,9 +1,9 @@
-﻿using System.Windows;
-using System.Windows.Media;
-using StreamGlass.Twitch.Events;
-using TwitchCorpse;
+﻿using CorpseLib.StructuredText;
 using StreamGlass.Core;
-using CorpseLib.StructuredText;
+using StreamGlass.Twitch.Events;
+using System.Windows;
+using System.Windows.Media;
+using TwitchCorpse;
 using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch.StreamChat
@@ -63,6 +63,7 @@ namespace StreamGlass.Twitch.StreamChat
         public Message(UserMessageScrollPanel streamChatPanel, TwitchMessage message, double contentFontSize, bool isHighligted, bool showBadges)
         {
             InitializeComponent();
+            BanMenuItem.SetTranslationKey(TwitchPlugin.TranslationKeys.MENU_BAN);
             m_StreamChat = streamChatPanel;
             m_Message = message;
             m_ShowBadges = showBadges;

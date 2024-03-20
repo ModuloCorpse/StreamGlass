@@ -1,8 +1,8 @@
-﻿using StreamGlass.Core.Settings;
-using StreamGlass.Core.Controls;
-using System.Windows.Controls;
+﻿using CorpseLib.Ini;
 using CorpseLib.Translation;
-using CorpseLib.Ini;
+using StreamGlass.Core.Controls;
+using StreamGlass.Core.Settings;
+using System.Windows.Controls;
 
 namespace StreamGlass.Twitch.StreamChat
 {

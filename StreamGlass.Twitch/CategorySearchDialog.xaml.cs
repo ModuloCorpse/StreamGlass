@@ -1,4 +1,5 @@
-﻿using StreamGlass.Core.Controls;
+﻿using StreamGlass.Core;
+using StreamGlass.Core.Controls;
 using StreamGlass.Core.Profile;
 using System.Windows;
 using TwitchCorpse;
@@ -19,8 +20,8 @@ namespace StreamGlass.Twitch
             m_API = api;
             InitializeComponent();
             SearchLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_TWITCH_SEARCH);
-            CloseButton.TranslationKey = "close_button";
-            SaveButton.TranslationKey = "save_button";
+            CloseButton.SetTranslationKey(StreamGlassTranslationKeys.CLOSE_BUTTON);
+            SaveButton.SetTranslationKey(StreamGlassTranslationKeys.SAVE_BUTTON);
 
             if (info != null)
             {

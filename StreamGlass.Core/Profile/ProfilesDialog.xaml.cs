@@ -11,6 +11,9 @@ namespace StreamGlass.Core.Profile
         {
             m_ProfileManager = manager;
             InitializeComponent();
+
+            ProfileGroupBox.SetTranslationKey(StreamGlassTranslationKeys.SECTION_PROFILES);
+
             ProfileList.ItemAdded += ProfileList_AddProfile;
             ProfileList.ItemRemoved += ProfileList_RemoveProfile;
             ProfileList.ItemEdited += ProfileList_EditProfile;

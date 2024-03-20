@@ -42,7 +42,7 @@
                     </ui:StackPanel>
                 </ui:Grid>
                 <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft">
-                    <ui:Button TranslationKey="save_button" Margin="5,5,0,0" Content="Save" Height="20" Width="75" Click="SaveButton_Click">
+                    <ui:Button x:Name="SaveButton" Margin="5,5,0,0" Content="Save" Height="20" Width="75" Click="SaveButton_Click">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="10"/>
