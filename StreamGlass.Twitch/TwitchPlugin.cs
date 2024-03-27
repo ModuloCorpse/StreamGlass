@@ -19,7 +19,7 @@ using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch
 {
-    public class TwitchPlugin : APlugin
+    public class TwitchPlugin() : APlugin("Twitch", "twitch_settings.ini")
     {
         public static class Canals
         {
@@ -48,47 +48,47 @@ namespace StreamGlass.Twitch
 
         public static class TranslationKeys
         {
-            public static readonly TranslationKey SETTINGS_CHAT_MODE = new("settings_chat_mode");
-            public static readonly TranslationKey SETTINGS_CHAT_FONT = new("settings_chat_font");
-            public static readonly TranslationKey ALERT_EDITOR_ENABLE = new("alert_editor_enable");
-            public static readonly TranslationKey ALERT_EDITOR_IMAGE = new("alert_editor_image");
-            public static readonly TranslationKey ALERT_EDITOR_PREFIX = new("alert_editor_prefix");
-            public static readonly TranslationKey SETTINGS_ALERT_ALERTS = new("settings_alert_alerts");
-            public static readonly TranslationKey MENU_BAN = new("menu_ban");
-            public static readonly TranslationKey BAN_BUTTON = new("ban_button");
-            public static readonly TranslationKey BAN_TIME = new("ban_time");
-            public static readonly TranslationKey BAN_REASON = new("ban_reason");
-            public static readonly TranslationKey SETTINGS_TWITCH_AUTOCONNECT = new("settings_twitch_autoconnect");
-            public static readonly TranslationKey SETTINGS_TWITCH_CONNECT = new("settings_twitch_connect");
-            public static readonly TranslationKey SETTINGS_TWITCH_BROWSER = new("settings_twitch_browser");
-            public static readonly TranslationKey SETTINGS_TWITCH_BOT_PUBLIC = new("settings_twitch_bot_public");
-            public static readonly TranslationKey SETTINGS_TWITCH_BOT_PRIVATE = new("settings_twitch_bot_private");
-            public static readonly TranslationKey SETTINGS_TWITCH_SUB_MODE = new("settings_twitch_sub_mode");
-            public static readonly TranslationKey SETTINGS_TWITCH_SEARCH = new("settings_twitch_search");
-            public static readonly TranslationKey SETTINGS_TWITCH_DO_WELCOME = new("settings_twitch_do_welcome");
-            public static readonly TranslationKey SETTINGS_TWITCH_WELCOME_MESSAGE = new("settings_twitch_welcome_message");
-            public static readonly TranslationKey SETTINGS_TWITCH_SUB_MODE_CLAIMED = new("settings_twitch_sub_mode");
-            public static readonly TranslationKey SETTINGS_TWITCH_SUB_MODE_ALL = new("settings_twitch_sub_mode");
-            public static readonly TranslationKey DISPLAY_TYPE_TTB = new("display_type_ttb");
-            public static readonly TranslationKey DISPLAY_TYPE_RTTB = new("display_type_rttb");
-            public static readonly TranslationKey DISPLAY_TYPE_BTT = new("display_type_btt");
-            public static readonly TranslationKey DISPLAY_TYPE_RBTT = new("display_type_rbtt");
-            public static readonly TranslationKey ALERT_NAME_INC_RAID = new("alert_name_inc_raid");
-            public static readonly TranslationKey ALERT_NAME_OUT_RAID = new("alert_name_out_raid");
-            public static readonly TranslationKey ALERT_NAME_DONATION = new("alert_name_donation");
-            public static readonly TranslationKey ALERT_NAME_REWARD = new("alert_name_reward");
-            public static readonly TranslationKey ALERT_NAME_FOLLOW = new("alert_name_follow");
-            public static readonly TranslationKey ALERT_NAME_SUB_TIER1 = new("alert_name_sub_tier1");
-            public static readonly TranslationKey ALERT_NAME_SUB_TIER2 = new("alert_name_sub_tier2");
-            public static readonly TranslationKey ALERT_NAME_SUB_TIER3 = new("alert_name_sub_tier3");
-            public static readonly TranslationKey ALERT_NAME_GIFT_SUB_TIER1 = new("alert_name_gift_sub_tier1");
-            public static readonly TranslationKey ALERT_NAME_GIFT_SUB_TIER2 = new("alert_name_gift_sub_tier2");
-            public static readonly TranslationKey ALERT_NAME_GIFT_SUB_TIER3 = new("alert_name_gift_sub_tier3");
-            public static readonly TranslationKey ALERT_NAME_PRIME = new("alert_name_prime");
-            public static readonly TranslationKey ALERT_NAME_SHOUTOUT = new("alert_name_shoutout");
-            public static readonly TranslationKey ALERT_NAME_BEING_SHOUTOUT = new("alert_name_being_shoutout");
-            public static readonly TranslationKey ALERT_EDITOR_AUDIO_FILE = new("alert_editor_audio_file");
-            public static readonly TranslationKey ALERT_CHAT_MESSAGE = new("alert_chat_message");
+            public static readonly TranslationKey SETTINGS_CHAT_MODE = new("twitch_settings_chat_mode");
+            public static readonly TranslationKey SETTINGS_CHAT_FONT = new("twitch_settings_chat_font");
+            public static readonly TranslationKey ALERT_EDITOR_ENABLE = new("twitch_alert_editor_enable");
+            public static readonly TranslationKey ALERT_EDITOR_IMAGE = new("twitch_alert_editor_image");
+            public static readonly TranslationKey ALERT_EDITOR_PREFIX = new("twitch_alert_editor_prefix");
+            public static readonly TranslationKey SETTINGS_ALERT_ALERTS = new("twitch_settings_alert_alerts");
+            public static readonly TranslationKey MENU_BAN = new("twitch_menu_ban");
+            public static readonly TranslationKey BAN_BUTTON = new("twitch_ban_button");
+            public static readonly TranslationKey BAN_TIME = new("twitch_ban_time");
+            public static readonly TranslationKey BAN_REASON = new("twitch_ban_reason");
+            public static readonly TranslationKey SETTINGS_TWITCH_AUTOCONNECT = new("twitch_settings_twitch_autoconnect");
+            public static readonly TranslationKey SETTINGS_TWITCH_CONNECT = new("twitch_settings_twitch_connect");
+            public static readonly TranslationKey SETTINGS_TWITCH_BROWSER = new("twitch_settings_twitch_browser");
+            public static readonly TranslationKey SETTINGS_TWITCH_BOT_PUBLIC = new("twitch_settings_twitch_bot_public");
+            public static readonly TranslationKey SETTINGS_TWITCH_BOT_PRIVATE = new("twitch_settings_twitch_bot_private");
+            public static readonly TranslationKey SETTINGS_TWITCH_SUB_MODE = new("twitch_settings_twitch_sub_mode");
+            public static readonly TranslationKey SETTINGS_TWITCH_SEARCH = new("twitch_settings_twitch_search");
+            public static readonly TranslationKey SETTINGS_TWITCH_DO_WELCOME = new("twitch_settings_twitch_do_welcome");
+            public static readonly TranslationKey SETTINGS_TWITCH_WELCOME_MESSAGE = new("twitch_settings_twitch_welcome_message");
+            public static readonly TranslationKey SETTINGS_TWITCH_SUB_MODE_CLAIMED = new("twitch_settings_twitch_sub_mode");
+            public static readonly TranslationKey SETTINGS_TWITCH_SUB_MODE_ALL = new("twitch_settings_twitch_sub_mode");
+            public static readonly TranslationKey DISPLAY_TYPE_TTB = new("twitch_display_type_ttb");
+            public static readonly TranslationKey DISPLAY_TYPE_RTTB = new("twitch_display_type_rttb");
+            public static readonly TranslationKey DISPLAY_TYPE_BTT = new("twitch_display_type_btt");
+            public static readonly TranslationKey DISPLAY_TYPE_RBTT = new("twitch_display_type_rbtt");
+            public static readonly TranslationKey ALERT_NAME_INC_RAID = new("twitch_alert_name_inc_raid");
+            public static readonly TranslationKey ALERT_NAME_OUT_RAID = new("twitch_alert_name_out_raid");
+            public static readonly TranslationKey ALERT_NAME_DONATION = new("twitch_alert_name_donation");
+            public static readonly TranslationKey ALERT_NAME_REWARD = new("twitch_alert_name_reward");
+            public static readonly TranslationKey ALERT_NAME_FOLLOW = new("twitch_alert_name_follow");
+            public static readonly TranslationKey ALERT_NAME_SUB_TIER1 = new("twitch_alert_name_sub_tier1");
+            public static readonly TranslationKey ALERT_NAME_SUB_TIER2 = new("twitch_alert_name_sub_tier2");
+            public static readonly TranslationKey ALERT_NAME_SUB_TIER3 = new("twitch_alert_name_sub_tier3");
+            public static readonly TranslationKey ALERT_NAME_GIFT_SUB_TIER1 = new("twitch_alert_name_gift_sub_tier1");
+            public static readonly TranslationKey ALERT_NAME_GIFT_SUB_TIER2 = new("twitch_alert_name_gift_sub_tier2");
+            public static readonly TranslationKey ALERT_NAME_GIFT_SUB_TIER3 = new("twitch_alert_name_gift_sub_tier3");
+            public static readonly TranslationKey ALERT_NAME_PRIME = new("twitch_alert_name_prime");
+            public static readonly TranslationKey ALERT_NAME_SHOUTOUT = new("twitch_alert_name_shoutout");
+            public static readonly TranslationKey ALERT_NAME_BEING_SHOUTOUT = new("twitch_alert_name_being_shoutout");
+            public static readonly TranslationKey ALERT_EDITOR_AUDIO_FILE = new("twitch_alert_editor_audio_file");
+            public static readonly TranslationKey ALERT_CHAT_MESSAGE = new("twitch_alert_chat_message");
         }
 
         private static readonly Metadata ms_PluginMetadata;
@@ -115,16 +115,9 @@ namespace StreamGlass.Twitch
 
         private readonly TwitchCore m_Core = new();
         private readonly AlertManager m_AlertManager = new();
-        private readonly UserMessageScrollPanel m_StreamChatPanel;
-        private readonly AlertScrollPanel m_StreamAlertPanel;
-        private readonly HeldMessageScrollPanel m_HeldMessagePanel;
-
-        public TwitchPlugin() : base("Twitch", "twitch_settings.ini")
-        {
-            m_StreamChatPanel = new();
-            m_StreamAlertPanel = new();
-            m_HeldMessagePanel = new();
-        }
+        private readonly UserMessageScrollPanel m_StreamChatPanel = new();
+        private readonly AlertScrollPanel m_StreamAlertPanel = new();
+        private readonly HeldMessageScrollPanel m_HeldMessagePanel = new();
 
         protected override PluginInfo GeneratePluginInfo() => new("1.0.0-beta", "ModuloCorpse<https://www.twitch.tv/chaporon_>");
 

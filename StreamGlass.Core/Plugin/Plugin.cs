@@ -11,6 +11,7 @@ namespace StreamGlass.Core.Plugin
 
         public PluginInfo Info => m_PluginInfo;
         public Metadata Metadata => m_Metadata;
+        public string Name => m_Instance.Name;
 
         public Plugin(Metadata metadata, APlugin instance)
         {

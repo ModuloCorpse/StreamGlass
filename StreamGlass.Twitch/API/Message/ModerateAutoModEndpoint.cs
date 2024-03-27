@@ -6,7 +6,7 @@ namespace StreamGlass.Twitch.API.Message
 {
     public class ModerateAutoModEndpoint : AHTTPEndpoint
     {
-        public ModerateAutoModEndpoint() : base("/twitch/automod") { }
+        public ModerateAutoModEndpoint() : base("/automod") { }
 
         protected override Response OnPostRequest(Request request)
         {

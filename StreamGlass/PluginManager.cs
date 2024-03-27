@@ -6,10 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using Path = System.IO.Path;
 
 namespace StreamGlass
 {
-    public class PluginManager
+    public partial class PluginManager
     {
         public static readonly Logger PLUGIN_LOGGER = new("[${d}-${M}-${y} ${h}:${m}:${s}.${ms}] ${log}") { new LogInFile("./log/${y}${M}${d}${h}_Plugins.log") };
 
@@ -90,16 +92,27 @@ namespace StreamGlass
             }
         }
 
-
+        [GeneratedRegex(@"^[0-9a-zA-Z-_]+$", RegexOptions.IgnoreCase, "fr-FR")]
+        private static partial Regex PluginNameRegex();
         private readonly List<Plugin> m_Plugins = [];
 
         public void RegisterToAPI(CorpseLib.Web.API.API api)
         {
             foreach (Plugin plugin in m_Plugins)
             {
+                CorpseLib.Web.Http.Path path = new($"/{plugin.Name.ToLower()}");
+                HTTPEndpointNode httpEndpointNode = new();
+                WebSocketEndpointNode webSocketEndpointNode = new();
                 AEndpoint[] endpoints = plugin.GetPluginEndpoints();
                 foreach (AEndpoint endpoint in endpoints)
-                    api.AddEndpoint(endpoint);
+                {
+                    if (endpoint is AWebsocketEndpoint websocketEndpoint)
+                        webSocketEndpointNode.Add(websocketEndpoint);
+                    else if (endpoint is AHTTPEndpoint httpEndpoint)
+                        httpEndpointNode.Add(httpEndpoint);
+                }
+                api.AddEndpointNode(path, httpEndpointNode);
+                api.AddEndpointNode(path, webSocketEndpointNode);
             }
         }
 
@@ -123,7 +136,8 @@ namespace StreamGlass
 
         public void LoadPlugin(Metadata metadata, APlugin plugin)
         {
-            m_Plugins.Add(new(metadata, plugin));
+            if (PluginNameRegex().Match(plugin.Name).Success)
+                m_Plugins.Add(new(metadata, plugin));
         }
 
         private static APlugin? Instantiate(Metadata metadata)

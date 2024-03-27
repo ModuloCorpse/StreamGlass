@@ -54,6 +54,15 @@ namespace StreamGlass
 
             InitAPI();
             m_API.Start();
+
+            StreamGlassContext.LOGGER.Log("HTTP endpoints");
+            foreach (var pair in m_API.FlattenHTTP())
+                StreamGlassContext.LOGGER.Log(string.Format("- {0} => {1}", pair.Key, pair.Value.GetType().Name));
+
+            StreamGlassContext.LOGGER.Log("Websocket endpoints");
+            foreach (var pair in m_API.FlattenWebsocket())
+                StreamGlassContext.LOGGER.Log(string.Format("- {0} => {1}", pair.Key, pair.Value.GetType().Name));
+
             splashScreen.UpdateProgressBar(80);
 
             //Last initalization to do

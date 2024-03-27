@@ -12,7 +12,7 @@ namespace StreamGlass.Core.Plugin
         private readonly string m_Name = name;
         private string m_PluginDirectory = string.Empty;
 
-        internal string Name => m_Name;
+        public string Name => m_Name;
 
         protected APlugin(string name) : this(name, string.Empty) { }
 

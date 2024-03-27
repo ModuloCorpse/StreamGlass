@@ -6,7 +6,7 @@ namespace StreamGlass.Twitch.API.Message
 {
     public class ClearMessageEndpoint : AHTTPEndpoint
     {
-        public ClearMessageEndpoint() : base("/twitch/clear_chat") { }
+        public ClearMessageEndpoint() : base("/clear_chat") { }
 
         protected override Response OnPostRequest(Request request)
         {
