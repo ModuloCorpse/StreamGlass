@@ -137,7 +137,10 @@ namespace StreamGlass
         public void LoadPlugin(Metadata metadata, APlugin plugin)
         {
             if (PluginNameRegex().Match(plugin.Name).Success)
+            {
                 m_Plugins.Add(new(metadata, plugin));
+                PLUGIN_LOGGER.Log(string.Format("Plugin loaded {0}", plugin.Name));
+            }
         }
 
         private static APlugin? Instantiate(Metadata metadata)

@@ -20,7 +20,6 @@ namespace StreamGlass.Twitch
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
         private IniSection m_Settings = null;
         private TwitchHandler m_TwitchHandler = null;
-        private TwitchPubSub m_PubSub = null;
         private TwitchEventSub m_EventSub = null;
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
         private readonly TwitchAPI m_API = new();
@@ -40,13 +39,14 @@ namespace StreamGlass.Twitch
             SubscriptionType.ChannelChatClearUserMessages,
             SubscriptionType.ChannelChatMessage,
             SubscriptionType.ChannelChatMessageDelete,
-            SubscriptionType.ChannelChatNotification
+            SubscriptionType.ChannelChatNotification,
+            SubscriptionType.AutomodMessageHeld,
+            SubscriptionType.AutomodMessageUpdate
         ];
 
         public TwitchCore()
         {
             TwitchAPI.StartLogging();
-            TwitchPubSub.StartLogging();
             TwitchEventSub.StartLogging();
             m_GetViewerCount.OnUpdate += UpdateViewerCount;
         }
@@ -97,12 +97,6 @@ namespace StreamGlass.Twitch
                         if (m_Settings.Get("do_welcome") == "true")
                             PostMessage(m_Settings.Get("welcome_message"));
                     };
-                }
-                TwitchPubSub? pubSub = m_API.PubSubConnection(m_OriginalBroadcasterChannelInfo.Broadcaster.ID);
-                if (pubSub != null)
-                {
-                    m_PubSub = pubSub;
-                    m_PubSub.SetMonitor(new DebugLogMonitor(TwitchPubSub.PUBSUB));
                 }
             }
 
@@ -240,7 +234,6 @@ namespace StreamGlass.Twitch
             {
                 m_GetViewerCount.Stop();
                 ResetStreamInfo();
-                m_PubSub?.Disconnect();
                 m_EventSub?.Disconnect();
                 m_IsConnected = false;
                 StreamGlassCanals.Unregister(TwitchPlugin.Canals.STREAM_START, OnStreamStart);
