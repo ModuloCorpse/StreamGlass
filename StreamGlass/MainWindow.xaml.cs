@@ -77,11 +77,10 @@ namespace StreamGlass
             InitializeBrushPalette();
             m_SplashScreen.UpdateProgressBar(30);
             m_Manager = new(splashScreen);
-            //TODO Temporary code : To remove
-            TwitchPlugin twitchPlugin = m_Manager.TwitchPlugin;
-            StreamChatBorder.Child = twitchPlugin.CreateUserMessageScrollPanel();
-            StreamAlertBorder.Child = twitchPlugin.CreateAlertScrollPanel();
-            HeldMessageBorder.Child = twitchPlugin.CreateHeldMessageScrollPanel();
+            //TODO Temporary code : To replace with AvalonDock layouts
+            StreamChatBorder.Child = m_Manager.GetPanel("twitch_chat");
+            StreamAlertBorder.Child = m_Manager.GetPanel("twitch_alert");
+            HeldMessageBorder.Child = m_Manager.GetPanel("twitch_held_message");
             //
             UpdateProfilesMenuList();
 

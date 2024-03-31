@@ -19,7 +19,6 @@ namespace StreamGlass.Twitch.Commands
                 return new("Invalid argument", "Duration should be between 0 and 180 seconds");
             m_Core.StartAds(adDuration);
             return new("Ad started");
-
         }
     }
 }

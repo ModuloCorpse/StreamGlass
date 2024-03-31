@@ -14,12 +14,13 @@ using StreamGlass.Twitch.Events;
 using StreamGlass.Twitch.Moderation;
 using StreamGlass.Twitch.StreamChat;
 using System.Globalization;
+using System.Windows.Controls;
 using TwitchCorpse;
 using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch
 {
-    public class TwitchPlugin() : APlugin("Twitch", "twitch_settings.ini")
+    public class TwitchPlugin() : APlugin("Twitch", "twitch_settings.ini"), IAPIPlugin, ITestablePlugin, ISettingsPlugin, IPanelPlugin
     {
         public static class Canals
         {
@@ -121,7 +122,7 @@ namespace StreamGlass.Twitch
 
         protected override PluginInfo GeneratePluginInfo() => new("1.0.0-beta", "ModuloCorpse<https://www.twitch.tv/chaporon_>");
 
-        protected override void InitTranslation()
+        private static void InitTranslation()
         {
             Translation translation = new(new CultureInfo("en-US"), true)
             {
@@ -215,7 +216,7 @@ namespace StreamGlass.Twitch
             Translator.AddTranslation(translationFR);
         }
 
-        protected override void InitSettings()
+        private void InitSettings()
         {
             IniSection settings = m_Settings.GetOrAdd("settings");
             settings.Add("auto_connect", "false");
@@ -244,7 +245,7 @@ namespace StreamGlass.Twitch
             m_HeldMessagePanel.SetContentFontSize(double.Parse(moderationSection.GetOrAdd("message_font_size", "14")));
         }
 
-        protected override void InitPlugin()
+        private static void InitStringSources()
         {
             StreamGlassContext.CreateStringSource("viewer_count");
             StreamGlassContext.CreateStringSource("last_bits_donor");
@@ -258,7 +259,20 @@ namespace StreamGlass.Twitch
             StreamGlassContext.CreateStringSource("top_gifter");
             StreamGlassContext.CreateStringSource("top_nb_gift");
             StreamGlassContext.CreateStringSource("last_sub");
+        }
 
+        protected override void OnLoad()
+        {
+            InitTranslation();
+            InitSettings();
+            InitCommands();
+            InitCanals();
+            InitStringSources();
+            m_Core.OnPluginLoad();
+        }
+
+        protected override void OnInit()
+        {
             m_Core.OnPluginInit();
             m_AlertManager.Init();
             if (m_Settings.Get("settings")!.Get("auto_connect") == "true")
@@ -269,13 +283,13 @@ namespace StreamGlass.Twitch
             ProfileEditor.SetSearchCategoryDelegate(m_Core.SearchCategoryInfo);
         }
 
-        protected override void InitCommands()
+        private void InitCommands()
         {
             //TODO Add API command
             StreamGlassCLI.AddCommand(new TwitchAd(m_Core));
         }
 
-        protected override void InitCanals()
+        private static void InitCanals()
         {
             StreamGlassCanals.NewCanal<TwitchMessage>(Canals.CHAT_MESSAGE);
             StreamGlassCanals.NewCanal<string>(Canals.CHAT_JOINED);
@@ -300,29 +314,31 @@ namespace StreamGlass.Twitch
             StreamGlassCanals.NewCanal<bool>(Canals.ALLOW_AUTOMOD);
         }
 
-        protected override AEndpoint[] GetEndpoints() => [
+        public AEndpoint[] GetEndpoints() => [
             new AllMessageEndpoint(),
             new ClearMessageEndpoint(),
             new ModerateAutoModEndpoint()
         ];
 
-        protected override void Unregister()
-        {
-            m_Core.Disconnect();
-        }
+        protected override void OnUnload() => m_Core.Disconnect();
 
-        protected override void Update(long deltaTime) { }
-
-        protected override TabItemContent[] GetSettings() => [
+        public TabItemContent[] GetSettings() => [
             new StreamChatSettingsItem(m_Settings.GetOrAdd("chat"), m_StreamChatPanel),
             new StreamAlertSettingsItem(m_Settings.GetOrAdd("alert"), m_AlertManager, m_StreamAlertPanel),
             new TwitchSettingsItem(m_Settings.GetOrAdd("settings"), m_Core)
         ];
 
-        protected override void TestPlugin() => m_Core.Test();
+        public void Test() => m_Core.Test();
 
-        public AlertScrollPanel CreateAlertScrollPanel() => m_StreamAlertPanel;
-        public HeldMessageScrollPanel CreateHeldMessageScrollPanel() => m_HeldMessagePanel;
-        public UserMessageScrollPanel CreateUserMessageScrollPanel() => m_StreamChatPanel;
+        public Control? GetPanel(string panelID)
+        {
+            return panelID switch
+            {
+                "twitch_alert" => m_StreamAlertPanel,
+                "twitch_held_message" => m_HeldMessagePanel,
+                "twitch_chat" => m_StreamChatPanel,
+                _ => null
+            };
+        }
     }
 }

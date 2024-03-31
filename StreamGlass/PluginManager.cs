@@ -2,11 +2,13 @@
 using CorpseLib.Logging;
 using CorpseLib.Web.API;
 using StreamGlass.Core.Plugin;
+using StreamGlass.Core.Settings;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Windows.Controls;
 using Path = System.IO.Path;
 
 namespace StreamGlass
@@ -94,16 +96,21 @@ namespace StreamGlass
 
         [GeneratedRegex(@"^[0-9a-zA-Z-_]+$", RegexOptions.IgnoreCase, "fr-FR")]
         private static partial Regex PluginNameRegex();
-        private readonly List<Plugin> m_Plugins = [];
+        private readonly List<APlugin> m_Plugins = [];
+        private readonly List<ISettingsPlugin> m_SettingsPlugins = [];
+        private readonly List<IAPIPlugin> m_APIPlugins = [];
+        private readonly List<IUpdatablePlugin> m_UpdatablePlugins = [];
+        private readonly List<ITestablePlugin> m_TestablePlugins = [];
+        private readonly List<IPanelPlugin> m_PanelPlugins = [];
 
         public void RegisterToAPI(CorpseLib.Web.API.API api)
         {
-            foreach (Plugin plugin in m_Plugins)
+            foreach (IAPIPlugin plugin in m_APIPlugins)
             {
                 CorpseLib.Web.Http.Path path = new($"/{plugin.Name.ToLower()}");
                 HTTPEndpointNode httpEndpointNode = new();
                 WebSocketEndpointNode webSocketEndpointNode = new();
-                AEndpoint[] endpoints = plugin.GetPluginEndpoints();
+                AEndpoint[] endpoints = plugin.GetEndpoints();
                 foreach (AEndpoint endpoint in endpoints)
                 {
                     if (endpoint is AWebsocketEndpoint websocketEndpoint)
@@ -116,21 +123,25 @@ namespace StreamGlass
             }
         }
 
-        public void FillSettings(Core.Settings.Dialog settingsDialog)
+        public void FillSettings(Dialog settingsDialog)
         {
-            foreach (Plugin plugin in m_Plugins)
-                plugin.FillSettings(settingsDialog);
+            foreach (ISettingsPlugin plugin in m_SettingsPlugins)
+            {
+                TabItemContent[] settings = plugin.GetSettings();
+                foreach (TabItemContent setting in settings)
+                    settingsDialog.AddTabItem(setting);
+            }
         }
 
         public void Update(long deltaTime)
         {
-            foreach (Plugin plugin in m_Plugins)
-                plugin.Tick(deltaTime);
+            foreach (IUpdatablePlugin plugin in m_UpdatablePlugins)
+                plugin.Update(deltaTime);
         }
 
         public void Test()
         {
-            foreach (Plugin plugin in m_Plugins)
+            foreach (ITestablePlugin plugin in m_TestablePlugins)
                 plugin.Test();
         }
 
@@ -138,7 +149,19 @@ namespace StreamGlass
         {
             if (PluginNameRegex().Match(plugin.Name).Success)
             {
-                m_Plugins.Add(new(metadata, plugin));
+                plugin.InitMetadata(metadata);
+                plugin.RegisterPlugin();
+                if (plugin is IAPIPlugin apiPlugin)
+                    m_APIPlugins.Add(apiPlugin);
+                if (plugin is IUpdatablePlugin updatablePlugin)
+                    m_UpdatablePlugins.Add(updatablePlugin);
+                if (plugin is ITestablePlugin testablePlugin)
+                    m_TestablePlugins.Add(testablePlugin);
+                if (plugin is ISettingsPlugin settingsPlugin)
+                    m_SettingsPlugins.Add(settingsPlugin);
+                if (plugin is IPanelPlugin panelPlugin)
+                    m_PanelPlugins.Add(panelPlugin);
+                m_Plugins.Add(plugin);
                 PLUGIN_LOGGER.Log(string.Format("Plugin loaded {0}", plugin.Name));
             }
         }
@@ -210,15 +233,26 @@ namespace StreamGlass
 
         public void Clear()
         {
-            foreach (Plugin plugin in m_Plugins)
+            foreach (APlugin plugin in m_Plugins)
                 plugin.UnregisterPlugin();
             m_Plugins.Clear();
         }
 
         public void InitPlugins()
         {
-            foreach (Plugin plugin in m_Plugins)
+            foreach (APlugin plugin in m_Plugins)
                 plugin.Init();
+        }
+
+        public Control? GetPanel(string panelID)
+        {
+            foreach (IPanelPlugin panelPlugin in m_PanelPlugins)
+            {
+                Control? control = panelPlugin.GetPanel(panelID);
+                if (control != null)
+                    return control;
+            }
+            return null;
         }
     }
 }

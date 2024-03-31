@@ -12,6 +12,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Windows.Controls;
 using System.Windows.Threading;
 
 namespace StreamGlass
@@ -27,11 +28,6 @@ namespace StreamGlass
 
         public ProfileManager ProfileManager => m_ProfileManager;
 
-        //TODO Temporary code : To remove
-        private readonly TwitchPlugin m_TwitchPlugin = new();
-        public TwitchPlugin TwitchPlugin => m_TwitchPlugin;
-        //
-
         public Manager(SplashScreen splashScreen)
         {
             LoadIni();
@@ -45,8 +41,7 @@ namespace StreamGlass
             PluginManager.PLUGIN_LOGGER.Start();
             m_PluginManager = new();
             m_PluginManager.LoadPlugins();
-            //TODO Temporary code : To replace with "new TwitchPlugin()"
-            m_PluginManager.LoadPlugin(TwitchPlugin.PluginMetadata, m_TwitchPlugin);
+            m_PluginManager.LoadPlugin(TwitchPlugin.PluginMetadata, new TwitchPlugin());
             splashScreen.UpdateProgressBar(70);
 
             Translator.LoadDirectory("./locals");
@@ -98,8 +93,6 @@ namespace StreamGlass
             }
         }
 
-        //TODO Switch from string to TranslationKey in StreamGlass.Core
-        //TODO Replace in all XAML use of TranslationKey attribute by the SetTranslationKey to keep track of used key
         private void InitializeTranslation()
         {
             Translation translation = new(new CultureInfo("en-US"), true)
@@ -229,5 +222,7 @@ namespace StreamGlass
         public void FillSettingsDialog(Core.Settings.Dialog settingsDialog) => m_PluginManager.FillSettings(settingsDialog);
 
         public void Test() => m_PluginManager.Test();
+
+        public Control? GetPanel(string panelID) => m_PluginManager.GetPanel(panelID);
     }
 }

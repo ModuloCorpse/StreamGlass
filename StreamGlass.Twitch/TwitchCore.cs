@@ -103,6 +103,16 @@ namespace StreamGlass.Twitch
             return true;
         }
 
+        public void OnPluginLoad()
+        {
+            StreamGlassContext.RegisterFunction("Title", StreamGlassPlaceholdersFunction_Title);
+            StreamGlassContext.RegisterFunction("Game", StreamGlassPlaceholdersFunction_Game);
+            StreamGlassContext.RegisterFunction("DisplayName", StreamGlassPlaceholdersFunction_DisplayName);
+            StreamGlassContext.RegisterFunction("Channel", StreamGlassPlaceholdersFunction_Channel);
+            StreamGlassContext.RegisterFunction("Avatar", StreamGlassPlaceholdersFunction_Avatar);
+            StreamGlassContext.RegisterFunction("BoxArt", StreamGlassPlaceholdersFunction_BoxArt);
+        }
+
         public void OnPluginInit()
         {
             StreamGlassCanals.Register(TwitchPlugin.Canals.STREAM_START, OnStreamStart);
@@ -111,13 +121,6 @@ namespace StreamGlass.Twitch
             StreamGlassCanals.Register<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
             StreamGlassCanals.Register<BanEventArgs>(TwitchPlugin.Canals.BAN, BanUser);
             StreamGlassCanals.Register<MessageAllowedEventArgs>(TwitchPlugin.Canals.ALLOW_MESSAGE, AllowMessage);
-
-            StreamGlassContext.RegisterFunction("Title", StreamGlassPlaceholdersFunction_Title);
-            StreamGlassContext.RegisterFunction("Game", StreamGlassPlaceholdersFunction_Game);
-            StreamGlassContext.RegisterFunction("DisplayName", StreamGlassPlaceholdersFunction_DisplayName);
-            StreamGlassContext.RegisterFunction("Channel", StreamGlassPlaceholdersFunction_Channel);
-            StreamGlassContext.RegisterFunction("Avatar", StreamGlassPlaceholdersFunction_Avatar);
-            StreamGlassContext.RegisterFunction("BoxArt", StreamGlassPlaceholdersFunction_BoxArt);
         }
 
         private TwitchUser? GetUserInfo(string login, Cache cache)
