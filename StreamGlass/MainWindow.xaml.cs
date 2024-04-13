@@ -119,7 +119,6 @@ namespace StreamGlass
             Translator.SaveToDir("./locals");
             m_Manager.Stop();
             Application.Current.Shutdown();
-            StreamGlassContext.Delete();
         }
 
         private void SettingsToolStripMenuItem_Click(object sender, RoutedEventArgs e)

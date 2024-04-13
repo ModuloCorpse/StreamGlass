@@ -45,9 +45,9 @@ namespace StreamGlass.Core
             ms_StringSources.Load();
         }
 
-        public static void Delete()
+        public static void Delete(JsonObject json)
         {
-            ms_StringSources.Save();
+            ms_StringSources.SaveTo(json);
         }
 
         public override string? Call(string functionName, string[] args, Cache cache)

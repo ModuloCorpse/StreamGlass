@@ -208,7 +208,9 @@ namespace StreamGlass
 
         public void Stop()
         {
-            JsonParser.WriteToFile<Settings>("settings.json", m_Settings);
+            JsonObject json = (JsonObject)JsonHelper.Cast(m_Settings);
+            StreamGlassContext.Delete(json);
+            JsonParser.WriteToFile("settings.json", json);
             m_ProfileManager.Save();
             m_PluginManager.Clear();
             m_Watch.Stop();

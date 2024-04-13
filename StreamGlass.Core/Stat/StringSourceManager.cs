@@ -53,7 +53,7 @@ namespace StreamGlass.Core.Stat
 
         public void Load()
         {
-            JsonObject json = JsonParser.LoadFromFile("string_sources.json");
+            JsonObject json = JsonParser.LoadFromFile("settings.json");
             if (json.TryGet("sources", out JsonObject? statsObj))
             {
                 foreach (var pair in statsObj!)
@@ -79,9 +79,8 @@ namespace StreamGlass.Core.Stat
             }
         }
 
-        public void Save()
+        public void SaveTo(JsonObject json)
         {
-            JsonObject json = [];
             JsonObject statsObj = [];
             foreach (StringSource stringSource in m_StringSources.Values)
             {
@@ -100,7 +99,6 @@ namespace StreamGlass.Core.Stat
                 }
             }
             json["aggregators"] = aggregators;
-            JsonParser.WriteToFile("string_sources.json", json);
         }
 
         public string? Get(string name) => m_StringSources.TryGetValue(name, out StringSource? value) ? value.Get() : null;
