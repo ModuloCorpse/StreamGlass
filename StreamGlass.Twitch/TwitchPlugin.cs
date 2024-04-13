@@ -1,26 +1,25 @@
-﻿using CorpseLib.Ini;
-using CorpseLib.Json;
+﻿using CorpseLib.Json;
 using CorpseLib.Translation;
 using CorpseLib.Web.API;
 using StreamGlass.Core;
-using StreamGlass.Core.Controls;
 using StreamGlass.Core.Plugin;
 using StreamGlass.Core.Profile;
 using StreamGlass.Core.Settings;
+using StreamGlass.Twitch.Actions;
 using StreamGlass.Twitch.Alerts;
 using StreamGlass.Twitch.API.Message;
-using StreamGlass.Twitch.Commands;
 using StreamGlass.Twitch.Events;
 using StreamGlass.Twitch.Moderation;
 using StreamGlass.Twitch.StreamChat;
 using System.Globalization;
+using System.IO;
 using System.Windows.Controls;
 using TwitchCorpse;
 using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch
 {
-    public class TwitchPlugin() : APlugin("Twitch", "twitch_settings.ini"), IAPIPlugin, ITestablePlugin, ISettingsPlugin, IPanelPlugin
+    public class TwitchPlugin() : APlugin("Twitch"), IAPIPlugin, ITestablePlugin, ISettingsPlugin, IPanelPlugin
     {
         public static class Canals
         {
@@ -110,15 +109,22 @@ namespace StreamGlass.Twitch
             JsonHelper.RegisterSerializer(new RaidEventArgs.JSerializer());
             JsonHelper.RegisterSerializer(new RewardEventArgs.JSerializer());
             JsonHelper.RegisterSerializer(new ShoutoutEventArgs.JSerializer());
-            JsonHelper.RegisterSerializer(new TwitchMessage.JSerializer());
+            JsonHelper.RegisterSerializer(new Message.JSerializer());
             JsonHelper.RegisterSerializer(new VisualAlert.JSerializer());
+
+            JsonHelper.RegisterSerializer(new AlertSettings.JsonSerializer());
+            JsonHelper.RegisterSerializer(new Settings.AlertsSettings.JsonSerializer());
+            JsonHelper.RegisterSerializer(new Settings.ChatSettings.JsonSerializer());
+            JsonHelper.RegisterSerializer(new Settings.ModerationSettings.JsonSerializer());
+            JsonHelper.RegisterSerializer(new Settings.JsonSerializer());
         }
 
-        private readonly TwitchCore m_Core = new();
+        private readonly Core m_Core = new();
         private readonly AlertManager m_AlertManager = new();
         private readonly UserMessageScrollPanel m_StreamChatPanel = new();
         private readonly AlertScrollPanel m_StreamAlertPanel = new();
         private readonly HeldMessageScrollPanel m_HeldMessagePanel = new();
+        private Settings m_Settings = new();
 
         protected override PluginInfo GeneratePluginInfo() => new("1.0.0-beta", "ModuloCorpse<https://www.twitch.tv/chaporon_>");
 
@@ -218,31 +224,14 @@ namespace StreamGlass.Twitch
 
         private void InitSettings()
         {
-            IniSection settings = m_Settings.GetOrAdd("settings");
-            settings.Add("auto_connect", "false");
-            settings.Add("browser", string.Empty);
-            settings.Add("public_key", string.Empty);
-            settings.Add("secret_key", string.Empty);
-            settings.Add("sub_mode", "all");
-            settings.Add("do_welcome", "true");
-            settings.Add("welcome_message", "Hello World! I'm a bot connected with StreamGlass!");
-            m_Core.SetSettings(settings);
-
-            //Chat
-            IniSection chatSection = m_Settings.GetOrAdd("chat");
-            m_StreamChatPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(chatSection.GetOrAdd("display_type", "0")));
-            m_StreamChatPanel.SetContentFontSize(double.Parse(chatSection.GetOrAdd("message_font_size", "14")));
-
-            //Alert
-            IniSection alertSection = m_Settings.GetOrAdd("alert");
-            m_StreamAlertPanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(alertSection.GetOrAdd("display_type", "0")));
-            m_StreamAlertPanel.SetContentFontSize(double.Parse(alertSection.GetOrAdd("message_font_size", "20")));
-            m_AlertManager.InitSettings(alertSection);
-
-            //Held message
-            IniSection moderationSection = m_Settings.GetOrAdd("moderation");
-            m_HeldMessagePanel.SetDisplayType((ScrollPanelDisplayType)int.Parse(moderationSection.GetOrAdd("display_type", "0")));
-            m_HeldMessagePanel.SetContentFontSize(double.Parse(moderationSection.GetOrAdd("message_font_size", "14")));
+            m_Core.SetSettings(m_Settings);
+            m_StreamChatPanel.SetDisplayType(m_Settings.Chat.DisplayType);
+            m_StreamChatPanel.SetContentFontSize(m_Settings.Chat.MessageFontSize);
+            m_StreamAlertPanel.SetDisplayType(m_Settings.Alerts.DisplayType);
+            m_StreamAlertPanel.SetContentFontSize(m_Settings.Alerts.MessageFontSize);
+            m_AlertManager.InitSettings(m_Settings.Alerts);
+            m_HeldMessagePanel.SetDisplayType(m_Settings.Moderation.DisplayType);
+            m_HeldMessagePanel.SetContentFontSize(m_Settings.Moderation.MessageFontSize);
         }
 
         private static void InitStringSources()
@@ -263,9 +252,17 @@ namespace StreamGlass.Twitch
 
         protected override void OnLoad()
         {
+            string settingsFilePath = GetFilePath("twitch_settings.json");
+            if (File.Exists(settingsFilePath))
+            {
+                Settings? settings = JsonParser.LoadFromFile<Settings>(settingsFilePath);
+                if (settings != null)
+                    m_Settings = settings;
+            }
+
             InitTranslation();
             InitSettings();
-            InitCommands();
+            InitActions();
             InitCanals();
             InitStringSources();
             m_Core.OnPluginLoad();
@@ -275,7 +272,7 @@ namespace StreamGlass.Twitch
         {
             m_Core.OnPluginInit();
             m_AlertManager.Init();
-            if (m_Settings.Get("settings")!.Get("auto_connect") == "true")
+            if (m_Settings.AutoConnect)
                 m_Core.Connect();
             m_HeldMessagePanel.Init();
             m_StreamChatPanel.Init();
@@ -283,15 +280,15 @@ namespace StreamGlass.Twitch
             ProfileEditor.SetSearchCategoryDelegate(m_Core.SearchCategoryInfo);
         }
 
-        private void InitCommands()
+        private void InitActions()
         {
-            //TODO Add API command
-            StreamGlassCLI.AddCommand(new TwitchAd(m_Core));
+            //TODO Add API actions
+            StreamGlassActions.AddAction(new TwitchAd(m_Core), true, true, true);
         }
 
         private static void InitCanals()
         {
-            StreamGlassCanals.NewCanal<TwitchMessage>(Canals.CHAT_MESSAGE);
+            StreamGlassCanals.NewCanal<Message>(Canals.CHAT_MESSAGE);
             StreamGlassCanals.NewCanal<string>(Canals.CHAT_JOINED);
             StreamGlassCanals.NewCanal<TwitchUser>(Canals.USER_JOINED);
             StreamGlassCanals.NewCanal<DonationEventArgs>(Canals.DONATION);
@@ -300,7 +297,7 @@ namespace StreamGlass.Twitch
             StreamGlassCanals.NewCanal<RaidEventArgs>(Canals.RAID);
             StreamGlassCanals.NewCanal<RewardEventArgs>(Canals.REWARD);
             StreamGlassCanals.NewCanal<BanEventArgs>(Canals.BAN);
-            StreamGlassCanals.NewCanal<TwitchMessage>(Canals.HELD_MESSAGE);
+            StreamGlassCanals.NewCanal<Message>(Canals.HELD_MESSAGE);
             StreamGlassCanals.NewCanal<MessageAllowedEventArgs>(Canals.ALLOW_MESSAGE);
             StreamGlassCanals.NewCanal<string>(Canals.HELD_MESSAGE_MODERATED);
             StreamGlassCanals.NewCanal<string>(Canals.CHAT_CLEAR_USER);
@@ -320,12 +317,16 @@ namespace StreamGlass.Twitch
             new ModerateAutoModEndpoint()
         ];
 
-        protected override void OnUnload() => m_Core.Disconnect();
+        protected override void OnUnload()
+        {
+            m_Core.Disconnect();
+            JsonParser.WriteToFile<Settings>(GetFilePath("twitch_settings.json"), m_Settings);
+        }
 
         public TabItemContent[] GetSettings() => [
-            new StreamChatSettingsItem(m_Settings.GetOrAdd("chat"), m_StreamChatPanel),
-            new StreamAlertSettingsItem(m_Settings.GetOrAdd("alert"), m_AlertManager, m_StreamAlertPanel),
-            new TwitchSettingsItem(m_Settings.GetOrAdd("settings"), m_Core)
+            new StreamChatSettingsItem(m_Settings.Chat, m_StreamChatPanel),
+            new StreamAlertSettingsItem(m_Settings.Alerts, m_AlertManager, m_StreamAlertPanel),
+            new SettingsItem(m_Settings, m_Core)
         ];
 
         public void Test() => m_Core.Test();

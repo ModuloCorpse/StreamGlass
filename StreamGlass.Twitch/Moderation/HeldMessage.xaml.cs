@@ -7,15 +7,15 @@ using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch.Moderation
 {
-    public partial class HeldMessage : Core.Controls.UserControl
+    public partial class HeldMessage : StreamGlass.Core.Controls.UserControl
     {
         private readonly HeldMessageScrollPanel m_Parent;
-        private readonly TwitchMessage m_HeldMessage;
+        private readonly Message m_HeldMessage;
         private readonly bool m_ShowBadges;
 
         internal string ID => m_HeldMessage.ID;
 
-        private Text ConvertUserMessage(TwitchMessage message)
+        private Text ConvertUserMessage(Message message)
         {
             Text displayedMessage = new();
             TwitchUser user = message.Sender;
@@ -36,7 +36,7 @@ namespace StreamGlass.Twitch.Moderation
             displayedMessage.AddText(": ");
 
             Dictionary<string, object> emoteProperties = new() { { "Ratio", 1.5 } };
-            foreach (Section section in message.Message)
+            foreach (Section section in message.ChatMessage)
             {
                 switch (section.SectionType)
                 {
@@ -60,7 +60,7 @@ namespace StreamGlass.Twitch.Moderation
             return displayedMessage;
         }
 
-        public HeldMessage(HeldMessageScrollPanel parent, TwitchMessage message, double fontSize)
+        public HeldMessage(HeldMessageScrollPanel parent, Message message, double fontSize)
         {
             m_Parent = parent;
             m_HeldMessage = message;

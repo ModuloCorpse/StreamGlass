@@ -13,7 +13,7 @@ namespace StreamGlass.Twitch.Alerts
         private AlertSettings? m_CreatedAlertSettings = null;
         private Sound? m_CreatedSound = null;
 
-        internal AlertEditor(Core.Controls.Window parent, AlertSettings alertInfo) : base(parent)
+        internal AlertEditor(StreamGlass.Core.Controls.Window parent, AlertSettings alertInfo) : base(parent)
         {
             InitializeComponent();
             AlertEnableTextBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.ALERT_EDITOR_ENABLE);

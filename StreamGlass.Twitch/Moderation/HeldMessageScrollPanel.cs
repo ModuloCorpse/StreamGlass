@@ -11,7 +11,7 @@ namespace StreamGlass.Twitch.Moderation
 
         public void Init()
         {
-            StreamGlassCanals.Register<TwitchMessage>(TwitchPlugin.Canals.HELD_MESSAGE, OnHeldMessage);
+            StreamGlassCanals.Register<Message>(TwitchPlugin.Canals.HELD_MESSAGE, OnHeldMessage);
             StreamGlassCanals.Register<string>(TwitchPlugin.Canals.HELD_MESSAGE_MODERATED, RemoveHeldMessage);
             StreamGlassCanals.Register<bool>(TwitchPlugin.Canals.ALLOW_AUTOMOD, AllowLastMessage);
         }
@@ -33,7 +33,7 @@ namespace StreamGlass.Twitch.Moderation
             }));
         }
 
-        private void OnHeldMessage(TwitchMessage? message)
+        private void OnHeldMessage(Message? message)
         {
             if (message == null)
                 return;

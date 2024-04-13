@@ -97,52 +97,59 @@ namespace StreamGlass
         [GeneratedRegex(@"^[0-9a-zA-Z-_]+$", RegexOptions.IgnoreCase, "fr-FR")]
         private static partial Regex PluginNameRegex();
         private readonly List<APlugin> m_Plugins = [];
-        private readonly List<ISettingsPlugin> m_SettingsPlugins = [];
-        private readonly List<IAPIPlugin> m_APIPlugins = [];
-        private readonly List<IUpdatablePlugin> m_UpdatablePlugins = [];
-        private readonly List<ITestablePlugin> m_TestablePlugins = [];
-        private readonly List<IPanelPlugin> m_PanelPlugins = [];
 
         public void RegisterToAPI(CorpseLib.Web.API.API api)
         {
-            foreach (IAPIPlugin plugin in m_APIPlugins)
+            foreach (APlugin plugin in m_Plugins)
             {
-                CorpseLib.Web.Http.Path path = new($"/{plugin.Name.ToLower()}");
-                HTTPEndpointNode httpEndpointNode = new();
-                WebSocketEndpointNode webSocketEndpointNode = new();
-                AEndpoint[] endpoints = plugin.GetEndpoints();
-                foreach (AEndpoint endpoint in endpoints)
+                if (plugin is IAPIPlugin apiPlugin)
                 {
-                    if (endpoint is AWebsocketEndpoint websocketEndpoint)
-                        webSocketEndpointNode.Add(websocketEndpoint);
-                    else if (endpoint is AHTTPEndpoint httpEndpoint)
-                        httpEndpointNode.Add(httpEndpoint);
+                    CorpseLib.Web.Http.Path path = new($"/{apiPlugin.Name.ToLower()}");
+                    HTTPEndpointNode httpEndpointNode = new();
+                    WebSocketEndpointNode webSocketEndpointNode = new();
+                    AEndpoint[] endpoints = apiPlugin.GetEndpoints();
+                    foreach (AEndpoint endpoint in endpoints)
+                    {
+                        if (endpoint is AWebsocketEndpoint websocketEndpoint)
+                            webSocketEndpointNode.Add(websocketEndpoint);
+                        else if (endpoint is AHTTPEndpoint httpEndpoint)
+                            httpEndpointNode.Add(httpEndpoint);
+                    }
+                    api.AddEndpointNode(path, httpEndpointNode);
+                    api.AddEndpointNode(path, webSocketEndpointNode);
                 }
-                api.AddEndpointNode(path, httpEndpointNode);
-                api.AddEndpointNode(path, webSocketEndpointNode);
             }
         }
 
         public void FillSettings(Dialog settingsDialog)
         {
-            foreach (ISettingsPlugin plugin in m_SettingsPlugins)
+            foreach (APlugin plugin in m_Plugins)
             {
-                TabItemContent[] settings = plugin.GetSettings();
-                foreach (TabItemContent setting in settings)
-                    settingsDialog.AddTabItem(setting);
+                if (plugin is ISettingsPlugin settingsPlugin)
+                {
+                    TabItemContent[] settings = settingsPlugin.GetSettings();
+                    foreach (TabItemContent setting in settings)
+                        settingsDialog.AddTabItem(setting);
+                }
             }
         }
 
         public void Update(long deltaTime)
         {
-            foreach (IUpdatablePlugin plugin in m_UpdatablePlugins)
-                plugin.Update(deltaTime);
+            foreach (APlugin plugin in m_Plugins)
+            {
+                if (plugin is IUpdatablePlugin updatablePlugin)
+                    updatablePlugin.Update(deltaTime);
+            }
         }
 
         public void Test()
         {
-            foreach (ITestablePlugin plugin in m_TestablePlugins)
-                plugin.Test();
+            foreach (APlugin plugin in m_Plugins)
+            {
+                if (plugin is ITestablePlugin testablePlugin)
+                    testablePlugin.Test();
+            }
         }
 
         public void LoadPlugin(Metadata metadata, APlugin plugin)
@@ -151,16 +158,6 @@ namespace StreamGlass
             {
                 plugin.InitMetadata(metadata);
                 plugin.RegisterPlugin();
-                if (plugin is IAPIPlugin apiPlugin)
-                    m_APIPlugins.Add(apiPlugin);
-                if (plugin is IUpdatablePlugin updatablePlugin)
-                    m_UpdatablePlugins.Add(updatablePlugin);
-                if (plugin is ITestablePlugin testablePlugin)
-                    m_TestablePlugins.Add(testablePlugin);
-                if (plugin is ISettingsPlugin settingsPlugin)
-                    m_SettingsPlugins.Add(settingsPlugin);
-                if (plugin is IPanelPlugin panelPlugin)
-                    m_PanelPlugins.Add(panelPlugin);
                 m_Plugins.Add(plugin);
                 PLUGIN_LOGGER.Log(string.Format("Plugin loaded {0}", plugin.Name));
             }
@@ -246,11 +243,14 @@ namespace StreamGlass
 
         public Control? GetPanel(string panelID)
         {
-            foreach (IPanelPlugin panelPlugin in m_PanelPlugins)
+            foreach (APlugin plugin in m_Plugins)
             {
-                Control? control = panelPlugin.GetPanel(panelID);
-                if (control != null)
-                    return control;
+                if (plugin is IPanelPlugin panelPlugin)
+                {
+                    Control? control = panelPlugin.GetPanel(panelID);
+                    if (control != null)
+                        return control;
+                }
             }
             return null;
         }

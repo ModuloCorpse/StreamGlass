@@ -57,6 +57,7 @@ namespace StreamGlass
 
         public MainWindow(SplashScreen splashScreen) : base(new())
         {
+            //Progress bar message: Waking up
             m_SplashScreen = splashScreen;
             StreamGlassContext.Init();
             StreamGlassContext.LOGGER.Start();
@@ -77,6 +78,9 @@ namespace StreamGlass
             InitializeBrushPalette();
             m_SplashScreen.UpdateProgressBar(30);
             m_Manager = new(splashScreen);
+
+            //Progress bar translated message: Interface loading
+            StreamGlassContext.AfterPluginInit();
             //TODO Temporary code : To replace with AvalonDock layouts
             StreamChatBorder.Child = m_Manager.GetPanel("twitch_chat");
             StreamAlertBorder.Child = m_Manager.GetPanel("twitch_alert");
@@ -121,7 +125,7 @@ namespace StreamGlass
         private void SettingsToolStripMenuItem_Click(object sender, RoutedEventArgs e)
         {
             Core.Settings.Dialog dialog = new(this);
-            dialog.AddTabItem(new GeneralSettingsItem(m_Manager.GetOrAddSettings("stream-chat"), GetBrushPalette()));
+            dialog.AddTabItem(new GeneralSettingsItem(dialog, GetBrushPalette()));
             m_Manager.FillSettingsDialog(dialog);
             dialog.ShowDialog();
         }

@@ -1,5 +1,4 @@
-﻿using CorpseLib.Ini;
-using CorpseLib.Json;
+﻿using CorpseLib.Json;
 using CorpseLib.Translation;
 using CorpseLib.Web.API.Event;
 using StreamGlass.API;
@@ -19,10 +18,15 @@ namespace StreamGlass
 {
     public class Manager
     {
+        static Manager()
+        {
+            JsonHelper.RegisterSerializer(new Settings.JsonSerializer());
+        }
+
         private readonly CorpseLib.Web.API.API m_API = new(15007);
         private readonly Stopwatch m_Watch = new();
         private readonly DispatcherTimer m_DispatcherTimer = new();
-        private readonly IniFile m_Settings = [];
+        private Settings m_Settings = new();
         private readonly ProfileManager m_ProfileManager;
         private readonly PluginManager m_PluginManager;
 
@@ -30,23 +34,29 @@ namespace StreamGlass
 
         public Manager(SplashScreen splashScreen)
         {
-            LoadIni();
+            //Progress bar message: Learning new languages
+            LoadSettings();
             InitializeTranslation();
+            Translator.LoadDirectory("./locals");
+            Translator.SetLanguage(new CultureInfo(m_Settings.CurrentLanguage));
             splashScreen.UpdateProgressBar(50);
 
+            //Progress bar translated message: Loading profiles
             m_ProfileManager = new();
             m_ProfileManager.Load();
             splashScreen.UpdateProgressBar(60);
 
             PluginManager.PLUGIN_LOGGER.Start();
             m_PluginManager = new();
+            //Progress bar translated message: Loading XX (name of the plugin)
             m_PluginManager.LoadPlugins();
+            //Progress bar translated message: Loading Twitch
             m_PluginManager.LoadPlugin(TwitchPlugin.PluginMetadata, new TwitchPlugin());
             splashScreen.UpdateProgressBar(70);
 
-            Translator.LoadDirectory("./locals");
             m_ProfileManager.UpdateStreamInfo();
 
+            //Progress bar translated message: Loading API endpoints
             InitAPI();
             m_API.Start();
 
@@ -61,7 +71,10 @@ namespace StreamGlass
             splashScreen.UpdateProgressBar(80);
 
             //Last initalization to do
+            //Progress bar translated message: Initializing XX (name of the plugin)
             m_PluginManager.InitPlugins();
+
+            //Progress bar translated message: Starting update routine
             m_DispatcherTimer.Tick += Tick;
             m_DispatcherTimer.Interval = TimeSpan.FromMilliseconds(50);
             m_Watch.Start();
@@ -69,27 +82,13 @@ namespace StreamGlass
             splashScreen.UpdateProgressBar(90);
         }
 
-        private void LoadIni()
+        private void LoadSettings()
         {
-            if (File.Exists("settings.ini"))
+            if (File.Exists("settings.json"))
             {
-                IniFile iniFile = IniParser.LoadFromFile("settings.ini");
-                if (!iniFile.HaveEmptySection)
-                    m_Settings.Merge(iniFile);
-            }
-            else if (File.Exists("settings.json"))
-            {
-                JsonObject response = JsonParser.LoadFromFile("settings.json");
-                foreach (var item in response)
-                {
-                    string key = item.Key;
-                    JsonObject value = item.Value.Cast<JsonObject>()!;
-                    IniSection section = new(key);
-                    foreach (var item2 in value)
-                        section.Add(item2.Key, item2.Value.Cast<string>()!);
-                    m_Settings.Add(section);
-                }
-                File.Delete("settings.json");
+                Settings? settings = JsonParser.LoadFromFile<Settings>("settings.json");
+                if (settings != null)
+                    m_Settings = settings;
             }
         }
 
@@ -179,7 +178,7 @@ namespace StreamGlass
                 { StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_OUTPUT, "Sortie :" },
             };
             Translator.AddTranslation(translationFR);
-            Translator.CurrentLanguageChanged += () => m_Settings.GetOrAdd("settings").Set("language", Translator.CurrentLanguage.Name);
+            Translator.CurrentLanguageChanged += () => m_Settings.CurrentLanguage = Translator.CurrentLanguage.Name;
         }
 
         private void InitAPI()
@@ -209,15 +208,13 @@ namespace StreamGlass
 
         public void Stop()
         {
-            m_Settings.WriteToFile("settings.ini");
+            JsonParser.WriteToFile<Settings>("settings.json", m_Settings);
             m_ProfileManager.Save();
             m_PluginManager.Clear();
             m_Watch.Stop();
             m_DispatcherTimer.Stop();
             m_API.Stop();
         }
-
-        public IniSection GetOrAddSettings(string sectionName) => m_Settings.GetOrAdd(sectionName);
 
         public void FillSettingsDialog(Core.Settings.Dialog settingsDialog) => m_PluginManager.FillSettings(settingsDialog);
 

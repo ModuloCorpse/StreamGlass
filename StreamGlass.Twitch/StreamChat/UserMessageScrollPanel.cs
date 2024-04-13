@@ -13,7 +13,7 @@ namespace StreamGlass.Twitch.StreamChat
 
         public void Init()
         {
-            StreamGlassCanals.Register<TwitchMessage>(TwitchPlugin.Canals.CHAT_MESSAGE, OnMessage);
+            StreamGlassCanals.Register<Twitch.Message>(TwitchPlugin.Canals.CHAT_MESSAGE, OnMessage);
             StreamGlassCanals.Register(TwitchPlugin.Canals.CHAT_CLEAR, ClearMessages);
             StreamGlassCanals.Register<string>(TwitchPlugin.Canals.CHAT_CLEAR_USER, RemoveAllMessagesFrom);
             StreamGlassCanals.Register<string>(TwitchPlugin.Canals.CHAT_CLEAR_MESSAGE, RemoveMessage);
@@ -35,7 +35,7 @@ namespace StreamGlass.Twitch.StreamChat
                 m_ChatHighlightedUsers.Add(userID);
         }
 
-        private void OnMessage(TwitchMessage? message)
+        private void OnMessage(Twitch.Message? message)
         {
             if (message == null)
                 return;

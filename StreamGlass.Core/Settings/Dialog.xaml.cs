@@ -15,8 +15,8 @@ namespace StreamGlass.Core.Settings
 
         public void AddTabItem(TabItemContent item)
         {
-            item.SetSettingDialog(this);
-            item.UpdateTabItemColorPalette(GetBrushPalette());
+            item.Init();
+            item.Update(GetBrushPalette());
             Controls.TabItem tabItem = new()
             {
                 Header = new Controls.Image()

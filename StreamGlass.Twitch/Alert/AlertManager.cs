@@ -1,5 +1,4 @@
-﻿using CorpseLib.Ini;
-using CorpseLib.Placeholder;
+﻿using CorpseLib.Placeholder;
 using CorpseLib.StructuredText;
 using CorpseLib.Translation;
 using StreamGlass.Core;
@@ -35,61 +34,20 @@ namespace StreamGlass.Twitch.Alerts
 
         public AlertManager()
         {
-            NewAlert(KnownAlerts.INCOMMING_RAID, TwitchPlugin.TranslationKeys.ALERT_NAME_INC_RAID,
-                null, "${ExeDir}/Assets/parachute.png",
-                "${e.From.DisplayName} is raiding you with ${e.NbViewers} viewers");
-            
-            NewAlert(KnownAlerts.OUTGOING_RAID, TwitchPlugin.TranslationKeys.ALERT_NAME_OUT_RAID,
-                null, "${ExeDir}/Assets/parachute.png",
-                "You are raiding ${e.To.DisplayName} with ${e.NbViewers} viewers");
-            
-            NewAlert(KnownAlerts.DONATION, TwitchPlugin.TranslationKeys.ALERT_NAME_DONATION,
-                null, "${ExeDir}/Assets/take-my-money.png",
-                "${e.User.DisplayName} as donated ${e.Amount} ${e.Currency}");
-            
-            NewAlert(KnownAlerts.REWARD, TwitchPlugin.TranslationKeys.ALERT_NAME_REWARD,
-                new("${ExeDir}/Assets/alert-sound.wav", string.Empty), "${ExeDir}/Assets/chest.png",
-                "${e.From.DisplayName} retrieve ${e.Reward}: ${e.Input}");
-            
-            NewAlert(KnownAlerts.FOLLOW, TwitchPlugin.TranslationKeys.ALERT_NAME_FOLLOW,
-                null, "${ExeDir}/Assets/hearts.png",
-                "${e.User.DisplayName} is now following you");
-            
-            NewAlert(KnownAlerts.SUB_TIER1, TwitchPlugin.TranslationKeys.ALERT_NAME_SUB_TIER1,
-                null, "${ExeDir}/Assets/stars-stack-1.png",
-                "${e.User.DisplayName} as subscribed to you with a tier 1");
-            
-            NewAlert(KnownAlerts.GIFT_SUB_TIER1, TwitchPlugin.TranslationKeys.ALERT_NAME_GIFT_SUB_TIER1,
-                null, "${ExeDir}/Assets/stars-stack-1.png",
-                "${e.User.DisplayName || 'Anonymous'} offered a sub tier 1");
-            
-            NewAlert(KnownAlerts.SUB_TIER2, TwitchPlugin.TranslationKeys.ALERT_NAME_SUB_TIER2,
-                null, "${ExeDir}/Assets/stars-stack-2.png",
-                "${e.User.DisplayName} as subscribed to you with a tier 2");
-            
-            NewAlert(KnownAlerts.GIFT_SUB_TIER2, TwitchPlugin.TranslationKeys.ALERT_NAME_GIFT_SUB_TIER2,
-                null, "${ExeDir}/Assets/stars-stack-2.png",
-                "${e.User.DisplayName || 'Anonymous'} offered a sub tier 2");
-            
-            NewAlert(KnownAlerts.SUB_TIER3, TwitchPlugin.TranslationKeys.ALERT_NAME_SUB_TIER3,
-                null, "${ExeDir}/Assets/stars-stack-3.png",
-                "${e.User.DisplayName} as subscribed to you with a tier 3");
-            
-            NewAlert(KnownAlerts.GIFT_SUB_TIER3, TwitchPlugin.TranslationKeys.ALERT_NAME_GIFT_SUB_TIER3,
-                null, "${ExeDir}/Assets/stars-stack-3.png",
-                "${e.User.DisplayName || 'Anonymous'} offered a sub tier 3");
-            
-            NewAlert(KnownAlerts.PRIME, TwitchPlugin.TranslationKeys.ALERT_NAME_PRIME,
-                null, "${ExeDir}/Assets/chess-queen.png",
-                "${e.User.DisplayName} as subscribed to you with a prime");
-            
-            NewAlertWithChatMessage(KnownAlerts.SHOUTOUT, TwitchPlugin.TranslationKeys.ALERT_NAME_SHOUTOUT,
-                null, "${ExeDir}/Assets/megaphone.png",
-                "${e.Moderator.DisplayName} gave a shoutout to ${e.User.DisplayName}", "Go check ${DisplayName(Lower(e.User.DisplayName))}, who's playing ${Game(e.User.DisplayName)} on https://twitch.tv/${e.User.Name}");
-            
-            NewAlert(KnownAlerts.BEING_SHOUTOUT, TwitchPlugin.TranslationKeys.ALERT_NAME_BEING_SHOUTOUT,
-                null, "${ExeDir}/Assets/megaphone.png",
-                "${e.DisplayName} gave you a shoutout");
+            NewAlert(KnownAlerts.INCOMMING_RAID, TwitchPlugin.TranslationKeys.ALERT_NAME_INC_RAID);
+            NewAlert(KnownAlerts.OUTGOING_RAID, TwitchPlugin.TranslationKeys.ALERT_NAME_OUT_RAID);
+            NewAlert(KnownAlerts.DONATION, TwitchPlugin.TranslationKeys.ALERT_NAME_DONATION);
+            NewAlert(KnownAlerts.REWARD, TwitchPlugin.TranslationKeys.ALERT_NAME_REWARD);
+            NewAlert(KnownAlerts.FOLLOW, TwitchPlugin.TranslationKeys.ALERT_NAME_FOLLOW);
+            NewAlert(KnownAlerts.SUB_TIER1, TwitchPlugin.TranslationKeys.ALERT_NAME_SUB_TIER1);
+            NewAlert(KnownAlerts.GIFT_SUB_TIER1, TwitchPlugin.TranslationKeys.ALERT_NAME_GIFT_SUB_TIER1);
+            NewAlert(KnownAlerts.SUB_TIER2, TwitchPlugin.TranslationKeys.ALERT_NAME_SUB_TIER2);
+            NewAlert(KnownAlerts.GIFT_SUB_TIER2, TwitchPlugin.TranslationKeys.ALERT_NAME_GIFT_SUB_TIER2);
+            NewAlert(KnownAlerts.SUB_TIER3, TwitchPlugin.TranslationKeys.ALERT_NAME_SUB_TIER3);
+            NewAlert(KnownAlerts.GIFT_SUB_TIER3, TwitchPlugin.TranslationKeys.ALERT_NAME_GIFT_SUB_TIER3);
+            NewAlert(KnownAlerts.PRIME, TwitchPlugin.TranslationKeys.ALERT_NAME_PRIME);
+            NewAlert(KnownAlerts.SHOUTOUT, TwitchPlugin.TranslationKeys.ALERT_NAME_SHOUTOUT);
+            NewAlert(KnownAlerts.BEING_SHOUTOUT, TwitchPlugin.TranslationKeys.ALERT_NAME_BEING_SHOUTOUT);
         }
 
         public void Init()
@@ -103,20 +61,12 @@ namespace StreamGlass.Twitch.Alerts
             StreamGlassCanals.Register<TwitchUser>(TwitchPlugin.Canals.BEING_SHOUTOUT, OnBeingShoutout);
         }
 
-        private void NewAlert(string alertID, TranslationKey translationKey, Sound? audio, string imgPath, string prefix)
-        {
-            m_Alerts[alertID] = new Alert(translationKey, alertID, new(audio, imgPath, prefix, string.Empty, true, false));
-        }
+        private void NewAlert(string alertID, TranslationKey translationKey) => m_Alerts[alertID] = new Alert(translationKey, alertID);
 
-        private void NewAlertWithChatMessage(string alertID, TranslationKey translationKey, Sound? audio, string imgPath, string prefix, string chatMessage)
-        {
-            m_Alerts[alertID] = new Alert(translationKey, alertID, new(audio, imgPath, prefix, chatMessage, true, true));
-        }
-
-        internal void InitSettings(IniSection alertSection)
+        internal void InitSettings(Settings.AlertsSettings settings)
         {
             foreach (var pair in m_Alerts)
-                pair.Value.LoadSettings(alertSection);
+                pair.Value.LoadSettings(settings);
         }
 
         private void TriggerAlert(string alertID, object e, Text? message = null)

@@ -11,18 +11,18 @@ namespace StreamGlass.Twitch.API.Message
         {
             private readonly Page? m_NextPage = null;
             private readonly Guid m_ID = Guid.NewGuid();
-            private readonly TwitchMessage[] m_Messages;
+            private readonly Twitch.Message[] m_Messages;
 
             public Guid ID => m_ID;
 
-            public Page(AllMessageEndpoint endpoint, List<TwitchMessage> messages)
+            public Page(AllMessageEndpoint endpoint, List<Twitch.Message> messages)
             {
-                List<TwitchMessage> messagesRet = [];
+                List<Twitch.Message> messagesRet = [];
                 bool keepPaging = true;
                 long length = 0;
                 while (messages.Count > 0 && keepPaging)
                 {
-                    TwitchMessage message = messages.First();
+                    Twitch.Message message = messages.First();
                     JsonObject node = (JsonObject)JsonHelper.Cast(message);
                     long nodeLength = node.ToNetworkString().Length;
                     if (length == 0 || length + nodeLength < 2000)
@@ -54,11 +54,11 @@ namespace StreamGlass.Twitch.API.Message
         }
 
         private readonly Dictionary<Guid, Page> m_Pages = [];
-        private readonly List<TwitchMessage> m_Messages = [];
+        private readonly List<Twitch.Message> m_Messages = [];
 
         public AllMessageEndpoint() : base("/all_message")
         {
-            StreamGlassCanals.Register<TwitchMessage>(TwitchPlugin.Canals.CHAT_MESSAGE, (message) => { if (message != null) m_Messages.Add(message); });
+            StreamGlassCanals.Register<Twitch.Message>(TwitchPlugin.Canals.CHAT_MESSAGE, (message) => { if (message != null) m_Messages.Add(message); });
             StreamGlassCanals.Register(TwitchPlugin.Canals.CHAT_CLEAR, m_Messages.Clear);
             StreamGlassCanals.Register<string>(TwitchPlugin.Canals.CHAT_CLEAR_USER, (userID) => { if (userID != null) m_Messages.RemoveAll(message => message.UserID == userID); });
             StreamGlassCanals.Register<string>(TwitchPlugin.Canals.CHAT_CLEAR_MESSAGE, (messageID) => { if (messageID != null) m_Messages.RemoveAll(message => message.ID == messageID); });

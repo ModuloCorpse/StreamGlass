@@ -1,12 +1,11 @@
-﻿using CorpseLib.Ini;
-using CorpseLib.Translation;
+﻿using CorpseLib.Translation;
 
 namespace StreamGlass.Twitch.Alerts
 {
-    internal class Alert(TranslationKey translationKey, string id, AlertSettings settings)
+    internal class Alert(TranslationKey translationKey, string id)
     {
         private readonly TranslationKey m_TranslationKey = translationKey;
-        private AlertSettings m_Settings = settings;
+        private AlertSettings m_Settings = new(null, string.Empty, string.Empty, string.Empty, true, false);
         private readonly string m_ID = id;
 
         public AlertSettings Settings => m_Settings;
@@ -15,27 +14,12 @@ namespace StreamGlass.Twitch.Alerts
 
         public void SetSettings(AlertSettings settings) => m_Settings = settings;
 
-        public void LoadSettings(IniSection section)
+        public void LoadSettings(Settings.AlertsSettings settings)
         {
-            string audioFilePath = section.GetOrAdd(string.Format("{0}_audio_file", m_ID), m_Settings.Audio?.File ?? string.Empty);
-            string audioOutputPath = section.GetOrAdd(string.Format("{0}_audio_output", m_ID), m_Settings.Audio?.Output ?? string.Empty);
-            string loadedImgPath = section.GetOrAdd(string.Format("{0}_path", m_ID), m_Settings.ImgPath);
-            string loadedPrefix = section.GetOrAdd(string.Format("{0}_prefix", m_ID), m_Settings.Prefix);
-            string loadedChatMessage = section.GetOrAdd(string.Format("{0}_chat_message", m_ID), m_Settings.ChatMessage);
-            bool loadedIsEnabled = section.GetOrAdd(string.Format("{0}_enabled", m_ID), (m_Settings.IsEnabled) ? "true" : "false") == "true";
-            bool loadedChatMessageIsEnabled = section.GetOrAdd(string.Format("{0}_chat_message_enabled", m_ID), (m_Settings.HaveChatMessage) ? "true" : "false") == "true";
-            m_Settings = new(new(audioFilePath, audioOutputPath), loadedImgPath, loadedPrefix, loadedChatMessage, loadedIsEnabled, loadedChatMessageIsEnabled);
+            if (settings.AlertSettings.TryGetValue(m_ID, out AlertSettings? alertSettings))
+                m_Settings = alertSettings!.Duplicate();
         }
 
-        public void SaveSettings(IniSection section)
-        {
-            section.Set(string.Format("{0}_audio_file", m_ID), m_Settings.Audio?.File ?? string.Empty);
-            section.Set(string.Format("{0}_audio_output", m_ID), m_Settings.Audio?.Output ?? string.Empty);
-            section.Set(string.Format("{0}_path", m_ID), m_Settings.ImgPath);
-            section.Set(string.Format("{0}_prefix", m_ID), m_Settings.Prefix);
-            section.Set(string.Format("{0}_enabled", m_ID), (m_Settings.IsEnabled) ? "true" : "false");
-            section.Set(string.Format("{0}_chat_message_enabled", m_ID), (m_Settings.HaveChatMessage) ? "true" : "false");
-            section.Set(string.Format("{0}_chat_message", m_ID), (m_Settings.HaveChatMessage) ? m_Settings.ChatMessage : string.Empty);
-        }
+        public void SaveSettings(Settings.AlertsSettings settings) => settings.AlertSettings[m_ID] = m_Settings.Duplicate();
     }
 }

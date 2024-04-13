@@ -29,7 +29,7 @@
     <Page Update="StreamChat\StreamChatSettingsItem.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="TwitchSettingsItem.xaml">
+    <Page Update="SettingsItem.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

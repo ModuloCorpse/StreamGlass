@@ -15,7 +15,7 @@ namespace StreamGlass.Twitch
         private string m_CategoryID = string.Empty;
         private string m_CategoryName = string.Empty;
 
-        public CategorySearchDialog(Core.Controls.Window parent, CategoryInfo? info, TwitchAPI api) : base(parent)
+        public CategorySearchDialog(StreamGlass.Core.Controls.Window parent, CategoryInfo? info, TwitchAPI api) : base(parent)
         {
             m_API = api;
             InitializeComponent();

@@ -10,7 +10,7 @@ namespace StreamGlass.Twitch.StreamChat
         private readonly TwitchUser m_UserToBan; 
         private BanEventArgs? m_Event = null;
 
-        public BanDialog(Core.Controls.Window parent, TwitchUser userToBan) : base(parent)
+        public BanDialog(StreamGlass.Core.Controls.Window parent, TwitchUser userToBan) : base(parent)
         {
             InitializeComponent();
             BanButton.SetTranslationKey(TwitchPlugin.TranslationKeys.BAN_BUTTON);

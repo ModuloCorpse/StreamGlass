@@ -1,5 +1,4 @@
-﻿using CorpseLib.Ini;
-using CorpseLib.StructuredText;
+﻿using CorpseLib.StructuredText;
 using StreamGlass.Core;
 using StreamGlass.Core.Profile;
 using StreamGlass.Twitch.Events;
@@ -7,9 +6,9 @@ using TwitchCorpse;
 
 namespace StreamGlass.Twitch
 {
-    public class TwitchHandler(IniSection settings, TwitchAPI api) : ITwitchHandler
+    public class Handler(Settings settings, TwitchAPI api) : ITwitchHandler
     {
-        private readonly IniSection m_Settings = settings;
+        private readonly Settings m_Settings = settings;
         private readonly TwitchAPI m_API = api;
         private string m_IRCChannel = string.Empty;
 
@@ -83,7 +82,7 @@ namespace StreamGlass.Twitch
         public void OnChatMessage(TwitchUser user, bool isHighlight, string messageId, string announcementColor, string messageColor, Text message)
         {
             StreamGlassCanals.Emit(StreamGlassCanals.CHAT_MESSAGE, new UserMessage(GetUserType(user), message.ToString()));
-            StreamGlassCanals.Emit(TwitchPlugin.Canals.CHAT_MESSAGE, new TwitchMessage(user, isHighlight, messageId, announcementColor, messageColor, m_IRCChannel, message));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.CHAT_MESSAGE, new Message(user, isHighlight, messageId, announcementColor, messageColor, m_IRCChannel, message));
         }
 
         public void OnFollow(TwitchUser user)
@@ -117,7 +116,7 @@ namespace StreamGlass.Twitch
 
         public void OnGiftSub(TwitchUser? user, int tier, int nbGift)
         {
-            if (m_Settings.Get("sub_mode") == "claimed")
+            if (m_Settings.SubMode == "claimed")
                 return;
             if (user != null)
             {
@@ -138,14 +137,14 @@ namespace StreamGlass.Twitch
 
         public void OnSharedGiftSub(TwitchUser? gifter, TwitchUser user, int tier, int monthGifted, int monthStreak, Text message)
         {
-            if (m_Settings.Get("sub_mode") == "all")
+            if (m_Settings.SubMode == "all")
                 return;
             StreamGlassCanals.Emit(TwitchPlugin.Canals.GIFT_FOLLOW, new GiftFollowEventArgs(user, gifter, message, tier, monthGifted, monthStreak, 1));
         }
 
         public void OnSub(TwitchUser user, int tier, bool isGift)
         {
-            if (m_Settings.Get("sub_mode") == "claimed")
+            if (m_Settings.SubMode == "claimed")
                 return;
             StreamGlassContext.UpdateStringSource("last_sub", user.DisplayName);
             if (isGift)
@@ -156,7 +155,7 @@ namespace StreamGlass.Twitch
 
         public void OnSharedSub(TwitchUser user, int tier, int monthTotal, int monthStreak, Text message)
         {
-            if (m_Settings.Get("sub_mode") == "all")
+            if (m_Settings.SubMode == "all")
                 return;
             StreamGlassContext.UpdateStringSource("last_sub", user.DisplayName);
             StreamGlassCanals.Emit(TwitchPlugin.Canals.FOLLOW, new FollowEventArgs(user, message, tier, monthTotal, monthStreak));
@@ -166,7 +165,7 @@ namespace StreamGlass.Twitch
 
         public void UnhandledEventSub(string message) => TwitchEventSub.LOGGER.Log(message);
 
-        public void OnMessageHeld(TwitchUser user, string messageID, Text message) => StreamGlassCanals.Emit(TwitchPlugin.Canals.HELD_MESSAGE, new TwitchMessage(user, false, messageID, string.Empty, string.Empty, string.Empty, message));
+        public void OnMessageHeld(TwitchUser user, string messageID, Text message) => StreamGlassCanals.Emit(TwitchPlugin.Canals.HELD_MESSAGE, new Message(user, false, messageID, string.Empty, string.Empty, string.Empty, message));
 
         public void OnHeldMessageTreated(string messageID) => StreamGlassCanals.Emit(TwitchPlugin.Canals.HELD_MESSAGE_MODERATED, messageID);
 

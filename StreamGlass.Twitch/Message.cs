@@ -5,11 +5,11 @@ using TwitchCorpse;
 
 namespace StreamGlass.Twitch
 {
-    public class TwitchMessage
+    public class Message
     {
-        public class JSerializer : AJsonSerializer<TwitchMessage>
+        public class JSerializer : AJsonSerializer<Message>
         {
-            protected override OperationResult<TwitchMessage> Deserialize(JsonObject reader)
+            protected override OperationResult<Message> Deserialize(JsonObject reader)
             {
                 if (reader.TryGet("message", out Text? message) &&
                     reader.TryGet("user", out TwitchUser? user) &&
@@ -22,7 +22,7 @@ namespace StreamGlass.Twitch
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(TwitchMessage obj, JsonObject writer)
+            protected override void Serialize(Message obj, JsonObject writer)
             {
                 writer["message"] = obj.m_Message;
                 writer["user"] = obj.m_User;
@@ -42,7 +42,7 @@ namespace StreamGlass.Twitch
         private readonly string m_Channel;
         private readonly bool m_IsHighlighted;
 
-        public TwitchMessage(TwitchUser user, bool ishighlighted, string channel, string message)
+        public Message(TwitchUser user, bool ishighlighted, string channel, string message)
         {
             m_IsHighlighted = ishighlighted;
             m_ID = Guid.NewGuid().ToString();
@@ -53,7 +53,7 @@ namespace StreamGlass.Twitch
             m_Message = new(message);
         }
 
-        public TwitchMessage(TwitchUser user, bool ishighlighted, string id, string announcementColor, string color, string channel, Text displayableMessage)
+        public Message(TwitchUser user, bool ishighlighted, string id, string announcementColor, string color, string channel, Text displayableMessage)
         {
             m_User = user;
             m_IsHighlighted = ishighlighted;
@@ -71,7 +71,7 @@ namespace StreamGlass.Twitch
         public string UserDisplayName => m_User.DisplayName;
         public string AnnouncementColor => m_AnnouncementColor;
         public string Color => m_Color;
-        public Text Message => m_Message;
+        public Text ChatMessage => m_Message;
         public TwitchUser.Type SenderType => m_User.UserType;
 
         public TwitchUser Sender => m_User;

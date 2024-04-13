@@ -7,8 +7,6 @@ namespace StreamGlass.Core.Stat
     public partial class StringSourceFileEditor : Dialog
     {
         private StringSourceFile? m_CreatedStringSourceFile = null;
-        private readonly string m_ID = Guid.NewGuid().ToString();
-
 
         //TODO Use placeholder analytics tool to extract all variables from content
         public StringSourceFileEditor(Controls.Window parent): base(parent)
@@ -26,7 +24,6 @@ namespace StreamGlass.Core.Stat
 
         public StringSourceFileEditor(Controls.Window parent, StringSourceFile statisticFile): this(parent)
         {
-            m_ID = statisticFile.ID;
             PathTextBox.Text = statisticFile.Path;
             ContentTextBox.Text = statisticFile.Content;
             StringSourcesList.AddObjects(statisticFile.Sources);
@@ -36,12 +33,13 @@ namespace StreamGlass.Core.Stat
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            StringSourceFile newStatisticFile = new(m_ID, PathTextBox.Text);
-            newStatisticFile.SetContent(ContentTextBox.Text);
-            string[] statistics = StringSourcesList.GetItems().Cast<string>().ToArray();
-            foreach (string statistic in statistics)
-                newStatisticFile.AddSource(statistic);
-            m_CreatedStringSourceFile = newStatisticFile;
+            StringSourceFile newStringSourceFile = new();
+            newStringSourceFile.SetPath(PathTextBox.Text);
+            newStringSourceFile.SetContent(ContentTextBox.Text);
+            string[] sources = StringSourcesList.GetItems().Cast<string>().ToArray();
+            foreach (string source in sources)
+                newStringSourceFile.AddSource(source);
+            m_CreatedStringSourceFile = newStringSourceFile;
             OnOkClick();
         }
 

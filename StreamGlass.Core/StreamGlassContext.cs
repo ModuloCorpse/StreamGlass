@@ -2,6 +2,7 @@
 using CorpseLib.Logging;
 using CorpseLib.Placeholder;
 using CorpseLib.StructuredText;
+using StreamGlass.Core.Audio;
 using StreamGlass.Core.Profile;
 using StreamGlass.Core.Stat;
 
@@ -23,7 +24,7 @@ namespace StreamGlass.Core
         public static void RegisterVariable(string variableName, string variable) => ms_Variables[variableName] = variable;
         public static void UnregisterVariable(string variableName) => ms_Variables.Remove(variableName);
 
-
+        public static void RegisterAggregator(StringSourceManager.AggregatorMaker aggregatorMaker) => ms_StringSources.RegisterAggregator(aggregatorMaker);
         public static void CreateStringSource(string source) => ms_StringSources.CreateStringSource(source);
         public static void UpdateStringSource(string source, string value) => ms_StringSources.UpdateStringSource(source, value);
         public static string GetStringSource(string source, string defaultValue) => ms_StringSources.GetOr(source, defaultValue);
@@ -36,7 +37,11 @@ namespace StreamGlass.Core
             JsonHelper.RegisterSerializer(new ProfileCommandEventArgs.JSerializer());
             JsonHelper.RegisterSerializer(new CategoryInfo.JSerializer());
             JsonHelper.RegisterSerializer(new UpdateStreamInfoArgs.JSerializer());
+            JsonHelper.RegisterSerializer(new Sound.JsonSerializer());
+        }
 
+        public static void AfterPluginInit()
+        {
             ms_StringSources.Load();
         }
 

@@ -1,49 +1,34 @@
 ﻿using CorpseLib.Json;
-using CorpseLib.Placeholder;
 using System.IO;
-using System.Text;
-using CorpseLib.ManagedObject;
 
 namespace StreamGlass.Core.Stat
 {
-    public class StringSourceFile : Object<StringSourceFile>
+    public class StringSourceFile : StringSourceAggregator
     {
-        private readonly HashSet<string> m_Sources = [];
-        private string m_Content = string.Empty;
+        private string m_Path = string.Empty;
 
-        internal StringSourceFile(string id, string path) : base(id, path) { }
-        internal StringSourceFile(JsonObject json) : base(json) { }
+        internal string Path => m_Path;
 
-        internal List<string> Sources => [.. m_Sources];
-        internal string Path => Name;
-        internal string Content => m_Content;
+        internal void SetPath(string path) => m_Path = path;
 
-        public void AddSource(string source) => m_Sources.Add(source);
-        public void RemoveSource(string source) => m_Sources.Remove(source);
-        public void SetContent(string content) => m_Content = content;
-
-        public bool CanUpdateFromSource(string updatedSource) => m_Sources.Contains(updatedSource);
-
-        public void UpdateStringSourceFile()
+        internal void Duplicate(StringSourceFile other)
         {
-            if (!string.IsNullOrEmpty(m_Content))
-                File.WriteAllText(Path, Converter.Convert(m_Content, new StreamGlassContext()));
+            Copy(other);
+            m_Path = other.m_Path;
         }
 
-        protected override void Save(ref JsonObject json)
+        protected override void OnSave(JsonObject json)
         {
-            json.Add("sources", m_Sources.ToList());
-            if (!string.IsNullOrEmpty(m_Content))
-                json.Add("content", m_Content);
+            json["path"] = m_Path;
         }
 
-        protected override void Load(JsonObject json)
+        protected override void OnLoad(JsonObject json)
         {
-            List<string> sources = json.GetList<string>("sources");
-            foreach (string source in sources)
-                AddSource(source);
-            if (json.TryGet("content", out string? content) && !string.IsNullOrEmpty(content))
-                SetContent(content);
+            if (json.TryGet("path", out string? path))
+                m_Path = path!;
         }
+
+        protected override string GetAggregatorType() => "file";
+        protected override void OnAggregate(string text) => File.WriteAllText(Path, text);
     }
 }

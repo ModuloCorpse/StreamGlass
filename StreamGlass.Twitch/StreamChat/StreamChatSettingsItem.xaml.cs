@@ -1,5 +1,4 @@
-﻿using CorpseLib.Ini;
-using CorpseLib.Translation;
+﻿using CorpseLib.Translation;
 using StreamGlass.Core.Controls;
 using StreamGlass.Core.Settings;
 using System.Windows.Controls;
@@ -9,21 +8,26 @@ namespace StreamGlass.Twitch.StreamChat
     public partial class StreamChatSettingsItem : TabItemContent
     {
         private readonly UserMessageScrollPanel m_StreamChat;
+        private readonly Settings.ChatSettings m_Settings = new();
         private readonly double m_OriginalContentFontSize;
         private readonly ScrollPanelDisplayType m_OriginalDisplayType;
 
-        public StreamChatSettingsItem(IniSection settings, UserMessageScrollPanel streamChat) : base("${ExeDir}/Assets/chat-bubble.png", settings)
+        public StreamChatSettingsItem(Settings.ChatSettings settings, UserMessageScrollPanel streamChat) : base("${ExeDir}/Assets/chat-bubble.png")
         {
             m_StreamChat = streamChat;
+            m_Settings = settings;
+            m_Settings.DisplayType = m_StreamChat.GetDisplayType();
+            m_Settings.MessageFontSize = m_StreamChat.MessageContentFontSize;
+
             InitializeComponent();
             ChatMessageFontLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_CHAT_FONT);
             ChatModeComboBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_CHAT_MODE);
-            m_OriginalDisplayType = m_StreamChat.GetDisplayType();
-            m_OriginalContentFontSize = m_StreamChat.MessageContentFontSize;
+
+            m_OriginalDisplayType = m_Settings.DisplayType;
+            m_OriginalContentFontSize = m_Settings.MessageFontSize;
 
             ChatModeComboBox.SetSelectedEnumValue(m_OriginalDisplayType);
-
-            AddControlLink("message_font_size", new NumericUpDownUserControlLink(ChatMessageFont));
+            ChatMessageFont.Value = m_OriginalContentFontSize;
         }
 
         private void TranslateComboBox()
@@ -56,7 +60,8 @@ namespace StreamGlass.Twitch.StreamChat
 
         protected override void OnSave()
         {
-            SetSetting("display_type", ((int)ChatModeComboBox.SelectedEnumValue).ToString());
+            m_Settings.DisplayType = ChatModeComboBox.SelectedEnumValue;
+            m_Settings.MessageFontSize = ChatMessageFont.Value;
         }
 
         protected override void OnCancel()

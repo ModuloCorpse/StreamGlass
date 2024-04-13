@@ -1,5 +1,4 @@
-﻿using CorpseLib.Ini;
-using StreamGlass.Core.Controls;
+﻿using StreamGlass.Core.Controls;
 using StreamGlass.Core.Settings;
 using System.Windows.Controls;
 
@@ -9,11 +8,13 @@ namespace StreamGlass.Twitch.Alerts
     {
         private readonly AlertManager m_AlertManager;
         private readonly AlertScrollPanel m_AlertScrollPanel;
+        private readonly Settings.AlertsSettings m_Settings;
         private readonly double m_OriginalContentFontSize;
         private readonly ScrollPanelDisplayType m_OriginalDisplayType;
 
-        public StreamAlertSettingsItem(IniSection settings, AlertManager alertManager, AlertScrollPanel alertScrollPanel) : base("${ExeDir}/Assets/megaphone.png", settings)
+        public StreamAlertSettingsItem(Settings.AlertsSettings settings, AlertManager alertManager, AlertScrollPanel alertScrollPanel) : base("${ExeDir}/Assets/megaphone.png")
         {
+            m_Settings = settings;
             m_AlertManager = alertManager;
             m_AlertScrollPanel = alertScrollPanel;
             InitializeComponent();
@@ -21,16 +22,15 @@ namespace StreamGlass.Twitch.Alerts
             ChatModeComboBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_CHAT_MODE);
             AlertInfosGroupBox.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_ALERT_ALERTS);
 
-            m_OriginalDisplayType = m_AlertScrollPanel.GetDisplayType();
-            m_OriginalContentFontSize = m_AlertScrollPanel.MessageContentFontSize;
+            m_OriginalDisplayType = m_Settings.DisplayType;
+            m_OriginalContentFontSize = m_Settings.MessageFontSize;
 
             ChatModeComboBox.SetSelectedEnumValue(m_OriginalDisplayType);
+            ChatMessageFont.Value = m_OriginalContentFontSize;
 
             AlertInfosList.SetConversionDelegate((obj) => ((Alert)obj).VisualName);
             foreach (var pair in m_AlertManager.Alerts)
                 AlertInfosList.AddObject(pair.Value);
-
-            AddControlLink("message_font_size", new NumericUpDownUserControlLink(ChatMessageFont));
         }
 
         private void TranslateComboBox()
@@ -66,9 +66,10 @@ namespace StreamGlass.Twitch.Alerts
 
         protected override void OnSave()
         {
-            SetSetting("display_type", ((int)ChatModeComboBox.SelectedEnumValue).ToString());
+            m_Settings.DisplayType = ChatModeComboBox.SelectedEnumValue;
+            m_Settings.MessageFontSize = ChatMessageFont.Value;
             foreach (var pair in m_AlertManager.Alerts)
-                pair.Value.SaveSettings(Settings);
+                pair.Value.SaveSettings(m_Settings);
         }
 
         protected override void OnCancel()

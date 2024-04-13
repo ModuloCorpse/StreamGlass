@@ -1,5 +1,4 @@
-﻿using CorpseLib.Ini;
-using CorpseLib.Translation;
+﻿using CorpseLib.Translation;
 using StreamGlass.Core;
 using StreamGlass.Core.Controls;
 using StreamGlass.Core.Settings;
@@ -17,12 +16,14 @@ namespace StreamGlass.StreamChat
             public override string ToString() => m_CultureInfo.NativeName;
         }
 
+        private readonly Core.Settings.Dialog m_SettingsDialog;
         private readonly BrushPaletteManager m_BrushPalette;
         private readonly CultureInfo m_OriginalLanguage;
         private readonly string m_OriginalBrushPaletteID;
 
-        public GeneralSettingsItem(IniSection settings, BrushPaletteManager brushPalette) : base("${ExeDir}/Assets/tinker.png", settings)
+        public GeneralSettingsItem(Core.Settings.Dialog settingsDialog, BrushPaletteManager brushPalette) : base("${ExeDir}/Assets/tinker.png")
         {
+            m_SettingsDialog = settingsDialog;
             m_BrushPalette = brushPalette;
             InitializeComponent();
             ColorModeComboBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.SETTINGS_GENERAL_COLOR);

@@ -19,11 +19,14 @@ namespace StreamGlass.Core.Stat
             StringSourceFileList.ItemEdited += StringSourceFileList_EditStringSourceFile;
             StringSourceFileList.SetConversionDelegate(ConvertProfile);
 
-            foreach (StringSourceFile stringSourceFile in m_StringSourceManager.Objects)
-                StringSourceFileList.AddObject(stringSourceFile);
+            foreach (StringSourceAggregator stringSourceAggregator in m_StringSourceManager.GetAggregators("file"))
+            {
+                if (stringSourceAggregator is StringSourceFile stringSourceFile)
+                    StringSourceFileList.AddObject(stringSourceFile);
+            }
         }
 
-        private string ConvertProfile(object profile) => ((StringSourceFile)profile).Name;
+        private string ConvertProfile(object profile) => ((StringSourceFile)profile).Path;
 
         private void StringSourceFileList_AddStringSourceFile(object? sender, EventArgs _)
         {
@@ -32,22 +35,23 @@ namespace StreamGlass.Core.Stat
             StringSourceFile? newStringSource = dialog.StringSourceFile;
             if (newStringSource != null)
             {
-                m_StringSourceManager.AddStringSourceFile(newStringSource);
+                m_StringSourceManager.Add(newStringSource);
                 StringSourceFileList.AddObject(newStringSource);
             }
         }
 
-        private void StringSourceFileList_RemoveStringSourceFile(object? sender, object args) => m_StringSourceManager.RemoveObject(((StringSourceFile)args).ID);
+        private void StringSourceFileList_RemoveStringSourceFile(object? sender, object args) => m_StringSourceManager.Remove((StringSourceFile)args);
         
         private void StringSourceFileList_EditStringSourceFile(object? sender, object args)
         {
-            StringSourceFileEditor dialog = new(this, (StringSourceFile)args);
+            StringSourceFile source = (StringSourceFile)args;
+            StringSourceFileEditor dialog = new(this, source);
             dialog.ShowDialog();
             StringSourceFile? editedStringSource = dialog.StringSourceFile;
             if (editedStringSource != null)
             {
                 StringSourceFileList.UpdateObject(args, editedStringSource);
-                m_StringSourceManager.UpdateStringSourceFile(editedStringSource);
+                source.Duplicate(editedStringSource);
             }
         }
 

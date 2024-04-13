@@ -8,14 +8,14 @@ using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch.StreamChat
 {
-    public partial class Message : Core.Controls.UserControl
+    public partial class Message : StreamGlass.Core.Controls.UserControl
     {
         private readonly UserMessageScrollPanel m_StreamChat;
-        private readonly TwitchMessage m_Message;
+        private readonly Twitch.Message m_Message;
         private readonly bool m_IsHighlighted;
         private readonly bool m_ShowBadges;
 
-        private Text ConvertUserMessage(TwitchMessage message)
+        private Text ConvertUserMessage(Twitch.Message message)
         {
             Text displayedMessage = new();
             TwitchUser user = message.Sender;
@@ -36,7 +36,7 @@ namespace StreamGlass.Twitch.StreamChat
             displayedMessage.AddText(": ");
 
             Dictionary<string, object> emoteProperties = new() { { "Ratio", 1.5 } };
-            foreach (Section section in message.Message)
+            foreach (Section section in message.ChatMessage)
             {
                 switch (section.SectionType)
                 {
@@ -60,7 +60,7 @@ namespace StreamGlass.Twitch.StreamChat
             return displayedMessage;
         }
 
-        public Message(UserMessageScrollPanel streamChatPanel, TwitchMessage message, double contentFontSize, bool isHighligted, bool showBadges)
+        public Message(UserMessageScrollPanel streamChatPanel, Twitch.Message message, double contentFontSize, bool isHighligted, bool showBadges)
         {
             InitializeComponent();
             BanMenuItem.SetTranslationKey(TwitchPlugin.TranslationKeys.MENU_BAN);
