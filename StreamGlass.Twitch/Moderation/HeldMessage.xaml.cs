@@ -17,7 +17,7 @@ namespace StreamGlass.Twitch.Moderation
 
         private Text ConvertUserMessage(Message message)
         {
-            Text displayedMessage = new();
+            Text displayedMessage = [];
             TwitchUser user = message.Sender;
             if (m_ShowBadges)
             {
@@ -35,24 +35,27 @@ namespace StreamGlass.Twitch.Moderation
             displayedMessage.AddText(user.DisplayName, properties);
             displayedMessage.AddText(": ");
 
-            Dictionary<string, object> emoteProperties = new() { { "Ratio", 1.5 } };
             foreach (Section section in message.ChatMessage)
             {
                 switch (section.SectionType)
                 {
                     case Section.Type.TEXT:
                     {
-                        displayedMessage.AddText(section.Content);
+                        displayedMessage.AddText(section.Content, section.Properties);
                         break;
                     }
                     case Section.Type.IMAGE:
                     {
-                        displayedMessage.AddImage(section.Content, section.Alt, emoteProperties);
+                        Dictionary<string, object> imageProperties = section.Properties;
+                        imageProperties.TryAdd("Ratio", 1.5);
+                        displayedMessage.AddImage(section.Content, section.Alt, imageProperties);
                         break;
                     }
                     case Section.Type.ANIMATED_IMAGE:
                     {
-                        displayedMessage.AddAnimatedImage(section.Content, section.Alt, emoteProperties);
+                        Dictionary<string, object> animatedImageProperties = section.Properties;
+                        animatedImageProperties.TryAdd("Ratio", 1.5);
+                        displayedMessage.AddAnimatedImage(section.Content, section.Alt, animatedImageProperties);
                         break;
                     }
                 }

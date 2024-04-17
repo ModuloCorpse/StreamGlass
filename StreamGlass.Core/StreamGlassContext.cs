@@ -32,7 +32,7 @@ namespace StreamGlass.Core
         public static void Init()
         {
             JsonHelper.RegisterSerializer(new Text.JSerializer());
-            JsonHelper.RegisterSerializer(new Section.JSerializer());
+            JsonHelper.RegisterSerializer(new Section.SectionJsonSerializer());
             JsonHelper.RegisterSerializer(new UserMessage.JSerializer());
             JsonHelper.RegisterSerializer(new ProfileCommandEventArgs.JSerializer());
             JsonHelper.RegisterSerializer(new CategoryInfo.JSerializer());

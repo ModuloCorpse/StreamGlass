@@ -24,6 +24,7 @@ namespace StreamGlass.Twitch
         public static class Canals
         {
             public static readonly string CHAT_MESSAGE = "twitch_chat_message";
+            public static readonly string OVERLAY_CHAT_MESSAGE = "twitch_overlay_chat_message";
             public static readonly string CHAT_JOINED = "twitch_chat_joined";
             public static readonly string USER_JOINED = "twitch_user_joined";
             public static readonly string DONATION = "twitch_donation";
@@ -289,6 +290,7 @@ namespace StreamGlass.Twitch
         private static void InitCanals()
         {
             StreamGlassCanals.NewCanal<Message>(Canals.CHAT_MESSAGE);
+            StreamGlassCanals.NewCanal<Message>(Canals.OVERLAY_CHAT_MESSAGE);
             StreamGlassCanals.NewCanal<string>(Canals.CHAT_JOINED);
             StreamGlassCanals.NewCanal<TwitchUser>(Canals.USER_JOINED);
             StreamGlassCanals.NewCanal<DonationEventArgs>(Canals.DONATION);

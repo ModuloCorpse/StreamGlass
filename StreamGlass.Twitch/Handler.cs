@@ -8,6 +8,9 @@ namespace StreamGlass.Twitch
 {
     public class Handler(Settings settings, TwitchAPI api) : ITwitchHandler
     {
+        private readonly List<IMessageFilter> m_GlobalFilters = [];
+        private readonly List<IMessageFilter> m_MessageFilters = [ /*new FirstHalfBoldFilter()*/ ];
+        private readonly List<IMessageFilter> m_OverlayFilters = [];
         private readonly Settings m_Settings = settings;
         private readonly TwitchAPI m_API = api;
         private string m_IRCChannel = string.Empty;
@@ -82,7 +85,16 @@ namespace StreamGlass.Twitch
         public void OnChatMessage(TwitchUser user, bool isHighlight, string messageId, string announcementColor, string messageColor, Text message)
         {
             StreamGlassCanals.Emit(StreamGlassCanals.CHAT_MESSAGE, new UserMessage(GetUserType(user), message.ToString()));
-            StreamGlassCanals.Emit(TwitchPlugin.Canals.CHAT_MESSAGE, new Message(user, isHighlight, messageId, announcementColor, messageColor, m_IRCChannel, message));
+            foreach (IMessageFilter globalFilter in m_GlobalFilters)
+                message = globalFilter.Filter(message);
+            Text messageToDisplay = (Text)message.Clone();
+            foreach (IMessageFilter messageFilter in m_MessageFilters)
+                messageToDisplay = messageFilter.Filter(messageToDisplay);
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.CHAT_MESSAGE, new Message(user, isHighlight, messageId, announcementColor, messageColor, m_IRCChannel, messageToDisplay));
+            Text overlayMessage = (Text)message.Clone();
+            foreach (IMessageFilter overlayFilter in m_OverlayFilters)
+                overlayMessage = overlayFilter.Filter(overlayMessage);
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.OVERLAY_CHAT_MESSAGE, new Message(user, isHighlight, messageId, announcementColor, messageColor, m_IRCChannel, overlayMessage));
         }
 
         public void OnFollow(TwitchUser user)

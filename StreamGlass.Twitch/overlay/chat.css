@@ -1,0 +1,36 @@
+.chat_container {
+    width: 100%;
+    height: 100%;
+}
+
+.chat {
+    position: fixed;
+    left: 0;
+    width: 100%;
+    display: flex;
+}
+
+.chat_message {
+    display: block;
+}
+
+.chat_message_author {
+    display: inline;
+    overflow-wrap: anywhere;
+}
+
+.chat_message_content, .chat_message_badges, .chat_message_badge_div, .chat_message_content_body, .chat_message_emote_div {
+    display: inline;
+}
+
+.chat_message_author_name {
+    font-weight: bold;
+}
+
+.chat_message_author_name, .chat_message_separator, .chat_message_text {
+    font-family: Inter,Roobert,Helvetica Neue,Helvetica,Arial,sans-serif;
+}
+
+.chat_message_text {
+    overflow-wrap: anywhere;
+}
