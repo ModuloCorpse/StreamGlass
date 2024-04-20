@@ -1,4 +1,4 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.DataNotation;
 using CorpseLib.ManagedObject;
 
 namespace StreamGlass.Core.Profile
@@ -60,6 +60,6 @@ namespace StreamGlass.Core.Profile
             m_NbMessage = 0;
         }
 
-        protected override Profile? DeserializeObject(JsonObject obj) => new(obj);
+        protected override Profile? DeserializeObject(DataObject obj) => new(obj);
     }
 }

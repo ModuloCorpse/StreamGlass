@@ -1,4 +1,5 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.DataNotation;
+using CorpseLib.Json;
 using CorpseLib.ManagedObject;
 using System.Windows.Media;
 
@@ -21,7 +22,7 @@ namespace StreamGlass.Core.Controls
 
         public BrushPalette(string id, string name, Type type) : base(id, name, false) => m_Type = type;
         public BrushPalette(string name, Type type) : base(name) => m_Type = type;
-        internal BrushPalette(JsonObject json) : base(json) { }
+        internal BrushPalette(DataObject json) : base(json) { }
 
         public void AddHexColor(string name, string hex)
         {
@@ -47,25 +48,28 @@ namespace StreamGlass.Core.Controls
             return false;
         }
 
-        protected override void Save(ref JsonObject json)
+        protected override void Save(ref DataObject json)
         {
-            JsonObject obj = [];
+            DataObject obj = [];
             foreach (var color in m_Palette)
                 obj.Add(color.Key, m_Converter.ConvertToString(color.Value));
             json.Add("colors", obj);
             json.Add("type", (int)m_Type);
         }
 
-        protected override void Load(JsonObject json)
+        protected override void Load(DataObject json)
         {
             m_Type = json.GetOrDefault("type", Type.NONE);
-            if (json.TryGet("colors", out JsonObject? colors))
+            if (json.TryGet("colors", out DataObject? colors))
             {
                 foreach (var color in colors!)
                 {
-                    Brush? brush = (Brush?)m_Converter.ConvertFrom(color.Value.Cast<string>()!);
-                    if (brush != null)
-                        m_Palette[color.Key] = brush;
+                    if (DataHelper.Cast(color.Value, out string? colorToConvert) && colorToConvert != null)
+                    {
+                        Brush? brush = (Brush?)m_Converter.ConvertFrom(colorToConvert);
+                        if (brush != null)
+                            m_Palette[color.Key] = brush;
+                    }
                 }
             }
         }

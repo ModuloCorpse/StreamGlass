@@ -1,4 +1,5 @@
 ﻿using CorpseLib;
+using CorpseLib.DataNotation;
 using CorpseLib.Json;
 using StreamGlass.Core.Profile;
 
@@ -8,13 +9,13 @@ namespace StreamGlass.Core
     {
         public class ACanalManager(string type)
         {
-            private readonly Canal<JsonNode> m_JCanal = new();
+            private readonly Canal<DataNode> m_JCanal = new();
             private readonly string m_Type = type;
 
-            public Canal<JsonNode> JCanal => m_JCanal;
+            public Canal<DataNode> JCanal => m_JCanal;
             public string Type => m_Type;
 
-            protected void Emit(JsonNode node) => m_JCanal.Emit(node);
+            protected void Emit(DataNode node) => m_JCanal.Emit(node);
         }
 
         public class TriggerCanalManager(string type, Canal canal) : ACanalManager(type)
@@ -26,7 +27,7 @@ namespace StreamGlass.Core
             public void Trigger()
             {
                 m_Canal.Trigger();
-                Emit(new JsonNull());
+                Emit(new DataValue());
             }
         }
 
@@ -39,7 +40,7 @@ namespace StreamGlass.Core
             public void Emit(T? obj)
             {
                 m_Canal.Emit(obj);
-                Emit(JsonHelper.Cast(obj));
+                Emit(DataHelper.Cast(obj));
             }
         }
 
@@ -90,7 +91,7 @@ namespace StreamGlass.Core
                 canalManager is TriggerCanalManager triggerCanalManager)
                 triggerCanalManager.Canal.Register(action);
         }
-        public static void Register(string type, Action<JsonNode?> action)
+        public static void Register(string type, Action<DataNode?> action)
         {
             if (ms_Managers.TryGetValue(type, out ACanalManager? canalManager))
                 canalManager.JCanal.Register(action);
@@ -114,7 +115,7 @@ namespace StreamGlass.Core
                 triggerCanalManager.Canal.Unregister(action);
         }
 
-        public static void Unregister(string type, Action<JsonNode?> action)
+        public static void Unregister(string type, Action<DataNode?> action)
         {
             if (ms_Managers.TryGetValue(type, out ACanalManager? canalManager))
                 canalManager.JCanal.Unregister(action);

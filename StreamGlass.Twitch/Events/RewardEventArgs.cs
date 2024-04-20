@@ -1,14 +1,14 @@
 ﻿using CorpseLib;
-using CorpseLib.Json;
+using CorpseLib.DataNotation;
 using TwitchCorpse;
 
 namespace StreamGlass.Twitch.Events
 {
     public class RewardEventArgs(TwitchUser from, string reward, string input)
     {
-        public class JSerializer : AJsonSerializer<RewardEventArgs>
+        public class DataSerializer : ADataSerializer<RewardEventArgs>
         {
-            protected override OperationResult<RewardEventArgs> Deserialize(JsonObject reader)
+            protected override OperationResult<RewardEventArgs> Deserialize(DataObject reader)
             {
                 if (reader.TryGet("from", out TwitchUser? from) &&
                     reader.TryGet("reward", out string? reward) &&
@@ -17,7 +17,7 @@ namespace StreamGlass.Twitch.Events
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(RewardEventArgs obj, JsonObject writer)
+            protected override void Serialize(RewardEventArgs obj, DataObject writer)
             {
                 writer["from"] = obj.m_From;
                 writer["reward"] = obj.m_Reward;

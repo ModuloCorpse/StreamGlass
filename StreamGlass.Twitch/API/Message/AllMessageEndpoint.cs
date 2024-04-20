@@ -1,4 +1,5 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.DataNotation;
+using CorpseLib.Json;
 using CorpseLib.Web.API;
 using CorpseLib.Web.Http;
 using StreamGlass.Core;
@@ -23,8 +24,8 @@ namespace StreamGlass.Twitch.API.Message
                 while (messages.Count > 0 && keepPaging)
                 {
                     Twitch.Message message = messages.First();
-                    JsonObject node = (JsonObject)JsonHelper.Cast(message);
-                    long nodeLength = node.ToNetworkString().Length;
+                    DataObject node = (DataObject)DataHelper.Cast(message);
+                    long nodeLength = JsonParser.NetStr(node).Length;
                     if (length == 0 || length + nodeLength < 2000)
                     {
                         length += nodeLength;
@@ -44,12 +45,12 @@ namespace StreamGlass.Twitch.API.Message
                 }
             }
 
-            public JsonObject ToJObject()
+            public DataObject ToJObject()
             {
                 if (m_NextPage == null)
-                    return new JsonObject() { { "messages", m_Messages } };
+                    return new DataObject() { { "messages", m_Messages } };
                 else
-                    return new JsonObject() { { "messages", m_Messages }, { "page", m_NextPage.m_ID.ToString() } };
+                    return new DataObject() { { "messages", m_Messages }, { "page", m_NextPage.m_ID.ToString() } };
             }
         }
 
@@ -73,7 +74,7 @@ namespace StreamGlass.Twitch.API.Message
                 Guid guid = Guid.Parse(request.GetParameter("page"));
                 if (m_Pages.TryGetValue(guid, out Page? page))
                 {
-                    Response response = new(200, "Ok", page.ToJObject().ToNetworkString());
+                    Response response = new(200, "Ok", JsonParser.NetStr(page.ToJObject()));
                     m_Pages.Remove(guid);
                     return response;
                 }
@@ -83,7 +84,7 @@ namespace StreamGlass.Twitch.API.Message
             else
             {
                 Page page = new(this, new(m_Messages));
-                return new(200, "Ok", page.ToJObject().ToNetworkString());
+                return new(200, "Ok", JsonParser.NetStr(page.ToJObject()));
             }
         }
     }

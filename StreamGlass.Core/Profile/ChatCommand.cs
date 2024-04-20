@@ -1,4 +1,4 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.DataNotation;
 using CorpseLib.Placeholder;
 using System.Collections.ObjectModel;
 
@@ -35,7 +35,7 @@ namespace StreamGlass.Core.Profile
         public int AutoTriggerDeltaTime => m_AutoTriggerDeltaTime;
         public string[] AutoTriggerArguments => m_AutoTriggerArguments;
 
-        internal ChatCommand(JsonObject json)
+        internal ChatCommand(DataObject json)
         {
             m_Name = json.GetOrDefault("name", string.Empty)!;
             m_Aliases = [.. json.GetList<string>("aliases")];
@@ -77,9 +77,9 @@ namespace StreamGlass.Core.Profile
             Reset();
         }
 
-        internal JsonObject Serialize()
+        internal DataObject Serialize()
         {
-            JsonObject json = [];
+            DataObject json = [];
             if (!string.IsNullOrWhiteSpace(m_Name))
                 json.Add("name", m_Name);
             if (m_Aliases.Length > 0)

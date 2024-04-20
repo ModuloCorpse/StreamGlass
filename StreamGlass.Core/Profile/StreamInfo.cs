@@ -1,4 +1,4 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.DataNotation;
 
 namespace StreamGlass.Core.Profile
 {
@@ -25,7 +25,7 @@ namespace StreamGlass.Core.Profile
             m_StreamLanguage = language;
         }
 
-        internal void Save(ref JsonObject json)
+        internal void Save(ref DataObject json)
         {
             if (HaveStreamTitle())
                 json.Add("stream_title", m_StreamTitle);
@@ -40,7 +40,7 @@ namespace StreamGlass.Core.Profile
                 json.Add("stream_language", m_StreamLanguage);
         }
 
-        internal void Load(JsonObject json)
+        internal void Load(DataObject json)
         {
             m_StreamTitle = json.GetOrDefault("stream_title", string.Empty);
             m_StreamDescription = json.GetOrDefault("stream_description", string.Empty);

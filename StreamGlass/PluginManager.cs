@@ -1,4 +1,5 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.DataNotation;
+using CorpseLib.Json;
 using CorpseLib.Logging;
 using CorpseLib.Web.API;
 using StreamGlass.Core.Plugin;
@@ -197,7 +198,7 @@ namespace StreamGlass
                     if (File.Exists(jsonFile))
                     {
                         PluginLoader loader = new(pluginDirectory);
-                        JsonObject settings = JsonParser.LoadFromFile(jsonFile);
+                        DataObject settings = JsonParser.LoadFromFile(jsonFile);
                         List<string> dependencies = settings.GetList<string>("dependencies");
                         foreach (string dependency in dependencies)
                             loader.AddDependency(dependency);

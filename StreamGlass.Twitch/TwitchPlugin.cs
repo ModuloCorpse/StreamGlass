@@ -1,4 +1,5 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.DataNotation;
+using CorpseLib.Json;
 using CorpseLib.Translation;
 using CorpseLib.Web.API;
 using StreamGlass.Core;
@@ -100,24 +101,24 @@ namespace StreamGlass.Twitch
         {
             ms_PluginMetadata = Metadata.CreateNativeMetadata<TwitchPlugin>("StreamGlass.Twitch.dll");
 
-            JsonHelper.RegisterSerializer(new TwitchUser.JSerializer());
-            JsonHelper.RegisterSerializer(new TwitchBadgeInfo.JSerializer());
-            JsonHelper.RegisterSerializer(new BanEventArgs.JSerializer());
-            JsonHelper.RegisterSerializer(new DonationEventArgs.JSerializer());
-            JsonHelper.RegisterSerializer(new FollowEventArgs.JSerializer());
-            JsonHelper.RegisterSerializer(new GiftFollowEventArgs.JSerializer());
-            JsonHelper.RegisterSerializer(new MessageAllowedEventArgs.JSerializer());
-            JsonHelper.RegisterSerializer(new RaidEventArgs.JSerializer());
-            JsonHelper.RegisterSerializer(new RewardEventArgs.JSerializer());
-            JsonHelper.RegisterSerializer(new ShoutoutEventArgs.JSerializer());
-            JsonHelper.RegisterSerializer(new Message.JSerializer());
-            JsonHelper.RegisterSerializer(new VisualAlert.JSerializer());
+            DataHelper.RegisterSerializer(new TwitchUser.DataSerializer());
+            DataHelper.RegisterSerializer(new TwitchBadgeInfo.DataSerializer());
+            DataHelper.RegisterSerializer(new BanEventArgs.DataSerializer());
+            DataHelper.RegisterSerializer(new DonationEventArgs.DataSerializer());
+            DataHelper.RegisterSerializer(new FollowEventArgs.DataSerializer());
+            DataHelper.RegisterSerializer(new GiftFollowEventArgs.DataSerializer());
+            DataHelper.RegisterSerializer(new MessageAllowedEventArgs.DataSerializer());
+            DataHelper.RegisterSerializer(new RaidEventArgs.DataSerializer());
+            DataHelper.RegisterSerializer(new RewardEventArgs.DataSerializer());
+            DataHelper.RegisterSerializer(new ShoutoutEventArgs.DataSerializer());
+            DataHelper.RegisterSerializer(new Message.DataSerializer());
+            DataHelper.RegisterSerializer(new VisualAlert.DataSerializer());
 
-            JsonHelper.RegisterSerializer(new AlertSettings.JsonSerializer());
-            JsonHelper.RegisterSerializer(new Settings.AlertsSettings.JsonSerializer());
-            JsonHelper.RegisterSerializer(new Settings.ChatSettings.JsonSerializer());
-            JsonHelper.RegisterSerializer(new Settings.ModerationSettings.JsonSerializer());
-            JsonHelper.RegisterSerializer(new Settings.JsonSerializer());
+            DataHelper.RegisterSerializer(new AlertSettings.DataSerializer());
+            DataHelper.RegisterSerializer(new Settings.AlertsSettings.DataSerializer());
+            DataHelper.RegisterSerializer(new Settings.ChatSettings.DataSerializer());
+            DataHelper.RegisterSerializer(new Settings.ModerationSettings.DataSerializer());
+            DataHelper.RegisterSerializer(new Settings.DataSerializer());
         }
 
         private readonly Core m_Core = new();

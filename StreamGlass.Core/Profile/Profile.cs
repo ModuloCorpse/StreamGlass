@@ -1,6 +1,6 @@
 ﻿using CorpseLib.ManagedObject;
 using System.Collections.ObjectModel;
-using CorpseLib.Json;
+using CorpseLib.DataNotation;
 
 namespace StreamGlass.Core.Profile
 {
@@ -14,7 +14,7 @@ namespace StreamGlass.Core.Profile
 
         public Profile(string name) : base(name) {}
         public Profile(string id, string name) : base(id, name) {}
-        internal Profile(JsonObject json) : base(json) {}
+        internal Profile(DataObject json) : base(json) {}
 
         public ReadOnlyCollection<ChatCommand> Commands => m_Commands.AsReadOnly();
         public bool IsSelectable => m_IsSelectable;
@@ -137,9 +137,9 @@ namespace StreamGlass.Core.Profile
 
         internal void UpdateStreamInfo() => StreamGlassCanals.Emit(StreamGlassCanals.UPDATE_STREAM_INFO, new UpdateStreamInfoArgs(GetStreamTitleOrParent(), GetStreamDescriptionOrParent(), GetStreamCategoryOrParent(), GetStreamLanguageOrParent()));
 
-        protected override void Save(ref JsonObject json)
+        protected override void Save(ref DataObject json)
         {
-            List<JsonObject> chatCommandArray = [];
+            List<DataObject> chatCommandArray = [];
             foreach (var command in m_Commands)
                 chatCommandArray.Add(command.Serialize());
             json.Add("chat_commands", chatCommandArray);
@@ -147,10 +147,10 @@ namespace StreamGlass.Core.Profile
             m_StreamInfo.Save(ref json);
         }
 
-        protected override void Load(JsonObject json)
+        protected override void Load(DataObject json)
         {
             m_IsSelectable = json.GetOrDefault("is_selectable", true);
-            foreach (JsonObject obj in json.GetList<JsonObject>("chat_commands"))
+            foreach (DataObject obj in json.GetList<DataObject>("chat_commands"))
                 AddCommand(new(obj));
             m_StreamInfo.Load(json);
         }

@@ -1,14 +1,14 @@
 ﻿using CorpseLib;
-using CorpseLib.Json;
+using CorpseLib.DataNotation;
 using TwitchCorpse;
 
 namespace StreamGlass.Twitch.Events
 {
     public class RaidEventArgs(TwitchUser? from, TwitchUser? to, int nbViewers, bool isIncomming)
     {
-        public class JSerializer : AJsonSerializer<RaidEventArgs>
+        public class DataSerializer : ADataSerializer<RaidEventArgs>
         {
-            protected override OperationResult<RaidEventArgs> Deserialize(JsonObject reader)
+            protected override OperationResult<RaidEventArgs> Deserialize(DataObject reader)
             {
                 reader.TryGet("from", out TwitchUser? from);
                 reader.TryGet("to", out TwitchUser? to);
@@ -19,7 +19,7 @@ namespace StreamGlass.Twitch.Events
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(RaidEventArgs obj, JsonObject writer)
+            protected override void Serialize(RaidEventArgs obj, DataObject writer)
             {
                 writer["from"] = obj.m_From;
                 writer["to"] = obj.m_To;

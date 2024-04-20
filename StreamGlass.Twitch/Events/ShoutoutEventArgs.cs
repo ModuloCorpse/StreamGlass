@@ -1,14 +1,14 @@
 ﻿using CorpseLib;
-using CorpseLib.Json;
+using CorpseLib.DataNotation;
 using TwitchCorpse;
 
 namespace StreamGlass.Twitch.Events
 {
     public class ShoutoutEventArgs(TwitchUser moderator, TwitchUser user)
     {
-        public class JSerializer : AJsonSerializer<ShoutoutEventArgs>
+        public class DataSerializer : ADataSerializer<ShoutoutEventArgs>
         {
-            protected override OperationResult<ShoutoutEventArgs> Deserialize(JsonObject reader)
+            protected override OperationResult<ShoutoutEventArgs> Deserialize(DataObject reader)
             {
                 if (reader.TryGet("moderator", out TwitchUser? moderator) &&
                     reader.TryGet("user", out TwitchUser? user))
@@ -16,7 +16,7 @@ namespace StreamGlass.Twitch.Events
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(ShoutoutEventArgs obj, JsonObject writer)
+            protected override void Serialize(ShoutoutEventArgs obj, DataObject writer)
             {
                 writer["moderator"] = obj.m_Moderator;
                 writer["user"] = obj.m_User;

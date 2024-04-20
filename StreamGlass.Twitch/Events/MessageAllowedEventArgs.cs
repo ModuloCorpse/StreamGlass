@@ -1,14 +1,14 @@
 ﻿using CorpseLib;
-using CorpseLib.Json;
+using CorpseLib.DataNotation;
 using TwitchCorpse;
 
 namespace StreamGlass.Twitch.Events
 {
     public class MessageAllowedEventArgs(TwitchUser sender, string messageID, bool isAllowed)
     {
-        public class JSerializer : AJsonSerializer<MessageAllowedEventArgs>
+        public class DataSerializer : ADataSerializer<MessageAllowedEventArgs>
         {
-            protected override OperationResult<MessageAllowedEventArgs> Deserialize(JsonObject reader)
+            protected override OperationResult<MessageAllowedEventArgs> Deserialize(DataObject reader)
             {
                 if (reader.TryGet("sender", out TwitchUser? sender) &&
                     reader.TryGet("message_id", out string? messageID) &&
@@ -17,7 +17,7 @@ namespace StreamGlass.Twitch.Events
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(MessageAllowedEventArgs obj, JsonObject writer)
+            protected override void Serialize(MessageAllowedEventArgs obj, DataObject writer)
             {
                 writer["sender"] = obj.m_Sender;
                 writer["message_id"] = obj.m_MessageID;

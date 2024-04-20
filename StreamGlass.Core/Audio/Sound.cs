@@ -1,13 +1,13 @@
 ﻿using CorpseLib;
-using CorpseLib.Json;
+using CorpseLib.DataNotation;
 
 namespace StreamGlass.Core.Audio
 {
     public class Sound
     {
-        public class JsonSerializer : AJsonSerializer<Sound>
+        public class DataSerializer : ADataSerializer<Sound>
         {
-            protected override OperationResult<Sound> Deserialize(JsonObject reader)
+            protected override OperationResult<Sound> Deserialize(DataObject reader)
             {
                 if (reader.TryGet("file", out string? file) &&
                     reader.TryGet("output", out string? output))
@@ -15,7 +15,7 @@ namespace StreamGlass.Core.Audio
                 return new("Deserialization error", "Cannot deserialize Sound");
             }
 
-            protected override void Serialize(Sound obj, JsonObject writer)
+            protected override void Serialize(Sound obj, DataObject writer)
             {
                 writer["file"] = obj.m_File;
                 writer["output"] = obj.m_Output;

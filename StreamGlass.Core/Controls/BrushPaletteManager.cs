@@ -1,4 +1,4 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.DataNotation;
 using CorpseLib.ManagedObject;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows.Media;
@@ -40,6 +40,6 @@ namespace StreamGlass.Core.Controls
 
         public void SetCurrentPalette(string id) => SetCurrentObject(id);
 
-        protected override BrushPalette? DeserializeObject(JsonObject obj) => new(obj);
+        protected override BrushPalette? DeserializeObject(DataObject obj) => new(obj);
     }
 }

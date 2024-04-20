@@ -1,4 +1,5 @@
 ﻿using CorpseLib;
+using CorpseLib.DataNotation;
 using CorpseLib.Json;
 using CorpseLib.Web.API.Event;
 using CorpseLib.Web.Http;
@@ -20,12 +21,12 @@ namespace StreamGlass.API
             public bool UnregisterClient(string clientID) => m_RegisteredClients.Remove(clientID);
             public bool IsRegistered(string clientID) => m_RegisteredClients.Contains(clientID);
 
-            public void Emit(JsonObject eventData) => m_Manager.SendCustomEvent([.. m_RegisteredClients], "event", EventType, eventData);
+            public void Emit(DataObject eventData) => m_Manager.SendCustomEvent([.. m_RegisteredClients], "event", EventType, eventData);
         }
 
         private readonly Dictionary<string, CustomEventHandler> m_CustomEvents = [];
 
-        internal void SendCustomEvent(string[] ids, string type, string eventType, JsonObject data) => SendEvent(ids, type, new JsonObject() { { "event", eventType }, { "data", data } });
+        internal void SendCustomEvent(string[] ids, string type, string eventType, DataObject data) => SendEvent(ids, type, new DataObject() { { "event", eventType }, { "data", data } });
 
         protected override OperationResult OnRegisterToUnknownEvent(string id, string eventType)
         {
@@ -49,7 +50,7 @@ namespace StreamGlass.API
                 return new("Unknown event", string.Format("Unknown event {0}", eventType));
         }
 
-        public Response Emit(string eventType, JsonObject data)
+        public Response Emit(string eventType, DataObject data)
         {
             if (m_CustomEvents.TryGetValue(eventType, out CustomEventHandler? customEventHandler))
             {

@@ -1,4 +1,5 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.DataNotation;
+using CorpseLib.Json;
 using CorpseLib.Translation;
 using CorpseLib.Web.API.Event;
 using StreamGlass.API;
@@ -20,7 +21,7 @@ namespace StreamGlass
     {
         static Manager()
         {
-            JsonHelper.RegisterSerializer(new Settings.JsonSerializer());
+            DataHelper.RegisterSerializer(new Settings.DataSerializer());
         }
 
         private readonly CorpseLib.Web.API.API m_API = new(15007);
@@ -208,7 +209,7 @@ namespace StreamGlass
 
         public void Stop()
         {
-            JsonObject json = (JsonObject)JsonHelper.Cast(m_Settings);
+            DataObject json = (DataObject)DataHelper.Cast(m_Settings);
             StreamGlassContext.Delete(json);
             JsonParser.WriteToFile("settings.json", json);
             m_ProfileManager.Save();

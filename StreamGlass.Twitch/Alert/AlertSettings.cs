@@ -1,14 +1,14 @@
 ﻿using CorpseLib;
-using CorpseLib.Json;
+using CorpseLib.DataNotation;
 using StreamGlass.Core.Audio;
 
 namespace StreamGlass.Twitch.Alerts
 {
     public class AlertSettings(Sound? audio, string imgPath, string prefix, string chatMessage, bool isEnabled, bool haveChatMessage)
     {
-        public class JsonSerializer : AJsonSerializer<AlertSettings>
+        public class DataSerializer : ADataSerializer<AlertSettings>
         {
-            protected override OperationResult<AlertSettings> Deserialize(JsonObject reader)
+            protected override OperationResult<AlertSettings> Deserialize(DataObject reader)
             {
                 if (
                     reader.TryGet("img", out string? imgPath) &&
@@ -23,7 +23,7 @@ namespace StreamGlass.Twitch.Alerts
                 return new("Deserialization error", "Cannot deserialize AlertSettings");
             }
 
-            protected override void Serialize(AlertSettings obj, JsonObject writer)
+            protected override void Serialize(AlertSettings obj, DataObject writer)
             {
                 if (obj.m_Audio != null)
                     writer["sound"] = obj.m_Audio;

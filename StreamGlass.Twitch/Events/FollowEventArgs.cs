@@ -1,5 +1,5 @@
 ﻿using CorpseLib;
-using CorpseLib.Json;
+using CorpseLib.DataNotation;
 using CorpseLib.StructuredText;
 using TwitchCorpse;
 
@@ -7,9 +7,9 @@ namespace StreamGlass.Twitch.Events
 {
     public class FollowEventArgs(TwitchUser? user, Text message, int tier, int monthTotal, int monthStreak) : FollowEventArgsBase(user, message, tier)
     {
-        public class JSerializer : AJsonSerializer<FollowEventArgs>
+        public class DataSerializer : ADataSerializer<FollowEventArgs>
         {
-            protected override OperationResult<FollowEventArgs> Deserialize(JsonObject reader)
+            protected override OperationResult<FollowEventArgs> Deserialize(DataObject reader)
             {
                 if (reader.TryGet("message", out Text? message) &&
                     reader.TryGet("user", out TwitchUser? user) &&
@@ -20,7 +20,7 @@ namespace StreamGlass.Twitch.Events
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(FollowEventArgs obj, JsonObject writer)
+            protected override void Serialize(FollowEventArgs obj, DataObject writer)
             {
                 writer["message"] = obj.Message;
                 writer["user"] = obj.User;

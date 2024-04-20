@@ -1,13 +1,13 @@
-﻿using CorpseLib.Json;
-using CorpseLib;
+﻿using CorpseLib;
+using CorpseLib.DataNotation;
 
 namespace StreamGlass.Core.Profile
 {
     public class CategoryInfo(string id, string name)
     {
-        public class JSerializer : AJsonSerializer<CategoryInfo>
+        public class DataSerializer : ADataSerializer<CategoryInfo>
         {
-            protected override OperationResult<CategoryInfo> Deserialize(JsonObject reader)
+            protected override OperationResult<CategoryInfo> Deserialize(DataObject reader)
             {
                 if (reader.TryGet("id", out string? id) &&
                     reader.TryGet("name", out string? name))
@@ -15,7 +15,7 @@ namespace StreamGlass.Core.Profile
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(CategoryInfo obj, JsonObject writer)
+            protected override void Serialize(CategoryInfo obj, DataObject writer)
             {
                 writer["id"] = obj.m_ID;
                 writer["name"] = obj.m_Name;

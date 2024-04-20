@@ -1,4 +1,5 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.DataNotation;
+using CorpseLib.Json;
 using CorpseLib.Web;
 using CorpseLib.Web.API;
 using CorpseLib.Web.Http;
@@ -86,7 +87,7 @@ namespace StreamGlass.API.Overlay
             string jsonFile = System.IO.Path.GetFullPath(System.IO.Path.Combine(overlayDirectory, "overlay.json"));
             if (File.Exists(jsonFile))
             {
-                JsonObject settings = JsonParser.LoadFromFile(jsonFile);
+                DataObject settings = JsonParser.LoadFromFile(jsonFile);
                 overlay = new(settings.GetOrDefault("root", overlayDirectory), settings.GetOrDefault("index", "index.html"));
             }
             else

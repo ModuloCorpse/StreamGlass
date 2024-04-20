@@ -1,4 +1,5 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.DataNotation;
+using CorpseLib.Json;
 using CorpseLib.Placeholder;
 
 namespace StreamGlass.Core.Stat
@@ -53,17 +54,17 @@ namespace StreamGlass.Core.Stat
 
         public void Load()
         {
-            JsonObject json = JsonParser.LoadFromFile("settings.json");
-            if (json.TryGet("sources", out JsonObject? statsObj))
+            DataObject json = JsonParser.LoadFromFile("settings.json");
+            if (json.TryGet("sources", out DataObject? statsObj))
             {
                 foreach (var pair in statsObj!)
                 {
-                    if (pair.Value is JsonValue value && value.Value is string str)
+                    if (pair.Value is DataValue value && value.Value is string str)
                         AddStringSource(new(pair.Key, str));
                 }
             }
-            List<JsonObject> aggregators = json.GetList<JsonObject>("aggregators");
-            foreach (JsonObject aggregatorData in aggregators)
+            List<DataObject> aggregators = json.GetList<DataObject>("aggregators");
+            foreach (DataObject aggregatorData in aggregators)
             {
                 if (aggregatorData.TryGet("type", out string? type))
                 {
@@ -79,21 +80,21 @@ namespace StreamGlass.Core.Stat
             }
         }
 
-        public void SaveTo(JsonObject json)
+        public void SaveTo(DataObject json)
         {
-            JsonObject statsObj = [];
+            DataObject statsObj = [];
             foreach (StringSource stringSource in m_StringSources.Values)
             {
                 if (stringSource.HasValue)
                     statsObj[stringSource.Name] = stringSource.Value;
             }
             json["sources"] = statsObj;
-            List<JsonObject> aggregators = [];
+            List<DataObject> aggregators = [];
             foreach (var pair in m_Aggregators)
             {
                 foreach (StringSourceAggregator aggregator in pair.Value)
                 {
-                    JsonObject aggregatorObj = new() { { "type", pair.Key } };
+                    DataObject aggregatorObj = new() { { "type", pair.Key } };
                     aggregator.Save(aggregatorObj);
                     aggregators.Add(aggregatorObj);
                 }

@@ -1,4 +1,4 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.DataNotation;
 using CorpseLib.Logging;
 using CorpseLib.Placeholder;
 using CorpseLib.StructuredText;
@@ -31,13 +31,13 @@ namespace StreamGlass.Core
 
         public static void Init()
         {
-            JsonHelper.RegisterSerializer(new Text.JSerializer());
-            JsonHelper.RegisterSerializer(new Section.SectionJsonSerializer());
-            JsonHelper.RegisterSerializer(new UserMessage.JSerializer());
-            JsonHelper.RegisterSerializer(new ProfileCommandEventArgs.JSerializer());
-            JsonHelper.RegisterSerializer(new CategoryInfo.JSerializer());
-            JsonHelper.RegisterSerializer(new UpdateStreamInfoArgs.JSerializer());
-            JsonHelper.RegisterSerializer(new Sound.JsonSerializer());
+            DataHelper.RegisterSerializer(new Text.DataSerializer());
+            DataHelper.RegisterSerializer(new Section.DataSerializer());
+            DataHelper.RegisterSerializer(new UserMessage.DataSerializer());
+            DataHelper.RegisterSerializer(new ProfileCommandEventArgs.DataSerializer());
+            DataHelper.RegisterSerializer(new CategoryInfo.DataSerializer());
+            DataHelper.RegisterSerializer(new UpdateStreamInfoArgs.DataSerializer());
+            DataHelper.RegisterSerializer(new Sound.DataSerializer());
         }
 
         public static void AfterPluginInit()
@@ -45,7 +45,7 @@ namespace StreamGlass.Core
             ms_StringSources.Load();
         }
 
-        public static void Delete(JsonObject json)
+        public static void Delete(DataObject json)
         {
             ms_StringSources.SaveTo(json);
         }

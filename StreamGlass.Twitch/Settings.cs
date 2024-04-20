@@ -1,4 +1,5 @@
 ﻿using CorpseLib;
+using CorpseLib.DataNotation;
 using CorpseLib.Json;
 using StreamGlass.Core.Controls;
 using StreamGlass.Twitch.Alerts;
@@ -10,9 +11,9 @@ namespace StreamGlass.Twitch
     {
         public class ChatSettings
         {
-            public class JsonSerializer : AJsonSerializer<ChatSettings>
+            public class DataSerializer : ADataSerializer<ChatSettings>
             {
-                protected override OperationResult<ChatSettings> Deserialize(JsonObject reader)
+                protected override OperationResult<ChatSettings> Deserialize(DataObject reader)
                 {
                     ChatSettings chatSettings = new();
                     if (reader.TryGet("display", out ScrollPanelDisplayType display))
@@ -22,7 +23,7 @@ namespace StreamGlass.Twitch
                     return new(chatSettings);
                 }
 
-                protected override void Serialize(ChatSettings obj, JsonObject writer)
+                protected override void Serialize(ChatSettings obj, DataObject writer)
                 {
                     writer["display"] = obj.DisplayType;
                     writer["font"] = obj.MessageFontSize;
@@ -35,9 +36,9 @@ namespace StreamGlass.Twitch
 
         public class AlertsSettings
         {
-            public class JsonSerializer : AJsonSerializer<AlertsSettings>
+            public class DataSerializer : ADataSerializer<AlertsSettings>
             {
-                protected override OperationResult<AlertsSettings> Deserialize(JsonObject reader)
+                protected override OperationResult<AlertsSettings> Deserialize(DataObject reader)
                 {
                     AlertsSettings alertsSettings = new();
                     if (reader.TryGet("display", out ScrollPanelDisplayType display))
@@ -50,7 +51,7 @@ namespace StreamGlass.Twitch
                     return new(alertsSettings);
                 }
 
-                protected override void Serialize(AlertsSettings obj, JsonObject writer)
+                protected override void Serialize(AlertsSettings obj, DataObject writer)
                 {
                     writer["display"] = obj.DisplayType;
                     writer["font"] = obj.MessageFontSize;
@@ -81,9 +82,9 @@ namespace StreamGlass.Twitch
 
         public class ModerationSettings
         {
-            public class JsonSerializer : AJsonSerializer<ModerationSettings>
+            public class DataSerializer : ADataSerializer<ModerationSettings>
             {
-                protected override OperationResult<ModerationSettings> Deserialize(JsonObject reader)
+                protected override OperationResult<ModerationSettings> Deserialize(DataObject reader)
                 {
                     ModerationSettings moderationSettings = new();
                     if (reader.TryGet("display", out ScrollPanelDisplayType display))
@@ -93,7 +94,7 @@ namespace StreamGlass.Twitch
                     return new(moderationSettings);
                 }
 
-                protected override void Serialize(ModerationSettings obj, JsonObject writer)
+                protected override void Serialize(ModerationSettings obj, DataObject writer)
                 {
                     writer["display"] = obj.DisplayType;
                     writer["font"] = obj.MessageFontSize;
@@ -104,9 +105,9 @@ namespace StreamGlass.Twitch
             public double MessageFontSize = 14;
         }
 
-        public class JsonSerializer : AJsonSerializer<Settings>
+        public class DataSerializer : ADataSerializer<Settings>
         {
-            protected override OperationResult<Settings> Deserialize(JsonObject reader)
+            protected override OperationResult<Settings> Deserialize(DataObject reader)
             {
                 Settings settings = new();
                 if (reader.TryGet("auto_connect", out bool? autoConnect))
@@ -132,7 +133,7 @@ namespace StreamGlass.Twitch
                 return new(settings);
             }
 
-            protected override void Serialize(Settings obj, JsonObject writer)
+            protected override void Serialize(Settings obj, DataObject writer)
             {
                 writer["auto_connect"] = obj.AutoConnect;
                 writer["do_welcome"] = obj.DoWelcome;

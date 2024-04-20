@@ -1,4 +1,4 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.DataNotation;
 using System.IO;
 
 namespace StreamGlass.Core.Stat
@@ -17,12 +17,12 @@ namespace StreamGlass.Core.Stat
             m_Path = other.m_Path;
         }
 
-        protected override void OnSave(JsonObject json)
+        protected override void OnSave(DataObject json)
         {
             json["path"] = m_Path;
         }
 
-        protected override void OnLoad(JsonObject json)
+        protected override void OnLoad(DataObject json)
         {
             if (json.TryGet("path", out string? path))
                 m_Path = path!;

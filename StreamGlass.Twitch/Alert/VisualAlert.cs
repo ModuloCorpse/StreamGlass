@@ -1,14 +1,14 @@
 ﻿using CorpseLib;
-using CorpseLib.Json;
+using CorpseLib.DataNotation;
 using CorpseLib.StructuredText;
 
 namespace StreamGlass.Twitch.Alerts
 {
     public class VisualAlert(string imagePath, Text displayableMessage)
     {
-        public class JSerializer : AJsonSerializer<VisualAlert>
+        public class DataSerializer : ADataSerializer<VisualAlert>
         {
-            protected override OperationResult<VisualAlert> Deserialize(JsonObject reader)
+            protected override OperationResult<VisualAlert> Deserialize(DataObject reader)
             {
                 if (reader.TryGet("text", out Text? text) &&
                     reader.TryGet("image", out string? image))
@@ -16,7 +16,7 @@ namespace StreamGlass.Twitch.Alerts
                 return new("Bad json", string.Empty);
             }
 
-            protected override void Serialize(VisualAlert obj, JsonObject writer)
+            protected override void Serialize(VisualAlert obj, DataObject writer)
             {
                 writer["text"] = obj.m_Message;
                 writer["image"] = obj.m_ImagePath;

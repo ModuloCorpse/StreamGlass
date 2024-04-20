@@ -1,4 +1,4 @@
-﻿using CorpseLib.Json;
+﻿using CorpseLib.DataNotation;
 using CorpseLib.Placeholder;
 
 namespace StreamGlass.Core.Stat
@@ -35,7 +35,7 @@ namespace StreamGlass.Core.Stat
             }
         }
 
-        internal void Save(JsonObject json)
+        internal void Save(DataObject json)
         {
             OnSave(json);
             json["sources"] = Sources;
@@ -43,7 +43,7 @@ namespace StreamGlass.Core.Stat
                 json["content"] = m_Content;
         }
 
-        internal void Load(JsonObject json)
+        internal void Load(DataObject json)
         {
             List<string> sources = json.GetList<string>("sources");
             foreach (string source in sources)
@@ -53,8 +53,8 @@ namespace StreamGlass.Core.Stat
             OnLoad(json);
         }
 
-        protected abstract void OnSave(JsonObject json);
-        protected abstract void OnLoad(JsonObject json);
+        protected abstract void OnSave(DataObject json);
+        protected abstract void OnLoad(DataObject json);
         protected abstract string GetAggregatorType();
         protected abstract void OnAggregate(string text);
     }
