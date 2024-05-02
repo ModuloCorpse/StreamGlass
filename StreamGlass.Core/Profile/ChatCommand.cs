@@ -35,20 +35,20 @@ namespace StreamGlass.Core.Profile
         public int AutoTriggerDeltaTime => m_AutoTriggerDeltaTime;
         public string[] AutoTriggerArguments => m_AutoTriggerArguments;
 
-        internal ChatCommand(DataObject json)
+        internal ChatCommand(DataObject obj)
         {
-            m_Name = json.GetOrDefault("name", string.Empty)!;
-            m_Aliases = [.. json.GetList<string>("aliases")];
-            m_AwaitTime = json.GetOrDefault("time", 0);
-            m_NbMessage = json.GetOrDefault("messages", 0);
-            m_Content = json.GetOrDefault("content", string.Empty)!;
-            m_UserType = json.GetOrDefault("user", uint.MaxValue);
-            m_Commands = json.GetList<string>("commands");
+            m_Name = obj.GetOrDefault("name", string.Empty)!;
+            m_Aliases = [.. obj.GetList<string>("aliases")];
+            m_AwaitTime = obj.GetOrDefault("time", 0);
+            m_NbMessage = obj.GetOrDefault("messages", 0);
+            m_Content = obj.GetOrDefault("content", string.Empty)!;
+            m_UserType = obj.GetOrDefault("user", uint.MaxValue);
+            m_Commands = obj.GetList<string>("commands");
             //AutoTrigger
-            m_AutoTrigger = json.GetOrDefault("auto_trigger", false);
-            m_AutoTriggerTime = json.GetOrDefault("auto_trigger_time", 0);
-            m_AutoTriggerDeltaTime = json.GetOrDefault("auto_trigger_delta_time", 0);
-            m_AutoTriggerArguments = [.. json.GetList<string>("auto_trigger_argv")];
+            m_AutoTrigger = obj.GetOrDefault("auto_trigger", false);
+            m_AutoTriggerTime = obj.GetOrDefault("auto_trigger_time", 0);
+            m_AutoTriggerDeltaTime = obj.GetOrDefault("auto_trigger_delta_time", 0);
+            m_AutoTriggerArguments = [.. obj.GetList<string>("auto_trigger_argv")];
         }
 
         public ChatCommand(string name,
@@ -79,31 +79,31 @@ namespace StreamGlass.Core.Profile
 
         internal DataObject Serialize()
         {
-            DataObject json = [];
+            DataObject obj = [];
             if (!string.IsNullOrWhiteSpace(m_Name))
-                json.Add("name", m_Name);
+                obj.Add("name", m_Name);
             if (m_Aliases.Length > 0)
-                json.Add("aliases", m_Aliases);
+                obj.Add("aliases", m_Aliases);
             if (m_AwaitTime != 0)
-                json.Add("time", m_AwaitTime);
+                obj.Add("time", m_AwaitTime);
             if (m_NbMessage != 0)
-                json.Add("messages", m_NbMessage);
+                obj.Add("messages", m_NbMessage);
             if (!string.IsNullOrWhiteSpace(m_Content))
-                json.Add("content", m_Content);
+                obj.Add("content", m_Content);
             if (m_UserType != uint.MaxValue)
-                json.Add("user", m_UserType);
+                obj.Add("user", m_UserType);
             if (m_Commands.Count != 0)
-                json.Add("commands", m_Commands);
+                obj.Add("commands", m_Commands);
             //AutoTrigger
             if (m_AutoTrigger)
-                json.Add("auto_trigger", m_AutoTrigger);
+                obj.Add("auto_trigger", m_AutoTrigger);
             if (m_AutoTriggerTime != 0)
-                json.Add("auto_trigger_time", m_AutoTriggerTime);
+                obj.Add("auto_trigger_time", m_AutoTriggerTime);
             if (m_AutoTriggerDeltaTime != 0)
-                json.Add("auto_trigger_delta_time", m_AutoTriggerDeltaTime);
+                obj.Add("auto_trigger_delta_time", m_AutoTriggerDeltaTime);
             if (m_AutoTriggerArguments.Length != 0)
-                json.Add("auto_trigger_argv", m_AutoTriggerArguments);
-            return json;
+                obj.Add("auto_trigger_argv", m_AutoTriggerArguments);
+            return obj;
         }
 
         private void RandomizeDeltaTime()

@@ -285,7 +285,7 @@ namespace StreamGlass.Twitch
         private void InitActions()
         {
             //TODO Add API actions
-            StreamGlassActions.AddAction(new TwitchAd(m_Core), true, true, true);
+            StreamGlassActions.AddAction(new TwitchAd(m_Core));
         }
 
         private static void InitCanals()

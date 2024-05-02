@@ -7,10 +7,14 @@ namespace StreamGlass.Core.Stat
     {
         private readonly HashSet<string> m_Sources = [];
         private string m_Content = string.Empty;
+        private bool m_CanSave = true;
 
         internal string[] Sources => [.. m_Sources];
         internal string Content => m_Content;
         internal string AggregatorType => GetAggregatorType();
+        internal bool CanSave => m_CanSave;
+
+        public void MakeUnsavable() => m_CanSave = false;
 
         protected void Copy(StringSourceAggregator other)
         {

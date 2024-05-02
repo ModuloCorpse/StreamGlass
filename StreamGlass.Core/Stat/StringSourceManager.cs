@@ -35,7 +35,19 @@ namespace StreamGlass.Core.Stat
             return [];
         }
 
-        public StringSourceAggregator? NewAggregator(string type) => (m_AggregatorTypes.TryGetValue(type, out AggregatorMaker? maker)) ? maker() : null;
+        public void NewAggregator(string type, DataObject data, bool unsavable)
+        {
+            if (m_AggregatorTypes.TryGetValue(type, out AggregatorMaker? maker))
+            {
+                StringSourceAggregator aggregator = maker();
+                aggregator.Load(data);
+                if (unsavable)
+                    aggregator.MakeUnsavable();
+                aggregator.Aggregate();
+                if (m_Aggregators.TryGetValue(aggregator.AggregatorType, out var aggregatorList))
+                    aggregatorList.Add(aggregator);
+            }
+        }
 
         public void Add(StringSourceAggregator aggregator)
         {
@@ -66,17 +78,8 @@ namespace StreamGlass.Core.Stat
             List<DataObject> aggregators = json.GetList<DataObject>("aggregators");
             foreach (DataObject aggregatorData in aggregators)
             {
-                if (aggregatorData.TryGet("type", out string? type))
-                {
-                    StringSourceAggregator? aggregator = NewAggregator(type!);
-                    if (aggregator != null)
-                    {
-                        aggregator.Load(aggregatorData);
-                        aggregator.Aggregate();
-                        if (m_Aggregators.TryGetValue(aggregator.AggregatorType, out var aggregatorList))
-                            aggregatorList.Add(aggregator);
-                    }
-                }
+                if (aggregatorData.TryGet("type", out string? type) && type != null)
+                    NewAggregator(type, aggregatorData, false);
             }
         }
 
@@ -94,9 +97,12 @@ namespace StreamGlass.Core.Stat
             {
                 foreach (StringSourceAggregator aggregator in pair.Value)
                 {
-                    DataObject aggregatorObj = new() { { "type", pair.Key } };
-                    aggregator.Save(aggregatorObj);
-                    aggregators.Add(aggregatorObj);
+                    if (aggregator.CanSave)
+                    {
+                        DataObject aggregatorObj = new() { { "type", pair.Key } };
+                        aggregator.Save(aggregatorObj);
+                        aggregators.Add(aggregatorObj);
+                    }
                 }
             }
             json["aggregators"] = aggregators;

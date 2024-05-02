@@ -28,6 +28,7 @@ namespace StreamGlass.Core
         public static void CreateStringSource(string source) => ms_StringSources.CreateStringSource(source);
         public static void UpdateStringSource(string source, string value) => ms_StringSources.UpdateStringSource(source, value);
         public static string GetStringSource(string source, string defaultValue) => ms_StringSources.GetOr(source, defaultValue);
+        public static void NewAggregator(string type, DataObject data) => ms_StringSources.NewAggregator(type, data, true);
 
         public static void Init()
         {

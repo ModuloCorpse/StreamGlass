@@ -1,11 +1,14 @@
-﻿namespace StreamGlass.Core.Plugin
+﻿
+namespace StreamGlass.Core.Plugin
 {
     public abstract class APlugin(string name) : IPlugin
     {
         private Metadata? m_Metadata = null;
         private readonly string m_Name = name;
 
+        public Metadata? Metadata => m_Metadata;
         public string Name => m_Name;
+        public bool Enable => m_Metadata?.Enable ?? true;
 
         public void InitMetadata(Metadata metadata) => m_Metadata = metadata;
 
@@ -22,5 +25,7 @@
 
         public void UnregisterPlugin() => OnUnload();
         protected abstract void OnUnload();
+
+        public void SetEnable(bool enable) => m_Metadata?.SetEnable(enable);
     }
 }

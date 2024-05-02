@@ -7,7 +7,12 @@ namespace StreamGlass.Core
     {
         private static readonly CLI ms_CLI = new();
 
-        public static bool AddCommand(Command command) => ms_CLI.AddCommand(command);
+        static StreamGlassCLI()
+        {
+            ms_CLI.Add(new HelpCommand("Help", ms_CLI));
+        }
+
+        public static bool AddCommand(Command command) => ms_CLI.Add(command);
 
         public static string ExecuteCommand(string command)
         {

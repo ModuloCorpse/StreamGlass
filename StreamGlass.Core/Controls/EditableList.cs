@@ -1,9 +1,7 @@
 ﻿using CorpseLib;
-using CorpseLib.Wpf;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media.Imaging;
 
 namespace StreamGlass.Core.Controls
 {

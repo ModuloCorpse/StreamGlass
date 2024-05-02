@@ -24,6 +24,9 @@ namespace StreamGlass
             private readonly List<string> m_DependenciesPath = [];
             private readonly List<string> m_PluginsPath = [];
             private readonly string m_PluginRoot = root;
+            private bool m_Enable = true;
+
+            public void SetEnable(bool enable) => m_Enable = enable;
 
             public void AddDependency(string dependency)
             {
@@ -68,7 +71,11 @@ namespace StreamGlass
                         foreach (Type type in dllAssembly.GetExportedTypes())
                         {
                             if (type.IsAssignableTo(typeof(APlugin)))
-                                pluginMetadatas.Add(new(type, m_PluginRoot, Path.GetFileName(file), File.GetLastWriteTime(file)));
+                            {
+                                Metadata metadata = new(type, m_PluginRoot, Path.GetFileName(file), File.GetLastWriteTime(file));
+                                metadata.SetEnable(m_Enable);
+                                pluginMetadatas.Add(metadata);
+                            }
                         }
                     }
                     catch (BadImageFormatException) { } //The file is not an assembly
@@ -98,10 +105,11 @@ namespace StreamGlass
         [GeneratedRegex(@"^[0-9a-zA-Z-_]+$", RegexOptions.IgnoreCase, "fr-FR")]
         private static partial Regex PluginNameRegex();
         private readonly List<APlugin> m_Plugins = [];
+        private readonly List<APlugin> m_ActivePlugins = [];
 
         public void RegisterToAPI(CorpseLib.Web.API.API api)
         {
-            foreach (APlugin plugin in m_Plugins)
+            foreach (APlugin plugin in m_ActivePlugins)
             {
                 if (plugin is IAPIPlugin apiPlugin)
                 {
@@ -124,7 +132,7 @@ namespace StreamGlass
 
         public void FillSettings(Dialog settingsDialog)
         {
-            foreach (APlugin plugin in m_Plugins)
+            foreach (APlugin plugin in m_ActivePlugins)
             {
                 if (plugin is ISettingsPlugin settingsPlugin)
                 {
@@ -137,7 +145,7 @@ namespace StreamGlass
 
         public void Update(long deltaTime)
         {
-            foreach (APlugin plugin in m_Plugins)
+            foreach (APlugin plugin in m_ActivePlugins)
             {
                 if (plugin is IUpdatablePlugin updatablePlugin)
                     updatablePlugin.Update(deltaTime);
@@ -146,7 +154,7 @@ namespace StreamGlass
 
         public void Test()
         {
-            foreach (APlugin plugin in m_Plugins)
+            foreach (APlugin plugin in m_ActivePlugins)
             {
                 if (plugin is ITestablePlugin testablePlugin)
                     testablePlugin.Test();
@@ -160,6 +168,8 @@ namespace StreamGlass
                 plugin.InitMetadata(metadata);
                 plugin.RegisterPlugin();
                 m_Plugins.Add(plugin);
+                if (plugin.Enable)
+                    m_ActivePlugins.Add(plugin);
                 PLUGIN_LOGGER.Log(string.Format("Plugin loaded {0}", plugin.Name));
             }
         }
@@ -194,11 +204,12 @@ namespace StreamGlass
                 foreach (string directory in directories)
                 {
                     string pluginDirectory = (directory[^1] == '/') ? directory : string.Format("{0}/", directory);
-                    string jsonFile = Path.GetFullPath(Path.Combine(pluginDirectory, "plugin.json"));
-                    if (File.Exists(jsonFile))
+                    string metadataFile = Path.GetFullPath(Path.Combine(pluginDirectory, "plugin.json"));
+                    if (File.Exists(metadataFile))
                     {
                         PluginLoader loader = new(pluginDirectory);
-                        DataObject settings = JsonParser.LoadFromFile(jsonFile);
+                        DataObject settings = JsonParser.LoadFromFile(metadataFile);
+                        loader.SetEnable(settings.GetOrDefault("enable", true));
                         List<string> dependencies = settings.GetList<string>("dependencies");
                         foreach (string dependency in dependencies)
                             loader.AddDependency(dependency);
@@ -229,22 +240,53 @@ namespace StreamGlass
             }
         }
 
+        private void SetEnablePlugin(APlugin plugin, bool enable)
+        {
+            if (!plugin.Metadata!.Native && enable != plugin.Enable)
+            {
+                plugin.SetEnable(enable);
+                if (enable)
+                {
+                    plugin.RegisterPlugin();
+                    plugin.Init();
+                    m_ActivePlugins.Add(plugin);
+                }
+                else
+                {
+                    plugin.UnregisterPlugin();
+                    m_ActivePlugins.Remove(plugin);
+                }
+            }
+        }
+
         public void Clear()
         {
-            foreach (APlugin plugin in m_Plugins)
+            foreach (APlugin plugin in m_ActivePlugins)
                 plugin.UnregisterPlugin();
+            m_ActivePlugins.Clear();
+            foreach (APlugin plugin in m_Plugins)
+            {
+                Metadata metadata = plugin.Metadata!;
+                if (!metadata.Native)
+                {
+                    string metadataFilePath = Path.GetFullPath(Path.Combine(metadata.Directory, "plugin.json"));
+                    DataObject settings = JsonParser.LoadFromFile(metadataFilePath);
+                    settings["enable"] = metadata.Enable;
+                    JsonParser.WriteToFile(metadataFilePath, settings);
+                }
+            }
             m_Plugins.Clear();
         }
 
         public void InitPlugins()
         {
-            foreach (APlugin plugin in m_Plugins)
+            foreach (APlugin plugin in m_ActivePlugins)
                 plugin.Init();
         }
 
         public Control? GetPanel(string panelID)
         {
-            foreach (APlugin plugin in m_Plugins)
+            foreach (APlugin plugin in m_ActivePlugins)
             {
                 if (plugin is IPanelPlugin panelPlugin)
                 {

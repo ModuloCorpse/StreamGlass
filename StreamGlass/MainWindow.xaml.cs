@@ -4,7 +4,6 @@ using StreamGlass.Core.Controls;
 using StreamGlass.Core.Profile;
 using StreamGlass.Core.Stat;
 using StreamGlass.StreamChat;
-using StreamGlass.Twitch;
 using System;
 using System.Windows;
 

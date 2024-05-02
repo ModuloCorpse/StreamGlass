@@ -34,8 +34,8 @@ namespace StreamGlass.Twitch
             WelcomeMessageTextBox.Text = m_Setting.WelcomeMessage;
 
             TwitchSubModeComboBox.Items.Clear();
-            TwitchSubModeComboBox.Items.Add("Claimed");
-            TwitchSubModeComboBox.Items.Add("All");
+            TwitchSubModeComboBox.Items.Add(TwitchPlugin.TranslationKeys.SETTINGS_TWITCH_SUB_MODE_CLAIMED.ToString());
+            TwitchSubModeComboBox.Items.Add(TwitchPlugin.TranslationKeys.SETTINGS_TWITCH_SUB_MODE_ALL.ToString());
             if (m_Setting.SubMode == "claimed")
                 TwitchSubModeComboBox.SelectedIndex = 0;
             else
