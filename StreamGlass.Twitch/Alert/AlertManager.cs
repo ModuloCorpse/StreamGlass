@@ -26,6 +26,7 @@ namespace StreamGlass.Twitch.Alerts
             public static readonly string PRIME = "prime";
             public static readonly string SHOUTOUT = "shoutout";
             public static readonly string BEING_SHOUTOUT = "being_shoutout";
+            public static readonly string CHAT_MESSAGE = "chat_message";
         }
 
         private readonly Dictionary<string, Alert> m_Alerts = [];
@@ -48,6 +49,7 @@ namespace StreamGlass.Twitch.Alerts
             NewAlert(KnownAlerts.PRIME, TwitchPlugin.TranslationKeys.ALERT_NAME_PRIME);
             NewAlert(KnownAlerts.SHOUTOUT, TwitchPlugin.TranslationKeys.ALERT_NAME_SHOUTOUT);
             NewAlert(KnownAlerts.BEING_SHOUTOUT, TwitchPlugin.TranslationKeys.ALERT_NAME_BEING_SHOUTOUT);
+            NewAlert(KnownAlerts.CHAT_MESSAGE, TwitchPlugin.TranslationKeys.ALERT_NAME_CHAT_MESSAGE);
         }
 
         public void Init()
@@ -59,6 +61,7 @@ namespace StreamGlass.Twitch.Alerts
             StreamGlassCanals.Register<RewardEventArgs>(TwitchPlugin.Canals.REWARD, OnReward);
             StreamGlassCanals.Register<ShoutoutEventArgs>(TwitchPlugin.Canals.SHOUTOUT, OnShoutout);
             StreamGlassCanals.Register<TwitchUser>(TwitchPlugin.Canals.BEING_SHOUTOUT, OnBeingShoutout);
+            StreamGlassCanals.Register<Message>(TwitchPlugin.Canals.CHAT_MESSAGE, OnMessage);
         }
 
         private void NewAlert(string alertID, TranslationKey translationKey) => m_Alerts[alertID] = new Alert(translationKey, alertID);
@@ -77,19 +80,21 @@ namespace StreamGlass.Twitch.Alerts
                 AlertSettings alertSettings = alert.Settings;
                 if (alertSettings.IsEnabled)
                 {
-                    StreamGlassContext context = new();
-                    context.AddVariable("e", e);
-                    string alertPrefix = Converter.Convert(alertSettings.Prefix, context);
-                    Text alertMessage = new(alertPrefix);
-                    if (message != null && !message.IsEmpty)
+                    if (alertID != KnownAlerts.CHAT_MESSAGE)
                     {
-                        alertMessage.AddText(": ");
-                        alertMessage.Append(message);
+                        StreamGlassContext context = new();
+                        context.AddVariable("e", e);
+                        string alertPrefix = Converter.Convert(alertSettings.Prefix, context);
+                        Text alertMessage = new(alertPrefix);
+                        if (message != null && !message.IsEmpty)
+                        {
+                            alertMessage.AddText(": ");
+                            alertMessage.Append(message);
+                        }
+                        StreamGlassCanals.Emit<VisualAlert>(TwitchPlugin.Canals.ALERT, new(alertSettings.ImgPath, alertMessage));
+                        if (alertSettings.HaveChatMessage)
+                            StreamGlassCanals.Emit(StreamGlassCanals.SEND_MESSAGE, Converter.Convert(alertSettings.ChatMessage, context));
                     }
-                    StreamGlassCanals.Emit<VisualAlert>(TwitchPlugin.Canals.ALERT, new(alertSettings.ImgPath, alertMessage));
-                    if (alertSettings.HaveChatMessage)
-                        StreamGlassCanals.Emit(StreamGlassCanals.SEND_MESSAGE, Converter.Convert(alertSettings.ChatMessage, context));
-
                     if (alertSettings.Audio != null)
                         SoundManager.PlaySound(alertSettings.Audio);
                 }
@@ -150,6 +155,14 @@ namespace StreamGlass.Twitch.Alerts
         {
             StreamGlassContext.LOGGER.Log("New received shoutout alert");
             TriggerAlert(KnownAlerts.BEING_SHOUTOUT, obj!);
+        }
+
+        private void OnMessage(Message? message)
+        {
+            if (message == null)
+                return;
+            if (message.Sender.UserType < TwitchUser.Type.BROADCASTER)
+                TriggerAlert(KnownAlerts.CHAT_MESSAGE, message);
         }
     }
 }

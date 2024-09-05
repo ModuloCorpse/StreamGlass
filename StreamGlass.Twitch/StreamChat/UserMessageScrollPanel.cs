@@ -1,5 +1,6 @@
 ﻿using StreamGlass.Core;
 using StreamGlass.Core.Controls;
+using System.Windows.Forms;
 
 namespace StreamGlass.Twitch.StreamChat
 {
@@ -42,11 +43,17 @@ namespace StreamGlass.Twitch.StreamChat
 
             Dispatcher.Invoke(() =>
             {
-                Message chatMessage = new(this,
-                message,
-                m_MessageContentFontSize,
-                m_ChatHighlightedUsers.Contains(message.UserID),
-                m_ShowBadges);
+                Twitch.Message? reply = null;
+                if (!string.IsNullOrEmpty(message.ReplyID))
+                {
+                    foreach (Message replyMessage in Controls)
+                    {
+                        if (replyMessage.ID == message.ReplyID)
+                            reply = replyMessage.TwitchMessage;
+                    }
+                }
+
+                Message chatMessage = new(this, message, reply, m_MessageContentFontSize, m_ChatHighlightedUsers.Contains(message.UserID), m_ShowBadges);
                 chatMessage.MessageContent.Loaded += (sender, e) => { UpdateControlsPosition(); };
                 AddControl(chatMessage);
             });

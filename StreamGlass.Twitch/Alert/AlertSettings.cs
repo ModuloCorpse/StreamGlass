@@ -49,6 +49,6 @@ namespace StreamGlass.Twitch.Alerts
         public bool IsEnabled => m_IsEnabled;
         public bool HaveChatMessage => m_HaveChatMessage;
 
-        public AlertSettings Duplicate() => new((m_Audio == null) ? null : new(m_Audio.File, m_Audio.Output), m_ImgPath, m_Prefix, m_ChatMessage, m_IsEnabled, m_HaveChatMessage);
+        public AlertSettings Duplicate() => new((m_Audio == null) ? null : new(m_Audio.File, m_Audio.Output, m_Audio.Cooldown), m_ImgPath, m_Prefix, m_ChatMessage, m_IsEnabled, m_HaveChatMessage);
     }
 }

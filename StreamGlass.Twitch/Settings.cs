@@ -64,7 +64,7 @@ namespace StreamGlass.Twitch
                 { KnownAlerts.INCOMMING_RAID, new(null, "${ExeDir}/Assets/parachute.png", "${e.From.DisplayName} is raiding you with ${e.NbViewers} viewers", string.Empty, true, false) },
                 { KnownAlerts.OUTGOING_RAID, new(null, "${ExeDir}/Assets/parachute.png", "You are raiding ${e.To.DisplayName} with ${e.NbViewers} viewers", string.Empty, true, false) },
                 { KnownAlerts.DONATION, new(null, "${ExeDir}/Assets/take-my-money.png", "${e.User.DisplayName} as donated ${e.Amount} ${e.Currency}", string.Empty, true, false) },
-                { KnownAlerts.REWARD, new(new("${ExeDir}/Assets/alert-sound.wav", string.Empty), "${ExeDir}/Assets/chest.png", "${e.From.DisplayName} retrieve ${e.Reward}: ${e.Input}", string.Empty, true, false) },
+                { KnownAlerts.REWARD, new(new("${ExeDir}/Assets/alert-sound.wav", string.Empty, TimeSpan.FromSeconds(30)), "${ExeDir}/Assets/chest.png", "${e.From.DisplayName} retrieve ${e.Reward}: ${e.Input}", string.Empty, true, false) },
                 { KnownAlerts.FOLLOW, new(null, "${ExeDir}/Assets/hearts.png", "${e.User.DisplayName} is now following you", string.Empty, true, false) },
                 { KnownAlerts.SUB_TIER1, new(null, "${ExeDir}/Assets/stars-stack-1.png", "${e.User.DisplayName} as subscribed to you with a tier 1", string.Empty, true, false) },
                 { KnownAlerts.GIFT_SUB_TIER1, new(null, "${ExeDir}/Assets/stars-stack-1.png", "${e.User.DisplayName || 'Anonymous'} offered a sub tier 1", string.Empty, true, false) },

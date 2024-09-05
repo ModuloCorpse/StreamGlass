@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="clr-namespace:StreamGlass.Core.Controls"
         mc:Ignorable="d"
-        d:DesignHeight="131"
+        d:DesignHeight="156"
         d:DesignWidth="454"
-        Height="131"
+        Height="156"
         Width="454"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -52,6 +52,10 @@
                     <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                         <ui:Label x:Name="AudioOutputTextBoxLabel" Margin="0,0,5,0" Text="Output:" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="75"/>
                         <ComboBox x:Name="AudioOutputComboBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="300" Height="25"/>
+                    </ui:StackPanel>
+                    <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                        <ui:Label x:Name="AudioCooldownTextBoxLabel" Margin="0,0,5,0" Text="Cooldown (s):" VerticalAlignment="Center" TextAlignment="Right" Height="auto" Width="75"/>
+                        <ui:TextBox x:Name="AudioCooldownTextBox" HorizontalAlignment="Center" Text="" VerticalAlignment="Top" Width="300" Height="25"/>
                     </ui:StackPanel>
                 </ui:StackPanel>
                 <ui:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="35">

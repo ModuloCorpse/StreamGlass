@@ -1,4 +1,5 @@
 ﻿using CorpseLib.DataNotation;
+using CorpseLib.Encryption;
 using CorpseLib.Json;
 using CorpseLib.Translation;
 using CorpseLib.Web.API;
@@ -46,6 +47,7 @@ namespace StreamGlass.Twitch
             public static readonly string STREAM_STOP = "twitch_stream_stop";
             public static readonly string ALERT = "twitch_stream_alert";
             public static readonly string ALLOW_AUTOMOD = "twitch_allow_automod";
+            public static readonly string SEND_SHOUTOUT = "twitch_give_shoutout";
         }
 
         public static class TranslationKeys
@@ -57,6 +59,7 @@ namespace StreamGlass.Twitch
             public static readonly TranslationKey ALERT_EDITOR_PREFIX = new("twitch_alert_editor_prefix");
             public static readonly TranslationKey SETTINGS_ALERT_ALERTS = new("twitch_settings_alert_alerts");
             public static readonly TranslationKey MENU_BAN = new("twitch_menu_ban");
+            public static readonly TranslationKey MENU_SHOUTOUT = new("twitch_menu_shoutout");
             public static readonly TranslationKey BAN_BUTTON = new("twitch_ban_button");
             public static readonly TranslationKey BAN_TIME = new("twitch_ban_time");
             public static readonly TranslationKey BAN_REASON = new("twitch_ban_reason");
@@ -89,6 +92,7 @@ namespace StreamGlass.Twitch
             public static readonly TranslationKey ALERT_NAME_PRIME = new("twitch_alert_name_prime");
             public static readonly TranslationKey ALERT_NAME_SHOUTOUT = new("twitch_alert_name_shoutout");
             public static readonly TranslationKey ALERT_NAME_BEING_SHOUTOUT = new("twitch_alert_name_being_shoutout");
+            public static readonly TranslationKey ALERT_NAME_CHAT_MESSAGE = new("twitch_alert_name_chat_message");
             public static readonly TranslationKey ALERT_EDITOR_AUDIO_FILE = new("twitch_alert_editor_audio_file");
             public static readonly TranslationKey ALERT_CHAT_MESSAGE = new("twitch_alert_chat_message");
         }
@@ -121,6 +125,7 @@ namespace StreamGlass.Twitch
             DataHelper.RegisterSerializer(new Settings.DataSerializer());
         }
 
+        private readonly WindowsEncryptionAlgorithm m_WindowsEncryptionAlgorithm = new([95, 239, 5, 252, 160, 29, 242, 88, 31, 3]);
         private readonly Core m_Core = new();
         private readonly AlertManager m_AlertManager = new();
         private readonly UserMessageScrollPanel m_StreamChatPanel = new();
@@ -141,6 +146,7 @@ namespace StreamGlass.Twitch
                 { TranslationKeys.ALERT_EDITOR_PREFIX, "Prefix:" },
                 { TranslationKeys.SETTINGS_ALERT_ALERTS, "Alerts" },
                 { TranslationKeys.MENU_BAN, "Ban User" },
+                { TranslationKeys.MENU_SHOUTOUT, "Shoutout User" },
                 { TranslationKeys.BAN_BUTTON, "Ban" },
                 { TranslationKeys.BAN_TIME, "Time (s):" },
                 { TranslationKeys.BAN_REASON, "Reason:" },
@@ -173,6 +179,7 @@ namespace StreamGlass.Twitch
                 { TranslationKeys.ALERT_NAME_PRIME, "Prime" },
                 { TranslationKeys.ALERT_NAME_SHOUTOUT, "Shoutout" },
                 { TranslationKeys.ALERT_NAME_BEING_SHOUTOUT, "Being shoutout" },
+                { TranslationKeys.ALERT_NAME_CHAT_MESSAGE, "Chat message" },
                 { TranslationKeys.ALERT_EDITOR_AUDIO_FILE, "Audio file:" },
                 { TranslationKeys.ALERT_CHAT_MESSAGE, "Chat message" }
             };
@@ -186,6 +193,7 @@ namespace StreamGlass.Twitch
                 { TranslationKeys.ALERT_EDITOR_PREFIX, "Alerte :" },
                 { TranslationKeys.SETTINGS_ALERT_ALERTS, "Alertes" },
                 { TranslationKeys.MENU_BAN, "Bannir l'utilisateur" },
+                { TranslationKeys.MENU_SHOUTOUT, "Shoutout l'utilisateur" },
                 { TranslationKeys.BAN_BUTTON, "Bannir" },
                 { TranslationKeys.BAN_TIME, "Durée (s) :" },
                 { TranslationKeys.BAN_REASON, "Raison :" },
@@ -217,7 +225,8 @@ namespace StreamGlass.Twitch
                 { TranslationKeys.ALERT_NAME_GIFT_SUB_TIER3, "Don tier 3" },
                 { TranslationKeys.ALERT_NAME_PRIME, "Prime" },
                 { TranslationKeys.ALERT_NAME_SHOUTOUT, "Shoutout" },
-                { TranslationKeys.ALERT_NAME_BEING_SHOUTOUT, "Being shoutout" },
+                { TranslationKeys.ALERT_NAME_BEING_SHOUTOUT, "Shoutout reçu" },
+                { TranslationKeys.ALERT_NAME_CHAT_MESSAGE, "Message dans le chat" },
                 { TranslationKeys.ALERT_EDITOR_AUDIO_FILE, "Fichier audio:" },
                 { TranslationKeys.ALERT_CHAT_MESSAGE, "Message du chat" }
             };
@@ -254,10 +263,14 @@ namespace StreamGlass.Twitch
 
         protected override void OnLoad()
         {
-            string settingsFilePath = GetFilePath("twitch_settings.json");
+            string settingsFilePath = GetFilePath("twitch_settings");
             if (File.Exists(settingsFilePath))
             {
-                Settings? settings = JsonParser.LoadFromFile<Settings>(settingsFilePath);
+                EncryptedFile encryptedFile = new(settingsFilePath)
+                {
+                    m_WindowsEncryptionAlgorithm
+                };
+                Settings? settings = JsonParser.Parse<Settings>(encryptedFile.Read());
                 if (settings != null)
                     m_Settings = settings;
             }
@@ -312,6 +325,7 @@ namespace StreamGlass.Twitch
             StreamGlassCanals.NewCanal(Canals.STREAM_STOP);
             StreamGlassCanals.NewCanal<VisualAlert>(Canals.ALERT);
             StreamGlassCanals.NewCanal<bool>(Canals.ALLOW_AUTOMOD);
+            StreamGlassCanals.NewCanal<TwitchUser>(Canals.SEND_SHOUTOUT);
         }
 
         public AEndpoint[] GetEndpoints() => [
@@ -323,7 +337,13 @@ namespace StreamGlass.Twitch
         protected override void OnUnload()
         {
             m_Core.Disconnect();
-            JsonParser.WriteToFile<Settings>(GetFilePath("twitch_settings.json"), m_Settings);
+
+            string settingsFilePath = GetFilePath("twitch_settings");
+            EncryptedFile encryptedFile = new(settingsFilePath)
+            {
+                m_WindowsEncryptionAlgorithm
+            };
+            encryptedFile.Write(JsonParser.Str<Settings>(m_Settings));
         }
 
         public TabItemContent[] GetSettings() => [

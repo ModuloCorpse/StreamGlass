@@ -90,6 +90,7 @@ namespace StreamGlass.Core.Audio
         private static readonly List<Tuple<string, int>> ms_Inputs = [];
         private static readonly Dictionary<string, AudioOutput> ms_Outputs = [];
         private static readonly Dictionary<string, CachedSound> ms_CachedSounds = [];
+        private static readonly Dictionary<Sound, DateTime> ms_LastTimedPlayed = [];
 
         static SoundManager()
         {
@@ -154,6 +155,13 @@ namespace StreamGlass.Core.Audio
 
         public static void PlaySound(Sound sound)
         {
+            DateTime now = DateTime.Now;
+            if (ms_LastTimedPlayed.TryGetValue(sound, out DateTime lastTimePlayed))
+            {
+                TimeSpan elapsedTime = now - lastTimePlayed;
+                if (elapsedTime < sound.Cooldown)
+                    return;
+            }
             if (!string.IsNullOrEmpty(sound.File))
             {
                 if (!ms_CachedSounds.TryGetValue(sound.File, out CachedSound? cachedSound))
@@ -164,6 +172,7 @@ namespace StreamGlass.Core.Audio
                 if (!ms_Outputs.TryGetValue(sound.Output, out AudioOutput? output))
                     output = ms_DefaultOutput;
                 output.PlaySound(cachedSound);
+                ms_LastTimedPlayed[sound] = now;
             }
         }
     }

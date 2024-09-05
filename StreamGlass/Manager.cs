@@ -135,6 +135,7 @@ namespace StreamGlass
                 { StreamGlassTranslationKeys.STRING_SOURCE_EDITOR_CONTENT, "Content:" },
                 { StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_FILE, "File:" },
                 { StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_OUTPUT, "Output:" },
+                { StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_COOLDOWN, "Cooldown (s):" },
             };
             Translator.AddTranslation(translation);
             Translation translationFR = new(new CultureInfo("fr-FR"), true)
@@ -177,6 +178,7 @@ namespace StreamGlass
                 { StreamGlassTranslationKeys.STRING_SOURCE_EDITOR_CONTENT, "Contenu :" },
                 { StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_FILE, "Fichier :" },
                 { StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_OUTPUT, "Sortie :" },
+                { StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_COOLDOWN, "Attente (s) :" },
             };
             Translator.AddTranslation(translationFR);
             Translator.CurrentLanguageChanged += () => m_Settings.CurrentLanguage = Translator.CurrentLanguage.Name;

@@ -42,5 +42,6 @@ namespace StreamGlass.Core
         public static readonly TranslationKey STRING_SOURCE_EDITOR_CONTENT = new("string_source_editor_content");
         public static readonly TranslationKey SOUND_EDITOR_AUDIO_FILE = new("sound_editor_audio_file");
         public static readonly TranslationKey SOUND_EDITOR_AUDIO_OUTPUT = new("sound_editor_audio_output");
+        public static readonly TranslationKey SOUND_EDITOR_AUDIO_COOLDOWN = new("sound_editor_audio_cooldown");
     }
 }
