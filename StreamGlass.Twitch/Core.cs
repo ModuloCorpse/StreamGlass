@@ -4,6 +4,7 @@ using CorpseLib.Placeholder;
 using StreamGlass.Core;
 using StreamGlass.Core.Profile;
 using StreamGlass.Twitch.Events;
+using System.IO;
 using TwitchCorpse;
 using TwitchCorpse.API;
 using static TwitchCorpse.TwitchEventSub;
@@ -24,6 +25,7 @@ namespace StreamGlass.Twitch
         private TwitchAPI? m_API;
         private TwitchAPI? m_IRCAPI;
         private bool m_IsConnected = false;
+        private bool m_IsSameAPI = true;
         private readonly SubscriptionType[] m_SubscriptionTypes = [
             SubscriptionType.ChannelFollow,
             SubscriptionType.ChannelSubscribe,
@@ -58,16 +60,24 @@ namespace StreamGlass.Twitch
         private bool Authenticate(string publicKey, string privateKey, string browser)
         {
             m_API!.AuthenticateFromTokenFile("twitch_api_token");
-            m_IRCAPI!.AuthenticateFromTokenFile("twitch_irc_api_token");
             if (!m_API.IsAuthenticated)
                 m_API.AuthenticateWithBrowser();
-            if (!m_IRCAPI!.IsAuthenticated)
+            if (string.IsNullOrWhiteSpace(browser))
             {
-                if (string.IsNullOrWhiteSpace(browser))
-                    m_IRCAPI = m_API;
-                else
-                    m_IRCAPI!.AuthenticateWithBrowser(browser);
+                m_IRCAPI = m_API;
+                m_IsSameAPI = true;
             }
+            else
+            {
+                m_IRCAPI!.AuthenticateFromTokenFile("twitch_irc_api_token");
+                if (!m_IRCAPI!.IsAuthenticated)
+                    m_IRCAPI!.AuthenticateWithBrowser(browser);
+                m_IsSameAPI = false;
+            }
+            if (File.Exists("twitch_api_token"))
+                File.Delete("twitch_api_token");
+            if (File.Exists("twitch_irc_api_token"))
+                File.Delete("twitch_irc_api_token");
             return m_API.IsAuthenticated && m_IRCAPI.IsAuthenticated;
         }
 
@@ -251,7 +261,8 @@ namespace StreamGlass.Twitch
             if (m_IsConnected)
             {
                 m_API!.SaveAPIToken("twitch_api_token");
-                m_IRCAPI!.SaveAPIToken("twitch_irc_api_token");
+                if (!m_IsSameAPI)
+                    m_IRCAPI!.SaveAPIToken("twitch_irc_api_token");
                 m_GetViewerCount.Stop();
                 ResetStreamInfo();
                 m_EventSub?.Disconnect();
