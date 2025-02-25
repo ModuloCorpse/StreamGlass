@@ -11,6 +11,8 @@ namespace StreamGlass.Core.Profile
         {
             StreamGlassCanals.Register<UserMessage>(StreamGlassCanals.CHAT_MESSAGE, OnChatMessage);
             StreamGlassCanals.Register(StreamGlassCanals.PROFILE_RESET, ResetCurrentProfile);
+            StreamGlassCanals.Register(StreamGlassCanals.PROFILE_LOCK_ALL, LockAllProfiles);
+            StreamGlassCanals.Register(StreamGlassCanals.PROFILE_UNLOCK_ALL, UnlockAllProfiles);
         }
 
         public Profile NewProfile(string name)
@@ -35,6 +37,17 @@ namespace StreamGlass.Core.Profile
         public void UpdateStreamInfo() => CurrentObject?.UpdateStreamInfo();
 
         private void ResetCurrentProfile() => CurrentObject?.Reset();
+        private void LockAllProfiles()
+        {
+            foreach (Profile profile in Objects)
+                profile.LockAll();
+        }
+
+        private void UnlockAllProfiles()
+        {
+            foreach (Profile profile in Objects)
+                profile.UnlockAll();
+        }
 
         public void SetCurrentProfile(string id)
         {

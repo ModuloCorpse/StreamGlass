@@ -6,22 +6,22 @@ namespace StreamGlass.Core.Profile
 {
     public class ChatCommand
     {
-        private readonly string m_Name = string.Empty;
-        private readonly string[] m_Aliases = [];
-        private readonly int m_AwaitTime = 0;
-        private readonly int m_NbMessage = 0;
-        private readonly string m_Content = string.Empty;
-        private readonly uint m_UserType = 0;
         private readonly List<string> m_Commands = [];
-        //Variables use for command that trigger after a certain amount of time
-        private readonly bool m_AutoTrigger = false;
-        private readonly int m_AutoTriggerTime = 0;
-        private readonly int m_AutoTriggerDeltaTime = 0;
+        private readonly string[] m_Aliases = [];
         private readonly string[] m_AutoTriggerArguments = [];
-        //Variables to check if the command can be triggered
+        private readonly string m_Name = string.Empty;
+        private readonly string m_Content = string.Empty;
         private long m_TimeSinceLastTrigger = 0;
         private long m_DeltaTime = 0;
+        private readonly uint m_UserType = 0;
+        private readonly int m_AwaitTime = 0;
+        private readonly int m_NbMessage = 0;
+        private readonly int m_AutoTriggerTime = 0;
+        private readonly int m_AutoTriggerDeltaTime = 0;
         private int m_MessageSinceLastTrigger = 0;
+        private int m_LockCount = 0;
+        private readonly bool m_AutoTrigger = false;
+        private bool m_IsEnabled = true;
 
         public string Name => m_Name;
         public string[] Aliases => m_Aliases;
@@ -44,6 +44,7 @@ namespace StreamGlass.Core.Profile
             m_Content = obj.GetOrDefault("content", string.Empty)!;
             m_UserType = obj.GetOrDefault("user", uint.MaxValue);
             m_Commands = obj.GetList<string>("commands");
+            m_IsEnabled = obj.GetOrDefault("enabled", true);
             //AutoTrigger
             m_AutoTrigger = obj.GetOrDefault("auto_trigger", false);
             m_AutoTriggerTime = obj.GetOrDefault("auto_trigger_time", 0);
@@ -94,6 +95,7 @@ namespace StreamGlass.Core.Profile
                 obj.Add("user", m_UserType);
             if (m_Commands.Count != 0)
                 obj.Add("commands", m_Commands);
+            obj.Add("enabled", m_IsEnabled);
             //AutoTrigger
             if (m_AutoTrigger)
                 obj.Add("auto_trigger", m_AutoTrigger);
@@ -116,6 +118,14 @@ namespace StreamGlass.Core.Profile
                 m_DeltaTime = new Random().Next(m_AutoTriggerDeltaTime, -m_AutoTriggerDeltaTime) * 1000;
         }
 
+        public void Lock() => ++m_LockCount;
+        public void Unlock() => --m_LockCount;
+
+        public void Enable() => m_IsEnabled = true;
+        public void Disable() => m_IsEnabled = false;
+        public void SetEnable(bool enabled) => m_IsEnabled = enabled;
+
+        public bool IsEnabled() => m_LockCount == 0 && m_IsEnabled;
         public bool CanTrigger(uint type) => m_MessageSinceLastTrigger >= m_NbMessage && m_TimeSinceLastTrigger >= (m_AwaitTime * 1000) && m_UserType <= type;
         public bool CanAutoTrigger() => m_AutoTrigger && m_MessageSinceLastTrigger >= m_NbMessage && (m_TimeSinceLastTrigger + m_DeltaTime) >= (m_AutoTriggerTime * 1000);
 

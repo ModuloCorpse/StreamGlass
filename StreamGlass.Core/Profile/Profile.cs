@@ -1,6 +1,6 @@
-﻿using CorpseLib.ManagedObject;
+﻿using CorpseLib.DataNotation;
+using CorpseLib.ManagedObject;
 using System.Collections.ObjectModel;
-using CorpseLib.DataNotation;
 
 namespace StreamGlass.Core.Profile
 {
@@ -10,6 +10,7 @@ namespace StreamGlass.Core.Profile
         private readonly Dictionary<string, int> m_CommandLocation = [];
         private readonly List<ChatCommand> m_Commands = [];
         private readonly object m_Lock = new();
+        private int m_LockCount = 0;
         private bool m_IsSelectable = true;
 
         public Profile(string name) : base(name) {}
@@ -18,6 +19,9 @@ namespace StreamGlass.Core.Profile
 
         public ReadOnlyCollection<ChatCommand> Commands => m_Commands.AsReadOnly();
         public bool IsSelectable => m_IsSelectable;
+
+        public void LockAll() => ++m_LockCount;
+        public void UnlockAll() => --m_LockCount;
 
         public void AddCommand(ChatCommand command)
         {
@@ -33,6 +37,8 @@ namespace StreamGlass.Core.Profile
 
         private void TriggerCommand(string command, uint userType, bool isForced)
         {
+            if (m_LockCount > 0)
+                return;
             string[] arguments = command.Split(' ');
             if (m_CommandLocation.TryGetValue(arguments[0], out var contentIdx))
             {
@@ -46,23 +52,20 @@ namespace StreamGlass.Core.Profile
                 Parent?.TriggerCommand(command, userType, isForced);
         }
 
-        private void ForceOnMessage(UserMessage message)
-        {
-            string messageContent = message.Message;
-            if (messageContent.Length > 0 && messageContent[0] == '!')
-                TriggerCommand(messageContent[1..], message.SenderType, false);
-        }
-
         internal void OnMessage(UserMessage message)
         {
             lock (m_Lock)
             {
-                ForceOnMessage(message);
+                string messageContent = message.Message;
+                if (messageContent.Length > 0 && messageContent[0] == '!')
+                    TriggerCommand(messageContent[1..], message.SenderType, false);
             }
         }
 
         private void ForceUpdate(long deltaTime, int nbMessage)
         {
+            if (m_LockCount > 0)
+                return;
             foreach (ChatCommand command in m_Commands)
             {
                 command.Update(deltaTime, nbMessage);
@@ -86,6 +89,8 @@ namespace StreamGlass.Core.Profile
 
         private void ForceReset()
         {
+            if (m_LockCount > 0)
+                return;
             foreach (ChatCommand command in m_Commands)
                 command.Reset();
             Parent?.ForceReset();

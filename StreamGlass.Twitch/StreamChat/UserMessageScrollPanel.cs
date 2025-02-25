@@ -1,12 +1,12 @@
 ﻿using StreamGlass.Core;
 using StreamGlass.Core.Controls;
-using System.Windows.Forms;
 
 namespace StreamGlass.Twitch.StreamChat
 {
     public class UserMessageScrollPanel : ScrollPanel<Message>
     {
         private readonly HashSet<string> m_ChatHighlightedUsers = [];
+        private readonly object m_MessageLock = new();
         private double m_MessageContentFontSize = 14;
         private bool m_ShowBadges = true;
 
@@ -41,21 +41,24 @@ namespace StreamGlass.Twitch.StreamChat
             if (message == null)
                 return;
 
-            Dispatcher.Invoke(() =>
+            Dispatcher.BeginInvoke(() =>
             {
-                Twitch.Message? reply = null;
-                if (!string.IsNullOrEmpty(message.ReplyID))
+                lock (m_MessageLock)
                 {
-                    foreach (Message replyMessage in Controls)
+                    Twitch.Message? reply = null;
+                    if (!string.IsNullOrEmpty(message.ReplyID))
                     {
-                        if (replyMessage.ID == message.ReplyID)
-                            reply = replyMessage.TwitchMessage;
+                        foreach (Message replyMessage in Controls)
+                        {
+                            if (replyMessage.ID == message.ReplyID)
+                                reply = replyMessage.TwitchMessage;
+                        }
                     }
-                }
 
-                Message chatMessage = new(this, message, reply, m_MessageContentFontSize, m_ChatHighlightedUsers.Contains(message.UserID), m_ShowBadges);
-                chatMessage.MessageContent.Loaded += (sender, e) => { UpdateControlsPosition(); };
-                AddControl(chatMessage);
+                    Message chatMessage = new(this, message, reply, m_MessageContentFontSize, m_ChatHighlightedUsers.Contains(message.UserID), m_ShowBadges);
+                    chatMessage.MessageContent.Loaded += (sender, e) => { UpdateControlsPosition(); };
+                    AddControl(chatMessage);
+                }
             });
         }
 
@@ -63,33 +66,51 @@ namespace StreamGlass.Twitch.StreamChat
         {
             if (userID == null)
                 return;
-            List<Message> messageToRemove = [];
-            foreach (Message message in Controls)
+            Dispatcher.BeginInvoke(() =>
             {
-                if (message.UserID == userID)
-                    messageToRemove.Add(message);
-            }
-            if (messageToRemove.Count > 0)
-                Dispatcher.Invoke((Delegate)(() => { Remove(messageToRemove); }));
+                lock (m_MessageLock)
+                {
+                    List<Message> messageToRemove = [];
+                    foreach (Message message in Controls)
+                    {
+                        if (message.UserID == userID)
+                            messageToRemove.Add(message);
+                    }
+                    if (messageToRemove.Count > 0)
+                        Remove(messageToRemove);
+                }
+            });
         }
 
         private void RemoveMessage(string? messageID)
         {
             if (messageID == null)
                 return;
-            foreach (Message message in Controls)
+            Dispatcher.BeginInvoke(() =>
             {
-                if (message.ID == messageID)
+                lock (m_MessageLock)
                 {
-                    Dispatcher.Invoke((Delegate)(() => { Remove(message); }));
-                    return;
+                    foreach (Message message in Controls)
+                    {
+                        if (message.ID == messageID)
+                        {
+                            Remove(message);
+                            return;
+                        }
+                    }
                 }
-            }
+            });
         }
 
         private void ClearMessages()
         {
-            Dispatcher.Invoke((Delegate)(() => { Clear(); }));
+            Dispatcher.BeginInvoke(() =>
+            {
+                lock (m_MessageLock)
+                {
+                    Clear();
+                }
+            });
         }
     }
 }

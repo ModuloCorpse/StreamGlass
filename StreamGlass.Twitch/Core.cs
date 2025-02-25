@@ -42,7 +42,9 @@ namespace StreamGlass.Twitch
             SubscriptionType.ChannelChatMessageDelete,
             SubscriptionType.ChannelChatNotification,
             SubscriptionType.AutomodMessageHeld,
-            SubscriptionType.AutomodMessageUpdate
+            SubscriptionType.AutomodMessageUpdate,
+            SubscriptionType.SharedChatBegin,
+            SubscriptionType.SharedChatEnd
         ];
 
         public Core()
@@ -97,7 +99,7 @@ namespace StreamGlass.Twitch
                 StreamGlassContext.RegisterVariable("Self", selfUserInfoName);
             }
 
-            ResetStreamInfo();
+            //ResetStreamInfo();
             m_OriginalBroadcasterChannelInfo = m_API.GetChannelInfo(selfUserInfo);
 
             if (m_OriginalBroadcasterChannelInfo != null)
@@ -264,7 +266,7 @@ namespace StreamGlass.Twitch
                 if (!m_IsSameAPI)
                     m_IRCAPI!.SaveAPIToken("twitch_irc_api_token");
                 m_GetViewerCount.Stop();
-                ResetStreamInfo();
+                //ResetStreamInfo();
                 m_EventSub?.Disconnect();
                 m_IsConnected = false;
                 StreamGlassCanals.Unregister(TwitchPlugin.Canals.STREAM_START, OnStreamStart);

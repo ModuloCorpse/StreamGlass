@@ -3,6 +3,7 @@ using StreamGlass.Core;
 using StreamGlass.Core.Profile;
 using StreamGlass.Twitch.Events;
 using TwitchCorpse;
+using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch
 {
@@ -84,8 +85,10 @@ namespace StreamGlass.Twitch
             return 0;
         }
 
-        public void OnChatMessage(TwitchUser user, bool isHighlight, string messageID, string? replyID, string announcementColor, string messageColor, Text message)
+        public void OnChatMessage(TwitchChatMessage chatMessage)
         {
+            TwitchUser user = chatMessage.User;
+            Text message = chatMessage.Message;
             if (m_Core.IsIRCSelf(user))
                 user = new(user.ID, user.Name, user.DisplayName, user.ProfileImageURL, TwitchUser.Type.SELF, [..user.Badges]);
             StreamGlassCanals.Emit(StreamGlassCanals.CHAT_MESSAGE, new UserMessage(GetUserType(user), message.ToString()));
@@ -94,11 +97,11 @@ namespace StreamGlass.Twitch
             Text messageToDisplay = (Text)message.Clone();
             foreach (IMessageFilter messageFilter in m_MessageFilters)
                 messageToDisplay = messageFilter.Filter(messageToDisplay);
-            StreamGlassCanals.Emit(TwitchPlugin.Canals.CHAT_MESSAGE, new Message(user, isHighlight, messageID, replyID ?? string.Empty, announcementColor, messageColor, m_IRCChannel, messageToDisplay));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.CHAT_MESSAGE, new Message(user, chatMessage.IsHighlight, chatMessage.MessageID, chatMessage.ReplyID, chatMessage.AnnouncementColor, chatMessage.MessageColor, m_IRCChannel, messageToDisplay));
             Text overlayMessage = (Text)message.Clone();
             foreach (IMessageFilter overlayFilter in m_OverlayFilters)
                 overlayMessage = overlayFilter.Filter(overlayMessage);
-            StreamGlassCanals.Emit(TwitchPlugin.Canals.OVERLAY_CHAT_MESSAGE, new Message(user, isHighlight, messageID, replyID ?? string.Empty, announcementColor, messageColor, m_IRCChannel, overlayMessage));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.OVERLAY_CHAT_MESSAGE, new Message(user, chatMessage.IsHighlight, chatMessage.MessageID, chatMessage.ReplyID, chatMessage.AnnouncementColor, chatMessage.MessageColor, m_IRCChannel, overlayMessage));
         }
 
         public void OnFollow(TwitchUser user)
@@ -188,5 +191,8 @@ namespace StreamGlass.Twitch
         public void OnBeingShoutout(TwitchUser from) => StreamGlassCanals.Emit(TwitchPlugin.Canals.BEING_SHOUTOUT, from);
 
         public void OnShoutout(TwitchUser moderator, TwitchUser to) => StreamGlassCanals.Emit(TwitchPlugin.Canals.SHOUTOUT, new ShoutoutEventArgs(moderator, to));
+
+        public void OnSharedChatStart() => StreamGlassCanals.Trigger(StreamGlassCanals.PROFILE_LOCK_ALL);
+        public void OnSharedChatStop() => StreamGlassCanals.Trigger(StreamGlassCanals.PROFILE_UNLOCK_ALL);
     }
 }

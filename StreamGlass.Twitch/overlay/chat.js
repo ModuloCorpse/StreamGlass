@@ -220,7 +220,10 @@ class ChatModule extends StreamGlassEventWebsocket
 			}
 		}
 		document.getElementById("full_chat").style.display = 'none';
-		super.Get('/twitch/all_message', this.#OnLoadMessage.bind(this));
+		if (super.HaveParameter("limit"))
+			super.Get('/twitch/all_message?limit=' + super.GetParameter("limit"), this.#OnLoadMessage.bind(this));
+		else
+			super.Get('/twitch/all_message', this.#OnLoadMessage.bind(this));
 		super.HoldEvents();
 		super.RegisterToEvent('twitch_overlay_chat_message', this.#OnTwitchChatMessage.bind(this));
 		super.RegisterToEvent('twitch_chat_clear', this.#OnTwitchChatClear.bind(this));

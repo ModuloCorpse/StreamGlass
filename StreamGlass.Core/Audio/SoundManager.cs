@@ -106,9 +106,16 @@ namespace StreamGlass.Core.Audio
                     {
                         if (device.FriendlyName.StartsWith(deviceInfo.ProductName))
                         {
-                            AudioOutput audioOutput = new(device.FriendlyName, waveOutDevice);
-                            ms_Outputs[audioOutput.Name] = audioOutput;
-                            break;
+                            try
+                            {
+                                AudioOutput audioOutput = new(device.FriendlyName, waveOutDevice);
+                                ms_Outputs[audioOutput.Name] = audioOutput;
+                                break;
+                            }
+                            catch (Exception ex)
+                            {
+                                StreamGlassContext.LOGGER.Log(string.Format("Sound error when loading {0} : {1}", device.FriendlyName, ex));
+                            }
                         }
                     }
                 }
@@ -137,10 +144,10 @@ namespace StreamGlass.Core.Audio
 
         internal static void LoadSound(string file)
         {
-            if (!ms_CachedSounds.TryGetValue(file, out CachedSound? sound))
-                ms_CachedSounds[file] = new(file);
-            else
-                sound!.AddReference();
+                if (!ms_CachedSounds.TryGetValue(file, out CachedSound? sound))
+                    ms_CachedSounds[file] = new(file);
+                else
+                    sound!.AddReference();
         }
 
         internal static void UnloadSound(string file)

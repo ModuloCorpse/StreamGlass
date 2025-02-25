@@ -1,6 +1,5 @@
 ﻿using CorpseLib;
 using CorpseLib.DataNotation;
-using CorpseLib.Json;
 using StreamGlass.Core.Profile;
 
 namespace StreamGlass.Core
@@ -50,6 +49,8 @@ namespace StreamGlass.Core
         public static readonly string PROFILE_COMMANDS = "profile_commands";
         public static readonly string PROFILE_CHANGED_MENU_ITEM = "profile_changed_menu_item";
         public static readonly string PROFILE_RESET = "profile_reset";
+        public static readonly string PROFILE_LOCK_ALL = "profile_lock_all";
+        public static readonly string PROFILE_UNLOCK_ALL = "profile_unlock_all";
 
         private static readonly Dictionary<string, ACanalManager> ms_Managers = [];
 
@@ -153,6 +154,8 @@ namespace StreamGlass.Core
             NewCanal<ProfileCommandEventArgs>(PROFILE_COMMANDS);
             NewCanal<string>(PROFILE_CHANGED_MENU_ITEM);
             NewCanal(PROFILE_RESET);
+            NewCanal(PROFILE_LOCK_ALL);
+            NewCanal(PROFILE_UNLOCK_ALL);
         }
     }
 }
