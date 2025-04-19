@@ -16,6 +16,7 @@ namespace StreamGlass.Core.Profile
             TimeTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_TIME);
             NbMessageTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_MESSAGES);
             UserComboBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_USER);
+            IsSharedTextBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.PROFILE_EDITOR_SHARE);
             AliasesGroupBox.SetTranslationKey(StreamGlassTranslationKeys.SECTION_ALIASES);
             SubCommandGroupBox.SetTranslationKey(StreamGlassTranslationKeys.SECTION_SUB_COMMANDS);
             AutoTriggerGroupBox.SetTranslationKey(StreamGlassTranslationKeys.SECTION_AUTO_TRIGGER);
@@ -42,6 +43,7 @@ namespace StreamGlass.Core.Profile
             NbMessageUpDown.Value = command.NbMessage;
             ContentTextBox.Text = command.Content;
             UserUpDown.Value = command.UserType;
+            IsSharedCheckBox.IsChecked = command.SharedMessage;
             SubCommandList.AddObjects(command.Commands);
 
             AutoTriggerEnableCheckBox.IsChecked = command.AutoTrigger;
@@ -62,12 +64,13 @@ namespace StreamGlass.Core.Profile
             int nbMessage = (int)NbMessageUpDown.Value;
             string content = ContentTextBox.Text;
             uint userType = (uint)UserUpDown.Value;
+            bool sharedMessage = IsSharedCheckBox.IsChecked ?? false;
             List<string> commands = SubCommandList.GetItems().Cast<string>().ToList();
             bool autoTrigger = AutoTriggerEnableCheckBox.IsChecked ?? false;
             int autoTriggerTime = (int)AutoTriggerTimeUpDown.Value;
             int autoTriggerDeltaTime = (int)AutoTriggerTimeDeltaUpDown.Value;
             string[] autoTriggerArguments = AutoTriggerArguments.GetItems().Cast<string>().ToArray();
-            m_CreatedCommand = new(name, aliases, awaitTime, nbMessage, content, userType, commands, autoTrigger, autoTriggerTime, autoTriggerDeltaTime, autoTriggerArguments);
+            m_CreatedCommand = new(name, aliases, awaitTime, nbMessage, content, userType, sharedMessage, commands, autoTrigger, autoTriggerTime, autoTriggerDeltaTime, autoTriggerArguments);
             OnOkClick();
         }
 

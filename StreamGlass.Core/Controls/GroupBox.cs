@@ -27,7 +27,11 @@ namespace StreamGlass.Core.Controls
         #endregion TextBrushPaletteKey
 
         private TranslationKey m_TranslationKey = new(string.Empty);
-        public void SetTranslationKey(TranslationKey key) => m_TranslationKey = key;
+        public void SetTranslationKey(TranslationKey key)
+        {
+            m_TranslationKey = key;
+            Translator_CurrentLanguageChanged();
+        }
 
         public GroupBox() => Translator.CurrentLanguageChanged += Translator_CurrentLanguageChanged;
 

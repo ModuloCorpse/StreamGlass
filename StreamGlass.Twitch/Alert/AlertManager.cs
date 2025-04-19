@@ -1,14 +1,16 @@
-﻿using CorpseLib.Placeholder;
+﻿using CorpseLib.DataNotation;
+using CorpseLib.Placeholder;
 using CorpseLib.StructuredText;
 using CorpseLib.Translation;
 using StreamGlass.Core;
 using StreamGlass.Core.Audio;
+using StreamGlass.Core.StreamChat;
 using StreamGlass.Twitch.Events;
 using TwitchCorpse;
 
 namespace StreamGlass.Twitch.Alerts
 {
-    public class AlertManager
+    public class AlertManager : IMessageReceiver
     {
         public class KnownAlerts
         {
@@ -50,6 +52,7 @@ namespace StreamGlass.Twitch.Alerts
             NewAlert(KnownAlerts.SHOUTOUT, TwitchPlugin.TranslationKeys.ALERT_NAME_SHOUTOUT);
             NewAlert(KnownAlerts.BEING_SHOUTOUT, TwitchPlugin.TranslationKeys.ALERT_NAME_BEING_SHOUTOUT);
             NewAlert(KnownAlerts.CHAT_MESSAGE, TwitchPlugin.TranslationKeys.ALERT_NAME_CHAT_MESSAGE);
+            StreamGlassChat.RegisterMessageReceiver(this);
         }
 
         public void Init()
@@ -61,7 +64,6 @@ namespace StreamGlass.Twitch.Alerts
             StreamGlassCanals.Register<RewardEventArgs>(TwitchPlugin.Canals.REWARD, OnReward);
             StreamGlassCanals.Register<ShoutoutEventArgs>(TwitchPlugin.Canals.SHOUTOUT, OnShoutout);
             StreamGlassCanals.Register<TwitchUser>(TwitchPlugin.Canals.BEING_SHOUTOUT, OnBeingShoutout);
-            StreamGlassCanals.Register<Message>(TwitchPlugin.Canals.CHAT_MESSAGE, OnMessage);
         }
 
         private void NewAlert(string alertID, TranslationKey translationKey) => m_Alerts[alertID] = new Alert(translationKey, alertID);
@@ -93,7 +95,11 @@ namespace StreamGlass.Twitch.Alerts
                         }
                         StreamGlassCanals.Emit<VisualAlert>(TwitchPlugin.Canals.ALERT, new(alertSettings.ImgPath, alertMessage));
                         if (alertSettings.HaveChatMessage)
-                            StreamGlassCanals.Emit(StreamGlassCanals.SEND_MESSAGE, Converter.Convert(alertSettings.ChatMessage, context));
+                        {
+                            //TODO
+                            DataObject messageData = new() { { "message", Converter.Convert(alertSettings.ChatMessage, context) }, { "for_source_only", true } };
+                            StreamGlassChat.SendMessage("twitch", messageData);
+                        }
                     }
                     if (alertSettings.Audio != null)
                         SoundManager.PlaySound(alertSettings.Audio);
@@ -157,12 +163,20 @@ namespace StreamGlass.Twitch.Alerts
             TriggerAlert(KnownAlerts.BEING_SHOUTOUT, obj!);
         }
 
-        private void OnMessage(Message? message)
+        public void AddMessage(StreamGlass.Core.StreamChat.Message message)
         {
-            if (message == null)
-                return;
-            if (message.Sender.UserType < TwitchUser.Type.BROADCASTER)
-                TriggerAlert(KnownAlerts.CHAT_MESSAGE, message);
+            if (m_Alerts.TryGetValue(KnownAlerts.CHAT_MESSAGE, out Alert? alert))
+            {
+                StreamGlassContext.LOGGER.Log("Adding visual alert");
+                AlertSettings alertSettings = alert.Settings;
+                if (alertSettings.IsEnabled)
+                {
+                    if (alertSettings.Audio != null)
+                        SoundManager.PlaySound(alertSettings.Audio);
+                }
+            }
         }
+
+        public void RemoveMessages(string[] messageIDs) { }
     }
 }

@@ -12,7 +12,6 @@ using StreamGlass.Twitch.Alerts;
 using StreamGlass.Twitch.API.Message;
 using StreamGlass.Twitch.Events;
 using StreamGlass.Twitch.Moderation;
-using StreamGlass.Twitch.StreamChat;
 using System.Globalization;
 using System.IO;
 using System.Windows.Controls;
@@ -25,8 +24,6 @@ namespace StreamGlass.Twitch
     {
         public static class Canals
         {
-            public static readonly string CHAT_MESSAGE = "twitch_chat_message";
-            public static readonly string OVERLAY_CHAT_MESSAGE = "twitch_overlay_chat_message";
             public static readonly string CHAT_JOINED = "twitch_chat_joined";
             public static readonly string USER_JOINED = "twitch_user_joined";
             public static readonly string DONATION = "twitch_donation";
@@ -34,12 +31,9 @@ namespace StreamGlass.Twitch
             public static readonly string GIFT_FOLLOW = "twitch_gift_follow";
             public static readonly string RAID = "twitch_raid";
             public static readonly string REWARD = "twitch_reward";
-            public static readonly string BAN = "twitch_ban";
             public static readonly string HELD_MESSAGE = "twitch_held_message";
             public static readonly string ALLOW_MESSAGE = "twitch_allow_message";
             public static readonly string HELD_MESSAGE_MODERATED = "twitch_held_message_moderated";
-            public static readonly string CHAT_CLEAR_USER = "twitch_chat_clear_user";
-            public static readonly string CHAT_CLEAR_MESSAGE = "twitch_chat_clear_message";
             public static readonly string SHOUTOUT = "twitch_shoutout";
             public static readonly string BEING_SHOUTOUT = "twitch_being_shoutout";
             public static readonly string CHAT_CLEAR = "twitch_chat_clear";
@@ -47,7 +41,6 @@ namespace StreamGlass.Twitch
             public static readonly string STREAM_STOP = "twitch_stream_stop";
             public static readonly string ALERT = "twitch_stream_alert";
             public static readonly string ALLOW_AUTOMOD = "twitch_allow_automod";
-            public static readonly string SEND_SHOUTOUT = "twitch_give_shoutout";
         }
 
         public static class TranslationKeys
@@ -120,7 +113,6 @@ namespace StreamGlass.Twitch
 
             DataHelper.RegisterSerializer(new AlertSettings.DataSerializer());
             DataHelper.RegisterSerializer(new Settings.AlertsSettings.DataSerializer());
-            DataHelper.RegisterSerializer(new Settings.ChatSettings.DataSerializer());
             DataHelper.RegisterSerializer(new Settings.ModerationSettings.DataSerializer());
             DataHelper.RegisterSerializer(new Settings.DataSerializer());
         }
@@ -128,7 +120,6 @@ namespace StreamGlass.Twitch
         private readonly WindowsEncryptionAlgorithm m_WindowsEncryptionAlgorithm = new([95, 239, 5, 252, 160, 29, 242, 88, 31, 3]);
         private readonly Core m_Core = new();
         private readonly AlertManager m_AlertManager = new();
-        private readonly UserMessageScrollPanel m_StreamChatPanel = new();
         private readonly AlertScrollPanel m_StreamAlertPanel = new();
         private readonly HeldMessageScrollPanel m_HeldMessagePanel = new();
         private Settings m_Settings = new();
@@ -145,8 +136,8 @@ namespace StreamGlass.Twitch
                 { TranslationKeys.ALERT_EDITOR_IMAGE, "Image:" },
                 { TranslationKeys.ALERT_EDITOR_PREFIX, "Prefix:" },
                 { TranslationKeys.SETTINGS_ALERT_ALERTS, "Alerts" },
-                { TranslationKeys.MENU_BAN, "Ban User" },
-                { TranslationKeys.MENU_SHOUTOUT, "Shoutout User" },
+                { TranslationKeys.MENU_BAN, "[Twitch] Ban User" },
+                { TranslationKeys.MENU_SHOUTOUT, "[Twitch] Shoutout User" },
                 { TranslationKeys.BAN_BUTTON, "Ban" },
                 { TranslationKeys.BAN_TIME, "Time (s):" },
                 { TranslationKeys.BAN_REASON, "Reason:" },
@@ -192,8 +183,8 @@ namespace StreamGlass.Twitch
                 { TranslationKeys.ALERT_EDITOR_IMAGE, "Image :" },
                 { TranslationKeys.ALERT_EDITOR_PREFIX, "Alerte :" },
                 { TranslationKeys.SETTINGS_ALERT_ALERTS, "Alertes" },
-                { TranslationKeys.MENU_BAN, "Bannir l'utilisateur" },
-                { TranslationKeys.MENU_SHOUTOUT, "Shoutout l'utilisateur" },
+                { TranslationKeys.MENU_BAN, "[Twitch] Bannir l'utilisateur" },
+                { TranslationKeys.MENU_SHOUTOUT, "[Twitch] Shoutout l'utilisateur" },
                 { TranslationKeys.BAN_BUTTON, "Bannir" },
                 { TranslationKeys.BAN_TIME, "Durée (s) :" },
                 { TranslationKeys.BAN_REASON, "Raison :" },
@@ -236,8 +227,6 @@ namespace StreamGlass.Twitch
         private void InitSettings()
         {
             m_Core.SetSettings(m_Settings);
-            m_StreamChatPanel.SetDisplayType(m_Settings.Chat.DisplayType);
-            m_StreamChatPanel.SetContentFontSize(m_Settings.Chat.MessageFontSize);
             m_StreamAlertPanel.SetDisplayType(m_Settings.Alerts.DisplayType);
             m_StreamAlertPanel.SetContentFontSize(m_Settings.Alerts.MessageFontSize);
             m_AlertManager.InitSettings(m_Settings.Alerts);
@@ -263,16 +252,26 @@ namespace StreamGlass.Twitch
 
         protected override void OnLoad()
         {
-            string settingsFilePath = GetFilePath("twitch_settings");
-            if (File.Exists(settingsFilePath))
+            string settingsSaveFilePath = GetFilePath("twitch_settings.save.json");
+            if (File.Exists(settingsSaveFilePath))
             {
-                EncryptedFile encryptedFile = new(settingsFilePath)
-                {
-                    m_WindowsEncryptionAlgorithm
-                };
-                Settings? settings = JsonParser.Parse<Settings>(encryptedFile.Read());
+                Settings? settings = JsonParser.LoadFromFile<Settings>(settingsSaveFilePath);
                 if (settings != null)
                     m_Settings = settings;
+            }
+            else
+            {
+                string settingsFilePath = GetFilePath("twitch_settings");
+                if (File.Exists(settingsFilePath))
+                {
+                    EncryptedFile encryptedFile = new(settingsFilePath)
+                    {
+                        m_WindowsEncryptionAlgorithm
+                    };
+                    Settings? settings = JsonParser.Parse<Settings>(encryptedFile.Read());
+                    if (settings != null)
+                        m_Settings = settings;
+                }
             }
 
             InitTranslation();
@@ -290,7 +289,6 @@ namespace StreamGlass.Twitch
             if (m_Settings.AutoConnect)
                 m_Core.Connect();
             m_HeldMessagePanel.Init();
-            m_StreamChatPanel.Init();
             m_StreamAlertPanel.Init();
             ProfileEditor.SetSearchCategoryDelegate(m_Core.SearchCategoryInfo);
         }
@@ -303,8 +301,6 @@ namespace StreamGlass.Twitch
 
         private static void InitCanals()
         {
-            StreamGlassCanals.NewCanal<Message>(Canals.CHAT_MESSAGE);
-            StreamGlassCanals.NewCanal<Message>(Canals.OVERLAY_CHAT_MESSAGE);
             StreamGlassCanals.NewCanal<string>(Canals.CHAT_JOINED);
             StreamGlassCanals.NewCanal<TwitchUser>(Canals.USER_JOINED);
             StreamGlassCanals.NewCanal<DonationEventArgs>(Canals.DONATION);
@@ -312,12 +308,9 @@ namespace StreamGlass.Twitch
             StreamGlassCanals.NewCanal<GiftFollowEventArgs>(Canals.GIFT_FOLLOW);
             StreamGlassCanals.NewCanal<RaidEventArgs>(Canals.RAID);
             StreamGlassCanals.NewCanal<RewardEventArgs>(Canals.REWARD);
-            StreamGlassCanals.NewCanal<BanEventArgs>(Canals.BAN);
             StreamGlassCanals.NewCanal<Message>(Canals.HELD_MESSAGE);
             StreamGlassCanals.NewCanal<MessageAllowedEventArgs>(Canals.ALLOW_MESSAGE);
             StreamGlassCanals.NewCanal<string>(Canals.HELD_MESSAGE_MODERATED);
-            StreamGlassCanals.NewCanal<string>(Canals.CHAT_CLEAR_USER);
-            StreamGlassCanals.NewCanal<string>(Canals.CHAT_CLEAR_MESSAGE);
             StreamGlassCanals.NewCanal<ShoutoutEventArgs>(Canals.SHOUTOUT);
             StreamGlassCanals.NewCanal<TwitchUser>(Canals.BEING_SHOUTOUT);
             StreamGlassCanals.NewCanal(Canals.CHAT_CLEAR);
@@ -325,11 +318,9 @@ namespace StreamGlass.Twitch
             StreamGlassCanals.NewCanal(Canals.STREAM_STOP);
             StreamGlassCanals.NewCanal<VisualAlert>(Canals.ALERT);
             StreamGlassCanals.NewCanal<bool>(Canals.ALLOW_AUTOMOD);
-            StreamGlassCanals.NewCanal<TwitchUser>(Canals.SEND_SHOUTOUT);
         }
 
         public AEndpoint[] GetEndpoints() => [
-            new AllMessageEndpoint(),
             new ClearMessageEndpoint(),
             new ModerateAutoModEndpoint()
         ];
@@ -347,7 +338,6 @@ namespace StreamGlass.Twitch
         }
 
         public TabItemContent[] GetSettings() => [
-            new StreamChatSettingsItem(m_Settings.Chat, m_StreamChatPanel),
             new StreamAlertSettingsItem(m_Settings.Alerts, m_AlertManager, m_StreamAlertPanel),
             new SettingsItem(m_Settings, m_Core)
         ];
@@ -360,7 +350,6 @@ namespace StreamGlass.Twitch
             {
                 "twitch_alert" => m_StreamAlertPanel,
                 "twitch_held_message" => m_HeldMessagePanel,
-                "twitch_chat" => m_StreamChatPanel,
                 _ => null
             };
         }

@@ -1,20 +1,25 @@
-﻿using CorpseLib.StructuredText;
+﻿using CorpseLib;
+using CorpseLib.StructuredText;
 using StreamGlass.Core;
-using StreamGlass.Core.Profile;
+using StreamGlass.Core.StreamChat;
 using StreamGlass.Twitch.Events;
+using System.Windows.Media;
 using TwitchCorpse;
 using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch
 {
-    public class Handler(Core core, Settings settings, TwitchAPI api) : ITwitchHandler
+    public class Handler(Core core, Settings settings, TwitchAPI api, MessageSource messageSource) : ITwitchHandler
     {
+        //Key : Twitch, Value : StreamGlass
+        private readonly BiMap<string, string> m_UserAssociationTable = [];
+        //Key : Twitch, Value : StreamGlass
+        private readonly BiMap<string, string> m_MessageAssociationTable = [];
+        private readonly Dictionary<string, TwitchUser> m_Users = [];
         private readonly Core m_Core = core;
-        private readonly List<IMessageFilter> m_GlobalFilters = [];
-        private readonly List<IMessageFilter> m_MessageFilters = [ /*new FirstHalfBoldFilter()*/ ];
-        private readonly List<IMessageFilter> m_OverlayFilters = [];
         private readonly Settings m_Settings = settings;
         private readonly TwitchAPI m_API = api;
+        private readonly MessageSource m_MessageSource = messageSource;
         private string m_IRCChannel = string.Empty;
 
         internal bool UpdateViewerCountOf(TwitchUser user)
@@ -48,12 +53,21 @@ namespace StreamGlass.Twitch
 
         public void OnChatJoined() => StreamGlassCanals.Emit(TwitchPlugin.Canals.CHAT_JOINED, m_IRCChannel);
 
-        public void OnChatMessageRemoved(string messageID) => StreamGlassCanals.Emit(TwitchPlugin.Canals.CHAT_CLEAR_MESSAGE, messageID);
+        public void OnChatMessageRemoved(string messageID)
+        {
+            if (m_MessageAssociationTable.TryGetValue(messageID, out string? id))
+                m_MessageSource.RemoveMessages([id!]);
+        }
 
-        public void OnChatUserRemoved(string userID) => StreamGlassCanals.Emit(TwitchPlugin.Canals.CHAT_CLEAR_USER, userID);
+        public void OnChatUserRemoved(string userID)
+        {
+            if (m_UserAssociationTable.TryGetValue(userID, out string? id))
+                m_MessageSource.RemoveAllMessagesFrom(id!);
+        }
 
         public void OnChatClear()
         {
+            m_MessageSource.ClearMessages();
             StreamGlassCanals.Trigger(TwitchPlugin.Canals.CHAT_CLEAR);
             StreamGlassCanals.Trigger(StreamGlassCanals.PROFILE_RESET);
         }
@@ -91,17 +105,35 @@ namespace StreamGlass.Twitch
             Text message = chatMessage.Message;
             if (m_Core.IsIRCSelf(user))
                 user = new(user.ID, user.Name, user.DisplayName, user.ProfileImageURL, TwitchUser.Type.SELF, [..user.Badges]);
-            StreamGlassCanals.Emit(StreamGlassCanals.CHAT_MESSAGE, new UserMessage(GetUserType(user), message.ToString()));
-            foreach (IMessageFilter globalFilter in m_GlobalFilters)
-                message = globalFilter.Filter(message);
-            Text messageToDisplay = (Text)message.Clone();
-            foreach (IMessageFilter messageFilter in m_MessageFilters)
-                messageToDisplay = messageFilter.Filter(messageToDisplay);
-            StreamGlassCanals.Emit(TwitchPlugin.Canals.CHAT_MESSAGE, new Message(user, chatMessage.IsHighlight, chatMessage.MessageID, chatMessage.ReplyID, chatMessage.AnnouncementColor, chatMessage.MessageColor, m_IRCChannel, messageToDisplay));
-            Text overlayMessage = (Text)message.Clone();
-            foreach (IMessageFilter overlayFilter in m_OverlayFilters)
-                overlayMessage = overlayFilter.Filter(overlayMessage);
-            StreamGlassCanals.Emit(TwitchPlugin.Canals.OVERLAY_CHAT_MESSAGE, new Message(user, chatMessage.IsHighlight, chatMessage.MessageID, chatMessage.ReplyID, chatMessage.AnnouncementColor, chatMessage.MessageColor, m_IRCChannel, overlayMessage));
+            int timestamp = 0; //TODO
+            string userID;
+            uint userType = GetUserType(user);
+            ChatUserInfo chatUserInfo = new(user.DisplayName, userType);
+            if (!string.IsNullOrEmpty(chatMessage.MessageColor))
+                chatUserInfo.SetColor((Color)ColorConverter.ConvertFromString(chatMessage.MessageColor));
+            if (m_UserAssociationTable.ContainsKey(user.ID))
+            {
+                userID = m_UserAssociationTable.GetValue(user.ID);
+                //Here to handle changes in twitch user name, color or role
+                m_MessageSource.UpdateChatUser(userID, chatUserInfo);
+            }
+            else
+            {
+                userID = m_MessageSource.NewChatUser(chatUserInfo);
+                m_UserAssociationTable.Add(user.ID, userID);
+            }
+            m_Users[user.ID] = user;
+            MessageInfo messageInfo = new(userID, message, timestamp);
+            foreach (TwitchBadgeInfo badgeInfo in user.Badges)
+                messageInfo.AddBadge(badgeInfo.URL4x);
+            if (m_MessageAssociationTable.TryGetValue(chatMessage.ReplyID, out string? replyID))
+                messageInfo.SetReplyID(replyID!);
+            if (!string.IsNullOrEmpty(chatMessage.AnnouncementColor))
+                messageInfo.SetBorderColor((Color)ColorConverter.ConvertFromString(chatMessage.AnnouncementColor));
+            messageInfo.SetIsHighlighted(chatMessage.IsHighlight || (user.UserType > TwitchUser.Type.MOD && user.UserType < TwitchUser.Type.BROADCASTER));
+            string messageID = m_MessageSource.PostMessage(messageInfo);
+            if (!string.IsNullOrEmpty(messageID))
+                m_MessageAssociationTable.Add(chatMessage.MessageID, messageID);
         }
 
         public void OnFollow(TwitchUser user)
@@ -192,7 +224,19 @@ namespace StreamGlass.Twitch
 
         public void OnShoutout(TwitchUser moderator, TwitchUser to) => StreamGlassCanals.Emit(TwitchPlugin.Canals.SHOUTOUT, new ShoutoutEventArgs(moderator, to));
 
-        public void OnSharedChatStart() => StreamGlassCanals.Trigger(StreamGlassCanals.PROFILE_LOCK_ALL);
-        public void OnSharedChatStop() => StreamGlassCanals.Trigger(StreamGlassCanals.PROFILE_UNLOCK_ALL);
+        public void OnSharedChatStart() { }
+        public void OnSharedChatStop() { }
+
+        public TwitchUser? GetUserFromMessage(StreamGlass.Core.StreamChat.Message message)
+        {
+            if (m_UserAssociationTable.TryGetKey(message.User.ID, out string? userID))
+            {
+                if (m_Users.TryGetValue(userID!, out TwitchUser? user))
+                {
+                    return user;
+                }
+            }
+            return null;
+        }
     }
 }

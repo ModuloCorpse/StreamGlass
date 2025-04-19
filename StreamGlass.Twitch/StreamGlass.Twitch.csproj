@@ -31,12 +31,6 @@
     <Compile Update="Moderation\HeldMessage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="StreamChat\Message.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="StreamChat\StreamChatSettingsItem.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
 
 </Project>

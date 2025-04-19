@@ -10,6 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="API\Overlay\Chat\chat.css" />
+    <None Remove="API\Overlay\Chat\chat.html" />
+    <None Remove="API\Overlay\Chat\chat.js" />
     <None Remove="API\Overlay\StreamGlass.js" />
     <None Remove="Assets\alert-sound.wav" />
     <None Remove="Assets\cancel.png" />
@@ -34,6 +37,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="API\Overlay\Chat\chat.css" />
+    <EmbeddedResource Include="API\Overlay\Chat\chat.html" />
+    <EmbeddedResource Include="API\Overlay\Chat\chat.js" />
     <EmbeddedResource Include="API\Overlay\StreamGlass.js" />
   </ItemGroup>
 
@@ -125,6 +131,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Update="GeneralSettingsItem.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="StreamChatSettingsItem.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

@@ -21,6 +21,7 @@ namespace StreamGlass.Core.Profile
         private int m_MessageSinceLastTrigger = 0;
         private int m_LockCount = 0;
         private readonly bool m_AutoTrigger = false;
+        private readonly bool m_SharedMessage = false;
         private bool m_IsEnabled = true;
 
         public string Name => m_Name;
@@ -31,6 +32,7 @@ namespace StreamGlass.Core.Profile
         public uint UserType => m_UserType;
         public ReadOnlyCollection<string> Commands => m_Commands.AsReadOnly();
         public bool AutoTrigger => m_AutoTrigger;
+        public bool SharedMessage => m_SharedMessage;
         public int AutoTriggerTime => m_AutoTriggerTime;
         public int AutoTriggerDeltaTime => m_AutoTriggerDeltaTime;
         public string[] AutoTriggerArguments => m_AutoTriggerArguments;
@@ -50,6 +52,8 @@ namespace StreamGlass.Core.Profile
             m_AutoTriggerTime = obj.GetOrDefault("auto_trigger_time", 0);
             m_AutoTriggerDeltaTime = obj.GetOrDefault("auto_trigger_delta_time", 0);
             m_AutoTriggerArguments = [.. obj.GetList<string>("auto_trigger_argv")];
+            //SharedMessage
+            m_SharedMessage = obj.GetOrDefault("shared_message", false);
         }
 
         public ChatCommand(string name,
@@ -58,6 +62,7 @@ namespace StreamGlass.Core.Profile
             int nbMessage,
             string content,
             uint userType,
+            bool sharedMessage,
             List<string> commands,
             bool autoTrigger,
             int autoTriggerTime,
@@ -75,6 +80,7 @@ namespace StreamGlass.Core.Profile
             m_AutoTriggerTime = autoTriggerTime;
             m_AutoTriggerDeltaTime = autoTriggerDeltaTime;
             m_AutoTriggerArguments = autoTriggerArguments;
+            m_SharedMessage = sharedMessage;
             Reset();
         }
 
@@ -105,6 +111,8 @@ namespace StreamGlass.Core.Profile
                 obj.Add("auto_trigger_delta_time", m_AutoTriggerDeltaTime);
             if (m_AutoTriggerArguments.Length != 0)
                 obj.Add("auto_trigger_argv", m_AutoTriggerArguments);
+            if (m_SharedMessage)
+                obj.Add("shared_message", m_SharedMessage);
             return obj;
         }
 
@@ -150,7 +158,9 @@ namespace StreamGlass.Core.Profile
                 for (int i = 1; i < arguments.Length; ++i)
                     context.AddVariable("$" + i.ToString(), arguments[i]);
                 string contentToSend = Converter.Convert(m_Content, context);
-                StreamGlassCanals.Emit(StreamGlassCanals.SEND_MESSAGE, contentToSend);
+                //TODO
+                DataObject messageData = new() { { "message", contentToSend }, { "for_source_only", !m_SharedMessage } };
+                StreamGlassChat.SendMessage("twitch", messageData);
                 StreamGlassCanals.Emit(StreamGlassCanals.PROFILE_COMMANDS, new ProfileCommandEventArgs(m_Name, arguments));
                 Reset();
             }

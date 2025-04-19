@@ -1,19 +1,19 @@
 ﻿using CorpseLib.DataNotation;
 using CorpseLib.Json;
 using CorpseLib.Translation;
+using CorpseLib.Web.API;
 using CorpseLib.Web.API.Event;
 using StreamGlass.API;
 using StreamGlass.API.Event;
 using StreamGlass.API.Overlay;
+using StreamGlass.API.Overlay.Chat;
 using StreamGlass.Core;
 using StreamGlass.Core.Profile;
 using StreamGlass.Twitch;
-using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Windows.Controls;
-using System.Windows.Threading;
 
 namespace StreamGlass
 {
@@ -21,12 +21,12 @@ namespace StreamGlass
     {
         static Manager()
         {
+            DataHelper.RegisterSerializer(new Settings.ChatSettings.DataSerializer());
             DataHelper.RegisterSerializer(new Settings.DataSerializer());
         }
 
         private readonly CorpseLib.Web.API.API m_API = new(15007);
-        private readonly Stopwatch m_Watch = new();
-        private readonly DispatcherTimer m_DispatcherTimer = new();
+        private readonly TickManager m_TickManager = new();
         private Settings m_Settings = new();
         private readonly ProfileManager m_ProfileManager;
         private readonly PluginManager m_PluginManager;
@@ -35,20 +35,27 @@ namespace StreamGlass
 
         public Manager(SplashScreen splashScreen)
         {
+            StreamGlassChat.Init(m_TickManager);
+
             //Progress bar message: Learning new languages
             LoadSettings();
+
+            StreamGlassChat.StreamChatPanel.SetDisplayType(m_Settings.Chat.DisplayType);
+            StreamGlassChat.StreamChatPanel.SetContentFontSize(m_Settings.Chat.MessageFontSize);
+
             InitializeTranslation();
             Translator.LoadDirectory("./locals");
             Translator.SetLanguage(new CultureInfo(m_Settings.CurrentLanguage));
             splashScreen.UpdateProgressBar(50);
 
             //Progress bar translated message: Loading profiles
-            m_ProfileManager = new();
+            m_ProfileManager = new(m_TickManager);
             m_ProfileManager.Load();
+            StreamGlassChat.RegisterMessageReceiver(m_ProfileManager);
             splashScreen.UpdateProgressBar(60);
 
             PluginManager.PLUGIN_LOGGER.Start();
-            m_PluginManager = new();
+            m_PluginManager = new(m_TickManager);
             //Progress bar translated message: Loading XX (name of the plugin)
             m_PluginManager.LoadPlugins();
             //Progress bar translated message: Loading Twitch
@@ -61,13 +68,19 @@ namespace StreamGlass
             InitAPI();
             m_API.Start();
 
-            StreamGlassContext.LOGGER.Log("HTTP endpoints");
-            foreach (var pair in m_API.FlattenHTTP())
-                StreamGlassContext.LOGGER.Log(string.Format("- {0} => {1}", pair.Key, pair.Value.GetType().Name));
-
-            StreamGlassContext.LOGGER.Log("Websocket endpoints");
-            foreach (var pair in m_API.FlattenWebsocket())
-                StreamGlassContext.LOGGER.Log(string.Format("- {0} => {1}", pair.Key, pair.Value.GetType().Name));
+            foreach (var pair in m_API.FlattenEndpoints())
+            {
+                AEndpoint endpoint = pair.Value;
+                StringBuilder builder = new("- ");
+                if (endpoint.IsHTTPEndpoint)
+                    builder.Append("HTTP ");
+                if (endpoint.IsWebsocketEndpoint)
+                    builder.Append("Websocket ");
+                builder.Append(pair.Key);
+                builder.Append(" => ");
+                builder.Append(endpoint.GetType().Name);
+                StreamGlassContext.LOGGER.Log(builder.ToString());
+            }
 
             splashScreen.UpdateProgressBar(80);
 
@@ -76,10 +89,7 @@ namespace StreamGlass
             m_PluginManager.InitPlugins();
 
             //Progress bar translated message: Starting update routine
-            m_DispatcherTimer.Tick += Tick;
-            m_DispatcherTimer.Interval = TimeSpan.FromMilliseconds(50);
-            m_Watch.Start();
-            m_DispatcherTimer.Start();
+            m_TickManager.Start();
             splashScreen.UpdateProgressBar(90);
         }
 
@@ -130,12 +140,17 @@ namespace StreamGlass
                 { StreamGlassTranslationKeys.PROFILE_EDITOR_USER, "User:" },
                 { StreamGlassTranslationKeys.PROFILE_EDITOR_ENABLE, "Enable:" },
                 { StreamGlassTranslationKeys.PROFILE_EDITOR_TIME_DELTA, "Time Delta:" },
+                { StreamGlassTranslationKeys.PROFILE_EDITOR_SHARE, "Multi-chat:" },
                 { StreamGlassTranslationKeys.SECTION_STRING_SOURCES, "String Sources" },
                 { StreamGlassTranslationKeys.STRING_SOURCE_EDITOR_PATH, "Path:" },
                 { StreamGlassTranslationKeys.STRING_SOURCE_EDITOR_CONTENT, "Content:" },
                 { StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_FILE, "File:" },
                 { StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_OUTPUT, "Output:" },
                 { StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_COOLDOWN, "Cooldown (s):" },
+                { StreamGlassTranslationKeys.SETTINGS_CHAT_MODE, "Chat Mode:" },
+                { StreamGlassTranslationKeys.SETTINGS_CHAT_FONT, "Chat Font Size:" },
+                { StreamGlassTranslationKeys.CHAT_TOGGLE_HIGHLIGHT_USER, "Toggle user highlight" },
+                { StreamGlassTranslationKeys.CHAT_DELETE_MESSAGE, "Delete message" },
             };
             Translator.AddTranslation(translation);
             Translation translationFR = new(new CultureInfo("fr-FR"), true)
@@ -173,12 +188,17 @@ namespace StreamGlass
                 { StreamGlassTranslationKeys.PROFILE_EDITOR_USER, "Utilisateur :" },
                 { StreamGlassTranslationKeys.PROFILE_EDITOR_ENABLE, "Activer :" },
                 { StreamGlassTranslationKeys.PROFILE_EDITOR_TIME_DELTA, "Delta de Temps :" },
+                { StreamGlassTranslationKeys.PROFILE_EDITOR_SHARE, "Multi-chat :" },
                 { StreamGlassTranslationKeys.SECTION_STRING_SOURCES, "Source de texte" },
                 { StreamGlassTranslationKeys.STRING_SOURCE_EDITOR_PATH, "Chemin :" },
                 { StreamGlassTranslationKeys.STRING_SOURCE_EDITOR_CONTENT, "Contenu :" },
                 { StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_FILE, "Fichier :" },
                 { StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_OUTPUT, "Sortie :" },
                 { StreamGlassTranslationKeys.SOUND_EDITOR_AUDIO_COOLDOWN, "Attente (s) :" },
+                { StreamGlassTranslationKeys.SETTINGS_CHAT_MODE, "Mode du Chat :" },
+                { StreamGlassTranslationKeys.SETTINGS_CHAT_FONT, "Taille du Chat :" },
+                { StreamGlassTranslationKeys.CHAT_TOGGLE_HIGHLIGHT_USER, "Mises en avant" },
+                { StreamGlassTranslationKeys.CHAT_DELETE_MESSAGE, "Supprimer le message" },
             };
             Translator.AddTranslation(translationFR);
             Translator.CurrentLanguageChanged += () => m_Settings.CurrentLanguage = Translator.CurrentLanguage.Name;
@@ -195,18 +215,10 @@ namespace StreamGlass
             m_API.AddEndpoint(new EventUnregisterEndpoint("/event/unregister", overlayWebsocketEndpoint));
             m_API.AddEndpoint(overlayWebsocketEndpoint);
             m_API.AddEndpoint(new EventHTTPEndpoint(overlayWebsocketEndpoint));
-            m_API.AddEndpoint(new OverlayHTTPEndpoint());
+            m_API.AddEndpoint(new OverlayEndpoint());
+            m_API.AddEndpoint(new MessagesEndpoint());
 
             m_PluginManager.RegisterToAPI(m_API);
-        }
-
-        private void Tick(object? sender, EventArgs e)
-        {
-            m_Watch.Stop();
-            long deltaTime = m_Watch.ElapsedMilliseconds;
-            m_PluginManager.Update(deltaTime);
-            m_ProfileManager.Update(deltaTime);
-            m_Watch.Restart();
         }
 
         public void Stop()
@@ -216,15 +228,26 @@ namespace StreamGlass
             JsonParser.WriteToFile("settings.json", json);
             m_ProfileManager.Save();
             m_PluginManager.Clear();
-            m_Watch.Stop();
-            m_DispatcherTimer.Stop();
+            m_TickManager.Stop();
             m_API.Stop();
         }
 
-        public void FillSettingsDialog(Core.Settings.Dialog settingsDialog) => m_PluginManager.FillSettings(settingsDialog);
+        public void FillSettingsDialog(Core.Settings.Dialog settingsDialog)
+        {
+            settingsDialog.AddTabItem(new StreamChatSettingsItem(m_Settings.Chat, StreamGlassChat.StreamChatPanel));
+            m_PluginManager.FillSettings(settingsDialog);
+        }
 
         public void Test() => m_PluginManager.Test();
 
-        public Control? GetPanel(string panelID) => m_PluginManager.GetPanel(panelID);
+        public Control? GetPanel(string panelID)
+        {
+            return panelID switch
+            {
+                //TODO
+                "chat" => StreamGlassChat.StreamChatPanel,
+                _ => m_PluginManager.GetPanel(panelID)
+            };
+        }
     }
 }

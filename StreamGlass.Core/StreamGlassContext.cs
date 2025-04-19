@@ -5,6 +5,7 @@ using CorpseLib.StructuredText;
 using StreamGlass.Core.Audio;
 using StreamGlass.Core.Profile;
 using StreamGlass.Core.Stat;
+using StreamGlass.Core.StreamChat;
 
 namespace StreamGlass.Core
 {
@@ -39,6 +40,11 @@ namespace StreamGlass.Core
             DataHelper.RegisterSerializer(new CategoryInfo.DataSerializer());
             DataHelper.RegisterSerializer(new UpdateStreamInfoArgs.DataSerializer());
             DataHelper.RegisterSerializer(new Sound.DataSerializer());
+            DataHelper.RegisterSerializer(new SendMessageEventArgs.DataSerializer());
+            DataHelper.RegisterSerializer(new ColorDataSerializer());
+            DataHelper.RegisterSerializer(new ChatUser.DataSerializer());
+            DataHelper.RegisterSerializer(new Message.DataSerializer());
+            DataHelper.RegisterSerializer(new DeleteMessagesEventArgs.DataSerializer());
         }
 
         public static void AfterPluginInit()

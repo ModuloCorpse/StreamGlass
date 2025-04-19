@@ -1,14 +1,37 @@
 ﻿using CorpseLib;
 using CorpseLib.DataNotation;
 using StreamGlass.Core.Controls;
-using StreamGlass.Twitch.Alerts;
-using static StreamGlass.Twitch.Alerts.AlertManager;
 
-namespace StreamGlass.Twitch
+namespace StreamGlass.Core.Settings
 {
-    public class Settings
+    public class BaseSettings
     {
-        public class AlertsSettings
+        public class ChatSettings
+        {
+            public class DataSerializer : ADataSerializer<ChatSettings>
+            {
+                protected override OperationResult<ChatSettings> Deserialize(DataObject reader)
+                {
+                    ChatSettings chatSettings = new();
+                    if (reader.TryGet("display", out ScrollPanelDisplayType display))
+                        chatSettings.DisplayType = display;
+                    if (reader.TryGet("font", out double font))
+                        chatSettings.MessageFontSize = font;
+                    return new(chatSettings);
+                }
+
+                protected override void Serialize(ChatSettings obj, DataObject writer)
+                {
+                    writer["display"] = obj.DisplayType;
+                    writer["font"] = obj.MessageFontSize;
+                }
+            }
+
+            public ScrollPanelDisplayType DisplayType = ScrollPanelDisplayType.TOP_TO_BOTTOM;
+            public double MessageFontSize = 14;
+        }
+
+        /*public class AlertsSettings
         {
             public class DataSerializer : ADataSerializer<AlertsSettings>
             {
@@ -52,81 +75,28 @@ namespace StreamGlass.Twitch
             };
             public ScrollPanelDisplayType DisplayType = ScrollPanelDisplayType.TOP_TO_BOTTOM;
             public double MessageFontSize = 20;
-        }
+        }*/
 
-        public class ModerationSettings
+        public class DataSerializer : ADataSerializer<BaseSettings>
         {
-            public class DataSerializer : ADataSerializer<ModerationSettings>
+            protected override OperationResult<BaseSettings> Deserialize(DataObject reader)
             {
-                protected override OperationResult<ModerationSettings> Deserialize(DataObject reader)
-                {
-                    ModerationSettings moderationSettings = new();
-                    if (reader.TryGet("display", out ScrollPanelDisplayType display))
-                        moderationSettings.DisplayType = display;
-                    if (reader.TryGet("font", out double font))
-                        moderationSettings.MessageFontSize = font;
-                    return new(moderationSettings);
-                }
-
-                protected override void Serialize(ModerationSettings obj, DataObject writer)
-                {
-                    writer["display"] = obj.DisplayType;
-                    writer["font"] = obj.MessageFontSize;
-                }
-            }
-
-            public ScrollPanelDisplayType DisplayType = ScrollPanelDisplayType.TOP_TO_BOTTOM;
-            public double MessageFontSize = 14;
-        }
-
-        public class DataSerializer : ADataSerializer<Settings>
-        {
-            protected override OperationResult<Settings> Deserialize(DataObject reader)
-            {
-                Settings settings = new();
-                if (reader.TryGet("auto_connect", out bool? autoConnect))
-                    settings.AutoConnect = (autoConnect == true);
-                if (reader.TryGet("do_welcome", out bool? doWelcome))
-                    settings.DoWelcome = (doWelcome == true);
-                if (reader.TryGet("sub_mode", out string? subMode) && subMode != null)
-                    settings.SubMode = subMode;
-                if (reader.TryGet("welcome_msg", out string? welcomeMsg) && welcomeMsg != null)
-                    settings.WelcomeMessage = welcomeMsg;
-                if (reader.TryGet("public_key", out string? publicKey) && publicKey != null)
-                    settings.PublicKey = publicKey;
-                if (reader.TryGet("secret_key", out string? secretKey) && secretKey != null)
-                    settings.SecretKey = secretKey;
-                if (reader.TryGet("browser", out string? browser) && browser != null)
-                    settings.Browser = browser;
-                if (reader.TryGet("alerts", out AlertsSettings? alerts) && alerts != null)
-                    settings.Alerts = alerts;
-                if (reader.TryGet("moderation", out ModerationSettings? moderation) && moderation != null)
-                    settings.Moderation = moderation;
+                BaseSettings settings = new();
+                if (reader.TryGet("chat", out ChatSettings? chat) && chat != null)
+                    settings.Chat = chat;
+                //if (reader.TryGet("alerts", out AlertsSettings? alerts) && alerts != null)
+                //    settings.Alerts = alerts;
                 return new(settings);
             }
 
-            protected override void Serialize(Settings obj, DataObject writer)
+            protected override void Serialize(BaseSettings obj, DataObject writer)
             {
-                writer["auto_connect"] = obj.AutoConnect;
-                writer["do_welcome"] = obj.DoWelcome;
-                writer["sub_mode"] = obj.SubMode;
-                writer["welcome_msg"] = obj.WelcomeMessage;
-                writer["public_key"] = obj.PublicKey;
-                writer["secret_key"] = obj.SecretKey;
-                writer["browser"] = obj.Browser;
-                writer["alerts"] = obj.Alerts;
-                writer["moderation"] = obj.Moderation;
+                writer["chat"] = obj.Chat;
+                //writer["alerts"] = obj.Alerts;
             }
         }
 
-        public AlertsSettings Alerts = new();
-        public ModerationSettings Moderation = new();
-        public string Browser = string.Empty;
-        public string PublicKey = string.Empty;
-        public string SecretKey = string.Empty;
-        public string WelcomeMessage = "Hello World! I'm a bot connected with StreamGlass!";
-        public string SubMode = "all";
-        public bool AutoConnect = false;
-        public bool DoWelcome = true;
+        public ChatSettings Chat = new();
+        //public AlertsSettings Alerts = new();
     }
 }

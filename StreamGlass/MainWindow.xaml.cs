@@ -81,7 +81,7 @@ namespace StreamGlass
             //Progress bar translated message: Interface loading
             StreamGlassContext.AfterPluginInit();
             //TODO Temporary code : To replace with AvalonDock layouts
-            StreamChatBorder.Child = m_Manager.GetPanel("twitch_chat");
+            StreamChatBorder.Child = m_Manager.GetPanel("chat");
             StreamAlertBorder.Child = m_Manager.GetPanel("twitch_alert");
             HeldMessageBorder.Child = m_Manager.GetPanel("twitch_held_message");
             //

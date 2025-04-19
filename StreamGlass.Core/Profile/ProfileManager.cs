@@ -1,15 +1,16 @@
 ﻿using CorpseLib.DataNotation;
 using CorpseLib.ManagedObject;
+using StreamGlass.Core.StreamChat;
 
 namespace StreamGlass.Core.Profile
 {
-    public class ProfileManager: Manager<Profile>
+    public class ProfileManager: Manager<Profile>, IMessageReceiver
     {
         private int m_NbMessage = 0;
 
-        public ProfileManager() : base("./profiles")
+        public ProfileManager(TickManager tickManager) : base("./profiles")
         {
-            StreamGlassCanals.Register<UserMessage>(StreamGlassCanals.CHAT_MESSAGE, OnChatMessage);
+            tickManager.RegisterTickFunction(Update);
             StreamGlassCanals.Register(StreamGlassCanals.PROFILE_RESET, ResetCurrentProfile);
             StreamGlassCanals.Register(StreamGlassCanals.PROFILE_LOCK_ALL, LockAllProfiles);
             StreamGlassCanals.Register(StreamGlassCanals.PROFILE_UNLOCK_ALL, UnlockAllProfiles);
@@ -56,17 +57,6 @@ namespace StreamGlass.Core.Profile
             StreamGlassCanals.Emit(StreamGlassCanals.PROFILE_CHANGED_MENU_ITEM, id);
         }
 
-        private void OnChatMessage(UserMessage? message)
-        {
-            if (message == null)
-                return;
-            if (message.SenderType != uint.MaxValue)
-            {
-                ++m_NbMessage;
-                CurrentObject?.OnMessage(message);
-            }
-        }
-
         public void Update(long deltaTime)
         {
             CurrentObject?.Update(deltaTime, m_NbMessage);
@@ -74,5 +64,16 @@ namespace StreamGlass.Core.Profile
         }
 
         protected override Profile? DeserializeObject(DataObject obj) => new(obj);
+
+        public void AddMessage(Message message)
+        {
+            if (message.User.UserType != uint.MaxValue)
+            {
+                ++m_NbMessage;
+                CurrentObject?.OnMessage(message.Content.ToString(), message.User.UserType);
+            }
+        }
+
+        public void RemoveMessages(string[] messageIDs) { }
     }
 }

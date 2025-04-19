@@ -52,13 +52,12 @@ namespace StreamGlass.Core.Profile
                 Parent?.TriggerCommand(command, userType, isForced);
         }
 
-        internal void OnMessage(UserMessage message)
+        internal void OnMessage(string messageContent, uint senderType)
         {
             lock (m_Lock)
             {
-                string messageContent = message.Message;
                 if (messageContent.Length > 0 && messageContent[0] == '!')
-                    TriggerCommand(messageContent[1..], message.SenderType, false);
+                    TriggerCommand(messageContent[1..], senderType, false);
             }
         }
 

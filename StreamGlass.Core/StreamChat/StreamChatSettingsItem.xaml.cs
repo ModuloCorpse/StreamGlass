@@ -3,16 +3,16 @@ using StreamGlass.Core.Controls;
 using StreamGlass.Core.Settings;
 using System.Windows.Controls;
 
-namespace StreamGlass.Twitch.StreamChat
+namespace StreamGlass.Core.StreamChat
 {
     public partial class StreamChatSettingsItem : TabItemContent
     {
         private readonly UserMessageScrollPanel m_StreamChat;
-        private readonly Settings.ChatSettings m_Settings = new();
+        private readonly BaseSettings.ChatSettings m_Settings = new();
         private readonly double m_OriginalContentFontSize;
         private readonly ScrollPanelDisplayType m_OriginalDisplayType;
 
-        public StreamChatSettingsItem(Settings.ChatSettings settings, UserMessageScrollPanel streamChat) : base("${ExeDir}/Assets/chat-bubble.png")
+        public StreamChatSettingsItem(BaseSettings.ChatSettings settings, UserMessageScrollPanel streamChat) : base("${ExeDir}/Assets/chat-bubble.png")
         {
             m_StreamChat = streamChat;
             m_Settings = settings;
@@ -20,8 +20,8 @@ namespace StreamGlass.Twitch.StreamChat
             m_Settings.MessageFontSize = m_StreamChat.MessageContentFontSize;
 
             InitializeComponent();
-            ChatMessageFontLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_CHAT_FONT);
-            ChatModeComboBoxLabel.SetTranslationKey(TwitchPlugin.TranslationKeys.SETTINGS_CHAT_MODE);
+            ChatMessageFontLabel.SetTranslationKey(StreamGlassTranslationKeys.SETTINGS_CHAT_FONT);
+            ChatModeComboBoxLabel.SetTranslationKey(StreamGlassTranslationKeys.SETTINGS_CHAT_MODE);
 
             m_OriginalDisplayType = m_Settings.DisplayType;
             m_OriginalContentFontSize = m_Settings.MessageFontSize;

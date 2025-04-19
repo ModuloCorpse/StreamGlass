@@ -4,15 +4,13 @@ using CorpseLib.Logging;
 using CorpseLib.Web.API;
 using StreamGlass.Core.Plugin;
 using StreamGlass.Core.Settings;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
 using Path = System.IO.Path;
 
-namespace StreamGlass
+namespace StreamGlass.Core
 {
     public partial class PluginManager
     {
@@ -107,6 +105,11 @@ namespace StreamGlass
         private readonly List<APlugin> m_Plugins = [];
         private readonly List<APlugin> m_ActivePlugins = [];
 
+        public PluginManager(TickManager tickManager)
+        {
+            tickManager.RegisterTickFunction(Update);
+        }
+
         public void RegisterToAPI(CorpseLib.Web.API.API api)
         {
             foreach (APlugin plugin in m_ActivePlugins)
@@ -114,18 +117,9 @@ namespace StreamGlass
                 if (plugin is IAPIPlugin apiPlugin)
                 {
                     CorpseLib.Web.Http.Path path = new($"/{apiPlugin.Name.ToLower()}");
-                    HTTPEndpointNode httpEndpointNode = new();
-                    WebSocketEndpointNode webSocketEndpointNode = new();
-                    AEndpoint[] endpoints = apiPlugin.GetEndpoints();
-                    foreach (AEndpoint endpoint in endpoints)
-                    {
-                        if (endpoint is AWebsocketEndpoint websocketEndpoint)
-                            webSocketEndpointNode.Add(websocketEndpoint);
-                        else if (endpoint is AHTTPEndpoint httpEndpoint)
-                            httpEndpointNode.Add(httpEndpoint);
-                    }
-                    api.AddEndpointNode(path, httpEndpointNode);
-                    api.AddEndpointNode(path, webSocketEndpointNode);
+                    EndpointTreeNode endpointTree = new();
+                    endpointTree.Add(apiPlugin.GetEndpoints());
+                    api.AddEndpointTreeNode(path, endpointTree);
                 }
             }
         }

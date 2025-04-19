@@ -2,7 +2,7 @@
 {
     public class UserControl : System.Windows.Controls.UserControl, IUIElement
     {
-        public Window GetWindow() => (Window)System.Windows.Window.GetWindow(this);
+        public Window? GetWindow() { try { return (Window)System.Windows.Window.GetWindow(this); } catch { return null; } }
 
         public void Update(BrushPaletteManager palette)
         {

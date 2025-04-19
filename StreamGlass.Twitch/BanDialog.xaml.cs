@@ -3,7 +3,7 @@ using StreamGlass.Twitch.Events;
 using System.Windows;
 using TwitchCorpse;
 
-namespace StreamGlass.Twitch.StreamChat
+namespace StreamGlass.Twitch
 {
     public partial class BanDialog : Dialog
     {

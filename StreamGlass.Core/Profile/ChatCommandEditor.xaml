@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="clr-namespace:StreamGlass.Core.Controls"
         mc:Ignorable="d"
-        d:DesignHeight="631"
+        d:DesignHeight="651"
         d:DesignWidth="454"
-        Height="631"
+        Height="651"
         Width="454"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -55,6 +55,10 @@
                 <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                     <ui:Label x:Name="UserComboBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="User:" Width="150"/>
                     <ui:NumericUpDown Margin="5,0,0,0" x:Name="UserUpDown" MinValue="0" Height="26" Width="250"/>
+                </ui:StackPanel>
+                <ui:StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                    <ui:Label x:Name="IsSharedTextBoxLabel" VerticalAlignment="Center" TextAlignment="Right" Text="Multi-chat:" Width="150"/>
+                    <CheckBox Margin="5,0,0,0" x:Name="IsSharedCheckBox"/>
                 </ui:StackPanel>
                 <ui:GroupBox x:Name="AliasesGroupBox" Header="Aliases">
                     <ui:EditableList x:Name="AliasesList" Height="75" EditImageSource="${ExeDir}/Assets/pencil.png" IsSearchable="False" />

@@ -3,27 +3,32 @@ using CorpseLib.Json;
 using CorpseLib.Web.API;
 using CorpseLib.Web.Http;
 using StreamGlass.Core;
+using StreamGlass.Core.StreamChat;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace StreamGlass.Twitch.API.Message
+namespace StreamGlass.API.Overlay.Chat
 {
-    public class AllMessageEndpoint : AHTTPEndpoint
+    public class MessagesEndpoint : AHTTPEndpoint, IMessageReceiver
     {
         private class Page
         {
             private readonly Page? m_NextPage = null;
             private readonly Guid m_ID = Guid.NewGuid();
-            private readonly Twitch.Message[] m_Messages;
+            private readonly Message[] m_Messages;
 
             public Guid ID => m_ID;
 
-            public Page(AllMessageEndpoint endpoint, List<Twitch.Message> messages)
+            public Page(MessagesEndpoint endpoint, List<Message> messages)
             {
-                List<Twitch.Message> messagesRet = [];
+                List<Message> messagesRet = [];
                 bool keepPaging = true;
                 long length = 0;
                 while (messages.Count > 0 && keepPaging)
                 {
-                    Twitch.Message message = messages.First();
+                    Message message = messages.First();
                     DataObject node = (DataObject)DataHelper.Cast(message);
                     long nodeLength = JsonParser.NetStr(node).Length;
                     if (length == 0 || length + nodeLength < 2000)
@@ -55,50 +60,11 @@ namespace StreamGlass.Twitch.API.Message
         }
 
         private readonly Dictionary<Guid, Page> m_Pages = [];
-        private readonly List<Twitch.Message> m_Messages = [];
-        private readonly object m_MessageLock = new();
+        private readonly ConcurrentDictionary<string, Message> m_Messages = [];
 
-        public AllMessageEndpoint() : base("/all_message")
+        public MessagesEndpoint() : base("/messages")
         {
-            StreamGlassCanals.Register<Twitch.Message>(TwitchPlugin.Canals.OVERLAY_CHAT_MESSAGE, OnOverlayChatMessage);
-            StreamGlassCanals.Register(TwitchPlugin.Canals.CHAT_CLEAR, OnChatClear);
-            StreamGlassCanals.Register<string>(TwitchPlugin.Canals.CHAT_CLEAR_USER, OnChatClearUser);
-            StreamGlassCanals.Register<string>(TwitchPlugin.Canals.CHAT_CLEAR_MESSAGE, OnChatClearMessage);
-        }
-
-        private void OnOverlayChatMessage(Twitch.Message? message)
-        {
-            lock (m_MessageLock)
-            {
-                if (message != null)
-                    m_Messages.Add(message);
-            }
-        }
-
-        private void OnChatClear()
-        {
-            lock (m_MessageLock)
-            {
-                m_Messages.Clear();
-            }
-        }
-
-        private void OnChatClearUser(string? userID)
-        {
-            lock (m_MessageLock)
-            {
-                if (userID != null)
-                    m_Messages.RemoveAll(message => message.UserID == userID);
-            }
-        }
-
-        private void OnChatClearMessage(string? messageID)
-        {
-            lock (m_MessageLock)
-            {
-                if (messageID != null)
-                    m_Messages.RemoveAll(message => message.ID == messageID);
-            }
+            StreamGlassChat.RegisterMessageReceiver(this);
         }
 
         private void AddPage(Page page) => m_Pages[page.ID] = page;
@@ -117,19 +83,43 @@ namespace StreamGlass.Twitch.API.Message
                 else
                     return new(404, "Page not found");
             }
+            else if (request.HaveParameter("id"))
+            {
+                string id = request.GetParameter("id");
+                if (m_Messages.TryGetValue(id, out Message? message))
+                {
+                    List<Message> messages = [ message ];
+                    return new(200, "Ok", JsonParser.NetStr(new DataObject() { { "messages", messages } }));
+                }
+                else
+                    return new(404, "Message not found");
+            }
             else
             {
                 Page page;
                 if (request.HaveParameter("limit"))
                 {
                     int limit = int.Parse(request.GetParameter("limit"));
-                    List<Twitch.Message> limitedMessages = [.. m_Messages.Skip(Math.Max(0, m_Messages.Count - limit))];
+                    List<Message> limitedMessages = [.. m_Messages.Values.Skip(Math.Max(0, m_Messages.Count - limit))];
                     page = new(this, limitedMessages);
                 }
                 else
-                    page = new(this, [.. m_Messages]);
+                    page = new(this, [.. m_Messages.Values]);
                 return new(200, "Ok", JsonParser.NetStr(page.ToJObject()));
             }
+        }
+
+        public void AddMessage(Message message)
+        {
+            m_Messages.TryAdd(message.ID, message);
+            StreamGlassCanals.Emit(StreamGlassCanals.OVERLAY_CHAT_MESSAGE, message);
+        }
+
+        public void RemoveMessages(string[] messageIDs)
+        {
+            foreach (string messageID in messageIDs)
+                m_Messages.TryRemove(messageID, out Message? _);
+            StreamGlassCanals.Emit(StreamGlassCanals.CHAT_DELETE_MESSAGES, new DeleteMessagesEventArgs(messageIDs));
         }
     }
 }

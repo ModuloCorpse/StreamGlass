@@ -17,7 +17,11 @@ namespace StreamGlass.Core.Controls
         #endregion Value
 
         private TranslationKey m_TranslationKey = new(string.Empty);
-        public void SetTranslationKey(TranslationKey key) => m_TranslationKey = key;
+        public void SetTranslationKey(TranslationKey key)
+        {
+            m_TranslationKey = key;
+            Translator_CurrentLanguageChanged();
+        }
 
         public RepeatButton() => Translator.CurrentLanguageChanged += Translator_CurrentLanguageChanged;
 

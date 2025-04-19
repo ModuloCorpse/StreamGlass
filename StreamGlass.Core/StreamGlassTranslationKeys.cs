@@ -37,11 +37,16 @@ namespace StreamGlass.Core
         public static readonly TranslationKey PROFILE_EDITOR_USER = new("profile_editor_user");
         public static readonly TranslationKey PROFILE_EDITOR_ENABLE = new("profile_editor_enable");
         public static readonly TranslationKey PROFILE_EDITOR_TIME_DELTA = new("profile_editor_time_delta");
+        public static readonly TranslationKey PROFILE_EDITOR_SHARE = new("profile_editor_share");
         public static readonly TranslationKey SECTION_STRING_SOURCES = new("section_string_sources");
         public static readonly TranslationKey STRING_SOURCE_EDITOR_PATH = new("string_source_editor_path");
         public static readonly TranslationKey STRING_SOURCE_EDITOR_CONTENT = new("string_source_editor_content");
         public static readonly TranslationKey SOUND_EDITOR_AUDIO_FILE = new("sound_editor_audio_file");
         public static readonly TranslationKey SOUND_EDITOR_AUDIO_OUTPUT = new("sound_editor_audio_output");
         public static readonly TranslationKey SOUND_EDITOR_AUDIO_COOLDOWN = new("sound_editor_audio_cooldown");
+        public static readonly TranslationKey SETTINGS_CHAT_MODE = new("settings_chat_mode");
+        public static readonly TranslationKey SETTINGS_CHAT_FONT = new("settings_chat_font");
+        public static readonly TranslationKey CHAT_TOGGLE_HIGHLIGHT_USER = new("chat_toggle_highlight_user");
+        public static readonly TranslationKey CHAT_DELETE_MESSAGE = new("chat_delete_message");
     }
 }

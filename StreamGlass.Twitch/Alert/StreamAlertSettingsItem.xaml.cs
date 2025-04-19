@@ -81,7 +81,7 @@ namespace StreamGlass.Twitch.Alerts
         private void AlertInfosList_ItemEdited(object _, object e)
         {
             Alert alert = (Alert)e;
-            AlertEditor dialog = new(GetWindow(), alert.Settings);
+            AlertEditor dialog = new(GetWindow()!, alert.Settings);
             dialog.ShowDialog();
             AlertSettings? newInfo = dialog.AlertSettings;
             if (newInfo != null)
