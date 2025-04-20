@@ -165,14 +165,17 @@ namespace StreamGlass.Twitch.Alerts
 
         public void AddMessage(StreamGlass.Core.StreamChat.Message message)
         {
-            if (m_Alerts.TryGetValue(KnownAlerts.CHAT_MESSAGE, out Alert? alert))
+            if (message.User.UserType < 8)
             {
-                StreamGlassContext.LOGGER.Log("Adding visual alert");
-                AlertSettings alertSettings = alert.Settings;
-                if (alertSettings.IsEnabled)
+                if (m_Alerts.TryGetValue(KnownAlerts.CHAT_MESSAGE, out Alert? alert))
                 {
-                    if (alertSettings.Audio != null)
-                        SoundManager.PlaySound(alertSettings.Audio);
+                    StreamGlassContext.LOGGER.Log("Adding visual alert");
+                    AlertSettings alertSettings = alert.Settings;
+                    if (alertSettings.IsEnabled)
+                    {
+                        if (alertSettings.Audio != null)
+                            SoundManager.PlaySound(alertSettings.Audio);
+                    }
                 }
             }
         }

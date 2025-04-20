@@ -10,6 +10,7 @@ using StreamGlass.Twitch.Events;
 using System.IO;
 using TwitchCorpse;
 using TwitchCorpse.API;
+using static StreamGlass.Core.StreamGlassProcessListener;
 using static TwitchCorpse.TwitchEventSub;
 
 namespace StreamGlass.Twitch
@@ -96,6 +97,9 @@ namespace StreamGlass.Twitch
             string twitchLogoPath = string.Empty;
             MessageSource twitchMessageSource = StreamGlassChat.GetOrCreateMessageSource("twitch", "Twitch chat", twitchLogoPath, PostMessage);
             m_TwitchHandler = new Handler(this, m_Settings, m_BroadcasterAPI, twitchMessageSource);
+            twitchMessageSource.RegisterChatContextMenu(TwitchPlugin.TranslationKeys.MENU_BAN, BanUserFromMessage);
+            twitchMessageSource.RegisterChatContextMenu(TwitchPlugin.TranslationKeys.MENU_SHOUTOUT, ShoutoutUserFromMessage);
+
             m_BroadcasterAPI.SetHandler(m_TwitchHandler);
             m_BroadcasterAPI.ResetCache();
 
@@ -130,9 +134,6 @@ namespace StreamGlass.Twitch
             StreamGlassContext.RegisterFunction("Channel", StreamGlassPlaceholdersFunction_Channel);
             StreamGlassContext.RegisterFunction("Avatar", StreamGlassPlaceholdersFunction_Avatar);
             StreamGlassContext.RegisterFunction("BoxArt", StreamGlassPlaceholdersFunction_BoxArt);
-
-            StreamGlassChat.RegisterChatContextMenu(TwitchPlugin.TranslationKeys.MENU_BAN, BanUserFromMessage);
-            StreamGlassChat.RegisterChatContextMenu(TwitchPlugin.TranslationKeys.MENU_SHOUTOUT, ShoutoutUserFromMessage);
         }
 
         public void OnPluginInit()
@@ -258,6 +259,8 @@ namespace StreamGlass.Twitch
         {
             if (m_IsConnected)
             {
+                m_TwitchHandler.UnregisterChatContextMenu(TwitchPlugin.TranslationKeys.MENU_BAN);
+                m_TwitchHandler.UnregisterChatContextMenu(TwitchPlugin.TranslationKeys.MENU_SHOUTOUT);
                 m_BroadcasterAPI!.SaveAPIToken("twitch_api_token");
                 if (!m_IsSameAPI)
                     m_ChatterAPI!.SaveAPIToken("twitch_irc_api_token");
@@ -273,8 +276,6 @@ namespace StreamGlass.Twitch
                 StreamGlassContext.UnregisterFunction("DisplayName");
                 StreamGlassContext.UnregisterFunction("Channel");
                 StreamGlassContext.UnregisterFunction("Avatar");
-                StreamGlassChat.UnregisterChatContextMenu(TwitchPlugin.TranslationKeys.MENU_BAN);
-                StreamGlassChat.UnregisterChatContextMenu(TwitchPlugin.TranslationKeys.MENU_SHOUTOUT);
             }
         }
 

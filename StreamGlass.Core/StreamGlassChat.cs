@@ -14,11 +14,7 @@ namespace StreamGlass.Core
         //TODO Make it internal or private or not exposing it
         public static UserMessageScrollPanel StreamChatPanel => ms_MessageManager!.StreamChatPanel;
 
-        public static void Init(TickManager tickManager)
-        {
-            if (ms_MessageManager == null)
-                ms_MessageManager = new MessageManager(tickManager);
-        }
+        public static void Init(TickManager tickManager) => ms_MessageManager ??= new MessageManager(tickManager);
         public static Message? GetMessage(string id) => ms_MessageManager!.GetMessage(id);
         public static void SendMessage(string id, string message) => ms_MessageManager!.SendMessage(id, message);
         public static void SendMessage(string id, DataObject messageData) => ms_MessageManager!.SendMessage(id, messageData);
@@ -27,8 +23,5 @@ namespace StreamGlass.Core
         public static MessageSource GetOrCreateMessageSource(string id, string description, string logoPath, SendMessageDelegate sendMessageDelegate) => ms_MessageManager!.GetOrCreateMessageSource(id, description, logoPath, sendMessageDelegate);
         public static void RegisterMessageReceiver(IMessageReceiver messageReceiver) => ms_MessageManager!.AddMessageReceiver(messageReceiver);
         public static void UnregisterMessageReceiver(IMessageReceiver messageReceiver) => ms_MessageManager!.RemoveMessageReceiver(messageReceiver);
-
-        public static void RegisterChatContextMenu(TranslationKey translationKey, ContextMenuDelegate contextMenuDelegate) => StreamChatPanel.RegisterChatContextMenu(translationKey, contextMenuDelegate);
-        public static void UnregisterChatContextMenu(TranslationKey translationKey) => StreamChatPanel.UnregisterChatContextMenu(translationKey);
     }
 }

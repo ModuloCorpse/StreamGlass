@@ -1,5 +1,6 @@
 ﻿using CorpseLib;
 using CorpseLib.StructuredText;
+using CorpseLib.Translation;
 using StreamGlass.Core;
 using StreamGlass.Core.StreamChat;
 using StreamGlass.Twitch.Events;
@@ -238,5 +239,7 @@ namespace StreamGlass.Twitch
             }
             return null;
         }
+
+        internal void UnregisterChatContextMenu(TranslationKey key) => m_MessageSource.UnregisterChatContextMenu(key);
     }
 }

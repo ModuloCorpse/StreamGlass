@@ -7,27 +7,39 @@ namespace StreamGlass.Core.StreamChat
     {
         public delegate void ContextMenuDelegate(Window window, Message message);
 
-        private readonly Dictionary<TranslationKey, ContextMenuDelegate> m_ContextMenuActions = [];
+        private readonly Dictionary<string, Dictionary<TranslationKey, ContextMenuDelegate>> m_ContextMenuActions = new() { { string.Empty, [] } };
         private readonly HashSet<string> m_ChatHighlightedUsers = [];
         private double m_MessageContentFontSize = 14;
         private bool m_ShowBadges = true;
 
-        internal Dictionary<TranslationKey, ContextMenuDelegate> ContextMenuActions => m_ContextMenuActions;
         public double MessageContentFontSize => m_MessageContentFontSize;
 
-        public void RegisterChatContextMenu(TranslationKey translationKey, ContextMenuDelegate contextMenuDelegate)
+        public Dictionary<TranslationKey, ContextMenuDelegate> GetContextMenuActions(string sourceID)
         {
-            if (!m_ContextMenuActions.ContainsKey(translationKey))
+            if (m_ContextMenuActions.TryGetValue(sourceID, out Dictionary<TranslationKey, ContextMenuDelegate>? contextMenu))
+                return contextMenu;
+            return [];
+        }
+
+        internal void RegisterChatContextMenu(string sourceID, TranslationKey translationKey, ContextMenuDelegate contextMenuDelegate)
+        {
+            if (!m_ContextMenuActions.ContainsKey(sourceID))
+                m_ContextMenuActions[sourceID] = [];
+            Dictionary<TranslationKey, ContextMenuDelegate> contextMenu = m_ContextMenuActions[sourceID];
+            if (!contextMenu.ContainsKey(translationKey))
             {
-                m_ContextMenuActions[translationKey] = contextMenuDelegate;
+                contextMenu[translationKey] = contextMenuDelegate;
                 UpdateContextMenu();
             }
         }
 
-        public void UnregisterChatContextMenu(TranslationKey translationKey)
+        internal void UnregisterChatContextMenu(string sourceID, TranslationKey translationKey)
         {
-            if (m_ContextMenuActions.Remove(translationKey))
-                UpdateContextMenu();
+            if (m_ContextMenuActions.TryGetValue(sourceID, out Dictionary<TranslationKey, ContextMenuDelegate>? contextMenu))
+            {
+                if (contextMenu.Remove(translationKey))
+                    UpdateContextMenu();
+            }
         }
 
         private void UpdateContextMenu() => Dispatcher.BeginInvoke(() =>

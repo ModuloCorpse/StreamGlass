@@ -25,8 +25,8 @@ namespace StreamGlass.Core.StreamChat
 
         public MessageManager(TickManager tickManager)
         {
-            m_StreamChatPanel.RegisterChatContextMenu(StreamGlassTranslationKeys.CHAT_TOGGLE_HIGHLIGHT_USER, ToggleHighlightedUser);
-            m_StreamChatPanel.RegisterChatContextMenu(StreamGlassTranslationKeys.CHAT_DELETE_MESSAGE, DeleteMessage);
+            m_StreamChatPanel.RegisterChatContextMenu(string.Empty, StreamGlassTranslationKeys.CHAT_TOGGLE_HIGHLIGHT_USER, ToggleHighlightedUser);
+            m_StreamChatPanel.RegisterChatContextMenu(string.Empty, StreamGlassTranslationKeys.CHAT_DELETE_MESSAGE, DeleteMessage);
 
             tickManager.RegisterTickFunction(Tick);
             m_MessageReceivers.Add(m_StreamChatPanel);

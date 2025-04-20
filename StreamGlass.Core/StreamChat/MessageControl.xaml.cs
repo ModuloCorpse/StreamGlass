@@ -1,7 +1,10 @@
 ﻿using CorpseLib.StructuredText;
+using CorpseLib.Translation;
 using StreamGlass.Core.Controls;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
+using static StreamGlass.Core.StreamChat.UserMessageScrollPanel;
 
 namespace StreamGlass.Core.StreamChat
 {
@@ -145,17 +148,22 @@ namespace StreamGlass.Core.StreamChat
 
         public void SetMessageFontSize(double fontSize) => MessageContent.SetFontSize(fontSize);
 
-        public void UpdateContextMenu()
+        private void AddContextMenu(Dictionary<TranslationKey, ContextMenuDelegate> contextMenu)
         {
-            //TODO Handle source specific context menu
-            MessageContextMenu.Items.Clear();
-            foreach (var item in m_StreamChat.ContextMenuActions)
+            foreach (var item in contextMenu)
             {
                 MenuItem menuItem = new();
                 menuItem.SetTranslationKey(item.Key);
                 menuItem.Click += (sender, e) => { item.Value.Invoke(GetWindow()!, m_Message); };
                 MessageContextMenu.Items.Add(menuItem);
             }
+        }
+
+        public void UpdateContextMenu()
+        {
+            MessageContextMenu.Items.Clear();
+            AddContextMenu(m_StreamChat.GetContextMenuActions(string.Empty));
+            AddContextMenu(m_StreamChat.GetContextMenuActions(m_Message.SourceID));
         }
 
         public void Refresh()

@@ -1,5 +1,7 @@
 ﻿using CorpseLib.DataNotation;
 using CorpseLib.StructuredText;
+using CorpseLib.Translation;
+using static StreamGlass.Core.StreamChat.UserMessageScrollPanel;
 
 namespace StreamGlass.Core.StreamChat
 {
@@ -43,5 +45,8 @@ namespace StreamGlass.Core.StreamChat
         public void RemoveMessages(string[] messageIDs) => m_MessageManager.RemoveMessages(messageIDs);
         public void RemoveAllMessagesFrom(string userID) => m_MessageManager.RemoveAllMessagesFrom(userID);
         public void ClearMessages() => m_MessageManager.ClearMessages(m_ID);
+
+        public void RegisterChatContextMenu(TranslationKey translationKey, ContextMenuDelegate contextMenuDelegate) => StreamGlassChat.StreamChatPanel.RegisterChatContextMenu(m_ID, translationKey, contextMenuDelegate);
+        public void UnregisterChatContextMenu(TranslationKey translationKey) => StreamGlassChat.StreamChatPanel.UnregisterChatContextMenu(m_ID, translationKey);
     }
 }
