@@ -10,12 +10,11 @@ using StreamGlass.Twitch.Events;
 using System.IO;
 using TwitchCorpse;
 using TwitchCorpse.API;
-using static StreamGlass.Core.StreamGlassProcessListener;
 using static TwitchCorpse.TwitchEventSub;
 
 namespace StreamGlass.Twitch
 {
-    public class Core
+    public class Core : IMessageSourceHandler
     {
         private static readonly string AUTHENTICATOR_PAGE_CONTENT = "<!DOCTYPE html><html><head><title>StreamGlass Twitch Auth</title></head><body><p>You can close this page</p></body></html>";
 
@@ -64,7 +63,7 @@ namespace StreamGlass.Twitch
 
         private bool Authenticate(string browser)
         {
-            m_BroadcasterAPI!.AuthenticateFromTokenFile("twitch_api_token");
+            m_BroadcasterAPI!.AuthenticateFromVault(StreamGlassVault.Vault, TwitchPlugin.VaultKeys.API_TOKEN);
             if (!m_BroadcasterAPI.IsAuthenticated)
                 m_BroadcasterAPI.AuthenticateWithBrowser();
             if (m_BroadcasterAPI.IsAuthenticated)
@@ -76,7 +75,7 @@ namespace StreamGlass.Twitch
             }
             else
             {
-                m_ChatterAPI!.AuthenticateFromTokenFile("twitch_irc_api_token");
+                m_ChatterAPI!.AuthenticateFromVault(StreamGlassVault.Vault, TwitchPlugin.VaultKeys.IRC_TOKEN);
                 if (!m_ChatterAPI.IsAuthenticated)
                     m_ChatterAPI.AuthenticateWithBrowser(browser);
                 m_IsSameAPI = false;
@@ -95,7 +94,7 @@ namespace StreamGlass.Twitch
                 return false;
             //TODO generate path to twitch logo
             string twitchLogoPath = string.Empty;
-            MessageSource twitchMessageSource = StreamGlassChat.GetOrCreateMessageSource("twitch", "Twitch chat", twitchLogoPath, PostMessage);
+            MessageSource twitchMessageSource = StreamGlassChat.GetOrCreateMessageSource("twitch", "Twitch chat", twitchLogoPath, this);
             m_TwitchHandler = new Handler(this, m_Settings, m_BroadcasterAPI, twitchMessageSource);
             twitchMessageSource.RegisterChatContextMenu(TwitchPlugin.TranslationKeys.MENU_BAN, BanUserFromMessage);
             twitchMessageSource.RegisterChatContextMenu(TwitchPlugin.TranslationKeys.MENU_SHOUTOUT, ShoutoutUserFromMessage);
@@ -139,7 +138,6 @@ namespace StreamGlass.Twitch
         public void OnPluginInit()
         {
             StreamGlassCanals.Register(TwitchPlugin.Canals.STREAM_START, OnStreamStart);
-            StreamGlassCanals.Register<SendMessageEventArgs>(StreamGlassCanals.SEND_MESSAGE, PostMessage);
             StreamGlassCanals.Register<TwitchUser>(TwitchPlugin.Canals.USER_JOINED, OnUserJoinedChannel);
             StreamGlassCanals.Register<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
             StreamGlassCanals.Register<MessageAllowedEventArgs>(TwitchPlugin.Canals.ALLOW_MESSAGE, AllowMessage);
@@ -242,8 +240,9 @@ namespace StreamGlass.Twitch
         {
             if (!m_IsConnected)
             {
-                m_BroadcasterAPI = new(m_Settings.PublicKey, m_Settings.SecretKey, 3000, AUTHENTICATOR_PAGE_CONTENT);
-                m_ChatterAPI = new(m_Settings.PublicKey, m_Settings.SecretKey, 3000, AUTHENTICATOR_PAGE_CONTENT);
+                string secretKey = StreamGlassVault.Load(TwitchPlugin.VaultKeys.SECRET);
+                m_BroadcasterAPI = new(m_Settings.PublicKey, secretKey, 3000, AUTHENTICATOR_PAGE_CONTENT);
+                m_ChatterAPI = new(m_Settings.PublicKey, secretKey, 3000, AUTHENTICATOR_PAGE_CONTENT);
                 if (!Authenticate(m_Settings.Browser))
                     return false;
                 if (Init())
@@ -261,14 +260,13 @@ namespace StreamGlass.Twitch
             {
                 m_TwitchHandler.UnregisterChatContextMenu(TwitchPlugin.TranslationKeys.MENU_BAN);
                 m_TwitchHandler.UnregisterChatContextMenu(TwitchPlugin.TranslationKeys.MENU_SHOUTOUT);
-                m_BroadcasterAPI!.SaveAPIToken("twitch_api_token");
+                m_BroadcasterAPI!.SaveAPIToken(StreamGlassVault.Vault, TwitchPlugin.VaultKeys.API_TOKEN);
                 if (!m_IsSameAPI)
-                    m_ChatterAPI!.SaveAPIToken("twitch_irc_api_token");
+                    m_ChatterAPI!.SaveAPIToken(StreamGlassVault.Vault, TwitchPlugin.VaultKeys.IRC_TOKEN);
                 m_GetViewerCount.Stop();
                 m_EventSub?.Disconnect();
                 m_IsConnected = false;
                 StreamGlassCanals.Unregister(TwitchPlugin.Canals.STREAM_START, OnStreamStart);
-                StreamGlassCanals.Unregister<SendMessageEventArgs>(StreamGlassCanals.SEND_MESSAGE, PostMessage);
                 StreamGlassCanals.Unregister<TwitchUser>(TwitchPlugin.Canals.USER_JOINED, OnUserJoinedChannel);
                 StreamGlassCanals.Unregister<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
                 StreamGlassCanals.Unregister<MessageAllowedEventArgs>(TwitchPlugin.Canals.ALLOW_MESSAGE, AllowMessage);
@@ -320,7 +318,7 @@ namespace StreamGlass.Twitch
 
         private void SendMessage(string message, bool forSourceOnly) => m_ChatterAPI!.PostMessage(m_BroadcasterAPI!.GetSelfUserInfo(), message, forSourceOnly);
 
-        private void PostMessage(DataObject messageData)
+        public void SendMessage(DataObject messageData)
         {
             if (m_ChatterAPI == null || !m_ChatterAPI.IsAuthenticated)
                 return;
@@ -328,10 +326,14 @@ namespace StreamGlass.Twitch
                 SendMessage(message, messageData.GetOrDefault("for_source_only", false));
         }
 
-        private void PostMessage(SendMessageEventArgs? message)
+        public void DeleteMessage(string id)
         {
-            if (message != null && !string.IsNullOrWhiteSpace(message.Message))
-                SendMessage(message.Message, !message.IsShared);
+            string twitchID = m_TwitchHandler.GetMessageID(id);
+            if (!string.IsNullOrEmpty(twitchID))
+            {
+                m_BroadcasterAPI!.DeleteMessage(twitchID);
+                m_TwitchHandler.RemoveMessage(twitchID);
+            }
         }
 
         public CategoryInfo? SearchCategoryInfo(Window parent, CategoryInfo? info)

@@ -158,7 +158,7 @@ namespace StreamGlass.Core
             NewCanal(PROFILE_LOCK_ALL);
             NewCanal(PROFILE_UNLOCK_ALL);
             NewCanal<Message>(OVERLAY_CHAT_MESSAGE);
-            NewCanal(CHAT_DELETE_MESSAGES);
+            NewCanal<DeleteMessagesEventArgs>(CHAT_DELETE_MESSAGES);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace StreamGlass.Core.StreamChat
 
         private readonly MessageManager m_MessageManager;
         private readonly List<IMessageFilter> m_Filters = [];
-        private readonly SendMessageDelegate m_SendMessageDelegate;
+        private readonly IMessageSourceHandler m_Handler;
         private readonly string m_ID;
         private readonly string m_Description;
         private readonly string m_LogoPath;
@@ -20,16 +20,17 @@ namespace StreamGlass.Core.StreamChat
         public string Description => m_Description;
         public string LogoPath => m_LogoPath;
 
-        internal MessageSource(MessageManager messageManager, string id, string description, string logoPath, SendMessageDelegate sendMessageDelegate)
+        internal MessageSource(MessageManager messageManager, string id, string description, string logoPath, IMessageSourceHandler handler)
         {
             m_MessageManager = messageManager;
-            m_SendMessageDelegate = sendMessageDelegate;
+            m_Handler = handler;
             m_ID = id;
             m_Description = description;
             m_LogoPath = logoPath;
         }
 
-        internal void SendMessage(DataObject messageData) => m_SendMessageDelegate.Invoke(messageData);
+        internal void DeleteMessage(string id) => m_Handler.DeleteMessage(id);
+        internal void SendMessage(DataObject messageData) => m_Handler.SendMessage(messageData);
         public string PostMessage(MessageInfo messageInfo)
         {
             Text content = (Text)messageInfo.Content.Clone();

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using StreamGlass.Core;
 using StreamGlass.Core.Controls;
 using StreamGlass.Core.Settings;
 using System.Windows;
@@ -30,7 +31,7 @@ namespace StreamGlass.Twitch
             TwitchBrowserTextBox.Text = m_Setting.Browser;
             TwitchAutoConnectCheckBox.IsChecked = m_Setting.AutoConnect;
             TwitchBotPublicTextBox.Text = m_Setting.PublicKey;
-            TwitchBotSecretPasswordBox.Text = m_Setting.SecretKey;
+            TwitchBotSecretPasswordBox.Text = StreamGlassVault.Load(TwitchPlugin.VaultKeys.SECRET);
             WelcomeMessageTextBox.Text = m_Setting.WelcomeMessage;
 
             TwitchSubModeComboBox.Items.Clear();
@@ -77,7 +78,7 @@ namespace StreamGlass.Twitch
             m_Setting.Browser = TwitchBrowserTextBox.Text;
             m_Setting.AutoConnect = TwitchAutoConnectCheckBox.IsChecked == true;
             m_Setting.PublicKey = TwitchBotPublicTextBox.Text;
-            m_Setting.SecretKey = TwitchBotSecretPasswordBox.Text;
+            StreamGlassVault.Store(TwitchPlugin.VaultKeys.SECRET, TwitchBotSecretPasswordBox.Text);
             m_Setting.WelcomeMessage = WelcomeMessageTextBox.Text;
 
             if (TwitchSubModeComboBox.SelectedIndex == 0)

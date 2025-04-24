@@ -94,8 +94,6 @@ namespace StreamGlass.Twitch
                     settings.WelcomeMessage = welcomeMsg;
                 if (reader.TryGet("public_key", out string? publicKey) && publicKey != null)
                     settings.PublicKey = publicKey;
-                if (reader.TryGet("secret_key", out string? secretKey) && secretKey != null)
-                    settings.SecretKey = secretKey;
                 if (reader.TryGet("browser", out string? browser) && browser != null)
                     settings.Browser = browser;
                 if (reader.TryGet("alerts", out AlertsSettings? alerts) && alerts != null)
@@ -112,7 +110,6 @@ namespace StreamGlass.Twitch
                 writer["sub_mode"] = obj.SubMode;
                 writer["welcome_msg"] = obj.WelcomeMessage;
                 writer["public_key"] = obj.PublicKey;
-                writer["secret_key"] = obj.SecretKey;
                 writer["browser"] = obj.Browser;
                 writer["alerts"] = obj.Alerts;
                 writer["moderation"] = obj.Moderation;

@@ -54,6 +54,8 @@ namespace StreamGlass.Twitch
 
         public void OnChatJoined() => StreamGlassCanals.Emit(TwitchPlugin.Canals.CHAT_JOINED, m_IRCChannel);
 
+        public void RemoveMessage(string id) => m_MessageAssociationTable.RemoveByKey(id);
+
         public void OnChatMessageRemoved(string messageID)
         {
             if (m_MessageAssociationTable.TryGetValue(messageID, out string? id))
@@ -238,6 +240,13 @@ namespace StreamGlass.Twitch
                 }
             }
             return null;
+        }
+
+        public string GetMessageID(string id)
+        {
+            if (m_MessageAssociationTable.TryGetKey(id, out string? messageID))
+                return messageID!;
+            return string.Empty;
         }
 
         internal void UnregisterChatContextMenu(TranslationKey key) => m_MessageSource.UnregisterChatContextMenu(key);

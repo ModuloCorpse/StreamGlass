@@ -3,6 +3,7 @@ using CorpseLib.Translation;
 using StreamGlass.Core.Controls;
 using System.Collections.Concurrent;
 using static StreamGlass.Core.StreamChat.MessageSource;
+using static StreamGlass.Core.StreamGlassProcessListener;
 
 namespace StreamGlass.Core.StreamChat
 {
@@ -113,13 +114,13 @@ namespace StreamGlass.Core.StreamChat
             return string.Empty;
         }
 
-        public MessageSource GetOrCreateMessageSource(string id, string description, string logoPath, SendMessageDelegate sendMessageDelegate)
+        public MessageSource GetOrCreateMessageSource(string id, string description, string logoPath, IMessageSourceHandler handler)
         {
             if (m_MessageSources.TryGetValue(id, out MessageSource? source))
                 return source;
             else
             {
-                MessageSource newSource = new(this, id, description, logoPath, sendMessageDelegate);
+                MessageSource newSource = new(this, id, description, logoPath, handler);
                 m_MessageSources[id] = newSource;
                 return newSource;
             }
@@ -150,7 +151,13 @@ namespace StreamGlass.Core.StreamChat
         }
 
         //TODO Handle in message source the destruction of the message
-        private void DeleteMessage(Window _, Message message) => RemoveMessages([message.ID]);
+        private void DeleteMessage(Window _, Message message)
+        {
+            RemoveMessages([message.ID]);
+            if (m_MessageSources.TryGetValue(message.SourceID, out MessageSource? messageSource))
+                messageSource.DeleteMessage(message.ID);
+        }
+
         public void ToggleHighlightedUser(Window _, Message message) => m_StreamChatPanel.ToggleHighlightedUser(message.User.ID);
 
         internal void Tick(long _)

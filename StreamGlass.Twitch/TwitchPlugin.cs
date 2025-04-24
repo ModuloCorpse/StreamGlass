@@ -22,6 +22,13 @@ namespace StreamGlass.Twitch
 {
     public class TwitchPlugin() : APlugin("Twitch"), IAPIPlugin, ITestablePlugin, ISettingsPlugin, IPanelPlugin
     {
+        public static class VaultKeys
+        {
+            public static readonly string SECRET = "twitch_secret";
+            public static readonly string API_TOKEN = "twitch_api_token";
+            public static readonly string IRC_TOKEN = "twitch_irc_token";
+        }
+
         public static class Canals
         {
             public static readonly string CHAT_JOINED = "twitch_chat_joined";
@@ -252,25 +259,14 @@ namespace StreamGlass.Twitch
 
         protected override void OnLoad()
         {
-            string settingsSaveFilePath = GetFilePath("twitch_settings.save.json");
+            string settingsSaveFilePath = GetFilePath("twitch_settings.json");
             if (File.Exists(settingsSaveFilePath))
             {
                 Settings? settings = JsonParser.LoadFromFile<Settings>(settingsSaveFilePath);
                 if (settings != null)
-                    m_Settings = settings;
-            }
-            else
-            {
-                string settingsFilePath = GetFilePath("twitch_settings");
-                if (File.Exists(settingsFilePath))
                 {
-                    EncryptedFile encryptedFile = new(settingsFilePath)
-                    {
-                        m_WindowsEncryptionAlgorithm
-                    };
-                    Settings? settings = JsonParser.Parse<Settings>(encryptedFile.Read());
-                    if (settings != null)
-                        m_Settings = settings;
+                    m_Settings = settings;
+                    m_Settings.SecretKey = StreamGlassVault.Load(VaultKeys.SECRET);
                 }
             }
 
@@ -329,12 +325,8 @@ namespace StreamGlass.Twitch
         {
             m_Core.Disconnect();
 
-            string settingsFilePath = GetFilePath("twitch_settings");
-            EncryptedFile encryptedFile = new(settingsFilePath)
-            {
-                m_WindowsEncryptionAlgorithm
-            };
-            encryptedFile.Write(JsonParser.Str<Settings>(m_Settings));
+            string settingsFilePath = GetFilePath("twitch_settings.json");
+            JsonParser.WriteToFile<Settings>(settingsFilePath, m_Settings);
         }
 
         public TabItemContent[] GetSettings() => [
