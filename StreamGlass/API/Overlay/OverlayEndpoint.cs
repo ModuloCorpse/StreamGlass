@@ -113,33 +113,13 @@ namespace StreamGlass.API.Overlay
                 string[] directories = Directory.GetDirectories("overlay/");
                 foreach (string directory in directories)
                 {
-                    string overlayDirectory = (directory[^1] == '/') ? directory : string.Format("{0}/", directory);
-                    string overlayPath = System.IO.Path.GetFileName(overlayDirectory[..^1]);
-                    FileOverlay? overlay = LoadOverlay(string.Format("overlay/{0}", overlayPath));
-                    if (overlay != null)
-                        m_Overlays[overlayPath] = overlay;
+                    LocalOverlay localOverlay = new(directory);
+                    AddOverlay(localOverlay);
                 }
             }
         }
 
         private void AddOverlay(Overlay overlay) => m_OverlayTree.AddValue(overlay.RootPath, overlay, false);
-
-        private static FileOverlay? LoadOverlay(string path)
-        {
-            string overlayDirectory = (path[^1] == '/') ? path : string.Format("{0}/", path);
-            if (!Directory.Exists(overlayDirectory))
-                return null;
-            FileOverlay overlay;
-            string jsonFile = System.IO.Path.GetFullPath(System.IO.Path.Combine(overlayDirectory, "overlay.json"));
-            if (File.Exists(jsonFile))
-            {
-                DataObject settings = JsonParser.LoadFromFile(jsonFile);
-                overlay = new(settings.GetOrDefault("root", overlayDirectory), settings.GetOrDefault("index", "index.html"));
-            }
-            else
-                overlay = new(overlayDirectory, "index.html");
-            return overlay;
-        }
 
         protected override Response OnRequest(Request request)
         {
@@ -148,43 +128,6 @@ namespace StreamGlass.API.Overlay
                 return overlay.OnRequest(request);
             else
                 return base.OnRequest(request);
-        }
-
-        protected override Response OnGetRequest(Request request)
-        {
-            //Path should be "/overlay/<overlayName>/<resource>" or "/overlay/<resource>"
-            string[] paths = request.Path.Paths;
-            if (paths.Length > 1) // paths[0] == "overlay"
-            {
-                string overlayName = paths[1];
-                if (m_Overlays.TryGetValue(overlayName, out AOverlay? overlay))
-                    return overlay.GetResource(request.Path);
-                else
-                {
-                    string overlayPath = string.Format("overlay/{0}", overlayName);
-                    FileOverlay? loadedOverlay = LoadOverlay(overlayPath);
-                    if (loadedOverlay != null)
-                    {
-                        m_Overlays[overlayName] = loadedOverlay;
-                        return loadedOverlay.GetResource(request.Path);
-                    }
-                    else
-                    {
-                        if (paths.Length == 2)
-                        {
-                            Stream? internalResourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(string.Format("StreamGlass.API.Overlay.{0}", paths[1]));
-                            if (internalResourceStream != null)
-                            {
-                                MIME? mime = MIME.GetMIME(paths[1]);
-                                if (mime != null)
-                                    return new Response(200, "Ok", new StreamReader(internalResourceStream).ReadToEnd(), mime);
-                                return new Response(200, "Ok", new StreamReader(internalResourceStream).ReadToEnd());
-                            }
-                        }
-                    }
-                }
-            }
-            return new(404, "Not Found", string.Format("{0} does not exist", request.Path));
         }
 
         protected override void OnClientRegistered(CorpseLib.Web.API.API.APIProtocol client, Path path)
