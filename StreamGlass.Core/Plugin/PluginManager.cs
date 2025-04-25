@@ -52,7 +52,7 @@ namespace StreamGlass.Core
                     catch (FileLoadException) { } //The assembly has already been loaded
                     catch (Exception ex)
                     {
-                        PLUGIN_LOGGER.Log(string.Format("Cannot load dependency {0}", dependencyFile));
+                        PLUGIN_LOGGER.Log("Cannot load dependency ${0}", dependencyFile);
                         PLUGIN_LOGGER.Log(ex.ToString());
                     }
                 }
@@ -80,7 +80,7 @@ namespace StreamGlass.Core
                     catch (FileLoadException) { } //The assembly has already been loaded
                     catch (Exception ex)
                     {
-                        PLUGIN_LOGGER.Log(string.Format("Cannot load {0}", file));
+                        PLUGIN_LOGGER.Log("Cannot load ${0}", file);
                         PLUGIN_LOGGER.Log(ex.ToString());
                     }
                 }
@@ -164,7 +164,7 @@ namespace StreamGlass.Core
                 m_Plugins.Add(plugin);
                 if (plugin.Enable)
                     m_ActivePlugins.Add(plugin);
-                PLUGIN_LOGGER.Log(string.Format("Plugin loaded {0}", plugin.Name));
+                PLUGIN_LOGGER.Log("Plugin loaded ${0}", plugin.Name);
             }
         }
 
@@ -179,11 +179,11 @@ namespace StreamGlass.Core
                 if (pluginInstance != null && pluginInstance is APlugin plugin)
                     return plugin;
                 else
-                    PLUGIN_LOGGER.Log(string.Format("Cannot instantiate plugin {0}", metadata.Filename));
+                    PLUGIN_LOGGER.Log("Cannot instantiate plugin ${0}", metadata.Filename);
             }
             catch (Exception ex)
             {
-                PLUGIN_LOGGER.Log(string.Format("Cannot load plugin {0}", metadata.Filename));
+                PLUGIN_LOGGER.Log("Cannot load plugin ${0}", metadata.Filename);
                 PLUGIN_LOGGER.Log(ex.ToString());
             }
             return null;

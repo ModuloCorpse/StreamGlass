@@ -114,7 +114,7 @@ namespace StreamGlass.Core.Audio
                             }
                             catch (Exception ex)
                             {
-                                StreamGlassContext.LOGGER.Log(string.Format("Sound error when loading {0} : {1}", device.FriendlyName, ex));
+                                StreamGlassContext.LOGGER.Log("Sound error when loading ${0} : ${1}", device.FriendlyName, ex);
                             }
                         }
                     }

@@ -99,7 +99,7 @@ namespace StreamGlass.Core
             if (ms_Managers.TryGetValue(type, out ACanalManager? canalManager))
                 canalManager.JCanal.Register(action);
             else
-                StreamGlassContext.LOGGER.Log(string.Format("Cannot find valid canal {0} to register to", type));
+                StreamGlassContext.LOGGER.Log("Cannot find valid canal ${0} to register to", type);
         }
 
         public static void Register<T>(string type, Action<T?> action)
@@ -108,7 +108,7 @@ namespace StreamGlass.Core
                 canalManager is CanalManager<T> triggerCanalManager)
                 triggerCanalManager.Canal.Register(action);
             else
-                StreamGlassContext.LOGGER.Log(string.Format("Cannot find valid canal {0} to register to", type));
+                StreamGlassContext.LOGGER.Log("Cannot find valid canal ${0} to register to", type);
         }
 
         public static void Unregister(string type, Action action)
@@ -137,7 +137,7 @@ namespace StreamGlass.Core
                 canalManager is TriggerCanalManager triggerCanalManager)
                 triggerCanalManager.Trigger();
             else
-                StreamGlassContext.LOGGER.Log(string.Format("Cannot find valid canal {0} to trigger", type));
+                StreamGlassContext.LOGGER.Log("Cannot find valid canal ${0} to trigger", type);
         }
         public static void Emit<T>(string type, T? arg)
         {
@@ -145,7 +145,7 @@ namespace StreamGlass.Core
                 canalManager is CanalManager<T> triggerCanalManager)
                 triggerCanalManager.Emit(arg);
             else
-                StreamGlassContext.LOGGER.Log(string.Format("Cannot find valid canal {0} to emit to", type));
+                StreamGlassContext.LOGGER.Log("Cannot find valid canal ${0} to emit to", type);
         }
 
         static StreamGlassCanals()
