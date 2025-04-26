@@ -2,7 +2,7 @@
 using CorpseLib.Web.API;
 using CorpseLib.Web.Http;
 
-namespace StreamGlass.API.Event
+namespace StreamGlass.Core.API.Event
 {
     public class EventHTTPEndpoint(APIWebsocketEndpoint websocketEndpoint) : AHTTPEndpoint("/event/custom", false)
     {
@@ -12,7 +12,7 @@ namespace StreamGlass.API.Event
         {
             try
             {
-                return m_WebsocketEndpoint.Emit(request.Path.Paths[^1], JsonParser.Parse(request.Body));
+                return m_WebsocketEndpoint.Emit(request.Path[^1], JsonParser.Parse(request.Body));
             } catch
             {
                 return new(400, "Bad Request", "Body is not a valid json");

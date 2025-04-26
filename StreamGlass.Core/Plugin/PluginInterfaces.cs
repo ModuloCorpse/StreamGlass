@@ -1,4 +1,5 @@
 ﻿using CorpseLib.Web.API;
+using StreamGlass.Core.API.Overlay;
 using StreamGlass.Core.Settings;
 using System.Windows.Controls;
 
@@ -12,6 +13,11 @@ namespace StreamGlass.Core.Plugin
     public interface ISettingsPlugin : IPlugin
     {
         public TabItemContent[] GetSettings();
+    }
+
+    public interface IOverlayPlugin : IPlugin
+    {
+        public Overlay[] GetOverlays();
     }
 
     public interface IAPIPlugin : IPlugin

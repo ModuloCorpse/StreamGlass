@@ -13,7 +13,6 @@
     <None Remove="API\Overlay\Chat\chat.css" />
     <None Remove="API\Overlay\Chat\chat.html" />
     <None Remove="API\Overlay\Chat\chat.js" />
-    <None Remove="API\Overlay\StreamGlass.js" />
     <None Remove="Assets\alert-sound.wav" />
     <None Remove="Assets\cancel.png" />
     <None Remove="Assets\chat-bubble.png" />

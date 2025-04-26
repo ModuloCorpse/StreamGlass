@@ -3,15 +3,16 @@ using CorpseLib.Json;
 using CorpseLib.Translation;
 using CorpseLib.Web.API;
 using CorpseLib.Web.API.Event;
-using StreamGlass.API;
-using StreamGlass.API.Event;
-using StreamGlass.API.Overlay;
 using StreamGlass.API.Overlay.Chat;
 using StreamGlass.Core;
+using StreamGlass.Core.API;
+using StreamGlass.Core.API.Event;
+using StreamGlass.Core.API.Overlay;
 using StreamGlass.Core.Profile;
 using StreamGlass.Twitch;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows.Controls;
 
@@ -215,8 +216,35 @@ namespace StreamGlass
             m_API.AddEndpoint(new EventUnregisterEndpoint("/event/unregister", overlayWebsocketEndpoint));
             m_API.AddEndpoint(overlayWebsocketEndpoint);
             m_API.AddEndpoint(new EventHTTPEndpoint(overlayWebsocketEndpoint));
-            m_API.AddEndpoint(new OverlayEndpoint());
+
+            //TODO Register it directly in the chat overlay
             m_API.AddEndpoint(new MessagesEndpoint());
+
+            OverlayEndpoint overlayEndpoint = new();
+            // '/overlay'
+            Overlay defaultOverlay = new();
+            defaultOverlay.AddAssemblyResource("StreamGlass.js", "StreamGlass.API.Overlay.StreamGlass.js");
+            overlayEndpoint.AddOverlay(new(), defaultOverlay);
+            // '/overlay/chat'
+            Overlay chatOverlay = new("chat");
+            chatOverlay.AddRootAssemblyResource("chat.html", "StreamGlass.API.Overlay.Chat.chat.html");
+            chatOverlay.AddAssemblyResource("chat.css", "StreamGlass.API.Overlay.Chat.chat.css");
+            chatOverlay.AddAssemblyResource("chat.js", "StreamGlass.API.Overlay.Chat.chat.js");
+            overlayEndpoint.AddOverlay(new("chat"), chatOverlay);
+            m_PluginManager.RegisterOverlays(overlayEndpoint);
+
+            //Local overlay will always be loaded last to allow overriding plugin overlay
+            if (Directory.Exists("overlay/"))
+            {
+                CorpseLib.Web.Http.Path localPath = new("local");
+                string[] directories = Directory.GetDirectories("overlay/");
+                foreach (string directory in directories)
+                {
+                    LocalOverlay localOverlay = new(directory);
+                    overlayEndpoint.AddOverlay(CorpseLib.Web.Http.Path.Append(localPath, localOverlay.RootPath), localOverlay);
+                }
+            }
+            m_API.AddEndpoint(overlayEndpoint);
 
             m_PluginManager.RegisterToAPI(m_API);
         }

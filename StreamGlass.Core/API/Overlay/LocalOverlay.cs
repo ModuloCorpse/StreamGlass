@@ -1,10 +1,9 @@
 ﻿using CorpseLib.DataNotation;
 using CorpseLib.Json;
 using CorpseLib.Web;
-using System.Collections.Generic;
 using System.IO;
 
-namespace StreamGlass.API.Overlay
+namespace StreamGlass.Core.API.Overlay
 {
     public class LocalOverlay : Overlay
     {

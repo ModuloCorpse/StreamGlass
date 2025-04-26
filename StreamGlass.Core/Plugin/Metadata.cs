@@ -7,6 +7,7 @@ namespace StreamGlass.Core.Plugin
         private readonly Type? m_Type = type;
         private readonly DateTime m_LastModified = lastModified;
         private readonly string m_Directory = directory;
+        private readonly string m_DirectoryName = Path.GetFileName((directory[^1] == '/') ? directory[..^1] : directory);
         private readonly string m_Filename = filename;
         private readonly bool m_Native = false;
         private bool m_Enable = true;
@@ -14,6 +15,7 @@ namespace StreamGlass.Core.Plugin
         public Type? Type => m_Type;
         public DateTime LastModified => m_LastModified;
         public string Directory => m_Directory;
+        public string DirectoryName => m_DirectoryName;
         public string Filename => m_Filename;
         public bool Native => m_Native;
         public bool Enable => m_Enable;

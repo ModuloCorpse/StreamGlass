@@ -2,9 +2,8 @@
 using CorpseLib.DataNotation;
 using CorpseLib.Web.API.Event;
 using CorpseLib.Web.Http;
-using System.Collections.Generic;
 
-namespace StreamGlass.API
+namespace StreamGlass.Core.API
 {
     public class APIWebsocketEndpoint() : EventEndpoint("/event", false)
     {
