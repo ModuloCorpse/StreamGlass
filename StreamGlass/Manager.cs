@@ -217,9 +217,6 @@ namespace StreamGlass
             m_API.AddEndpoint(overlayWebsocketEndpoint);
             m_API.AddEndpoint(new EventHTTPEndpoint(overlayWebsocketEndpoint));
 
-            //TODO Register it directly in the chat overlay
-            m_API.AddEndpoint(new MessagesEndpoint());
-
             OverlayEndpoint overlayEndpoint = new();
             // '/overlay'
             Overlay defaultOverlay = new();
@@ -227,7 +224,7 @@ namespace StreamGlass
             overlayEndpoint.AddOverlay(new(), defaultOverlay);
             // '/overlay/chat'
             Overlay chatOverlay = new("chat");
-            chatOverlay.AddRootAssemblyResource("chat.html", "StreamGlass.API.Overlay.Chat.chat.html");
+            chatOverlay.AddRootResource("chat.html", new ChatRootEndpoint());
             chatOverlay.AddAssemblyResource("chat.css", "StreamGlass.API.Overlay.Chat.chat.css");
             chatOverlay.AddAssemblyResource("chat.js", "StreamGlass.API.Overlay.Chat.chat.js");
             overlayEndpoint.AddOverlay(new("chat"), chatOverlay);

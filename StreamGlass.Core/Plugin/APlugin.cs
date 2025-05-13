@@ -8,7 +8,7 @@ namespace StreamGlass.Core.Plugin
 
         public Metadata? Metadata => m_Metadata;
         public string Name => m_Name;
-        public string DirectoryName => m_Metadata?.DirectoryName ?? string.Empty;
+        public string Namespace => m_Metadata?.Namespace ?? string.Empty;
         public bool Enable => m_Metadata?.Enable ?? true;
 
         public void InitMetadata(Metadata metadata) => m_Metadata = metadata;

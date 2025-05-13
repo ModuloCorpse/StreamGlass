@@ -119,7 +119,7 @@ namespace StreamGlass.Core
                 {
                     Overlay[] overlays = overlayPlugin.GetOverlays();
                     foreach (Overlay overlay in overlays)
-                        overlayEndpoint.AddOverlay(CorpseLib.Web.Http.Path.Append(new($"/plugin/{plugin.DirectoryName.ToLower()}"), overlay.RootPath), overlay);
+                        overlayEndpoint.AddOverlay(CorpseLib.Web.Http.Path.Append(new($"/plugin/{plugin.Namespace.ToLower()}"), overlay.RootPath), overlay);
                 }
             }
         }
@@ -130,7 +130,7 @@ namespace StreamGlass.Core
             {
                 if (plugin is IAPIPlugin apiPlugin)
                 {
-                    CorpseLib.Web.Http.Path path = new($"/{plugin.DirectoryName.ToLower()}");
+                    CorpseLib.Web.Http.Path path = new($"/{plugin.Namespace.ToLower()}");
                     EndpointTreeNode endpointTree = new();
                     endpointTree.Add(apiPlugin.GetEndpoints());
                     api.AddEndpointTreeNode(path, endpointTree);

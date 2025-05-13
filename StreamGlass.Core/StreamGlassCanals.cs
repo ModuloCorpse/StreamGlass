@@ -1,7 +1,6 @@
 ﻿using CorpseLib;
 using CorpseLib.DataNotation;
 using StreamGlass.Core.Profile;
-using StreamGlass.Core.StreamChat;
 
 namespace StreamGlass.Core
 {
@@ -44,15 +43,12 @@ namespace StreamGlass.Core
             }
         }
 
-        public static readonly string SEND_MESSAGE = "send_message";
         public static readonly string UPDATE_STREAM_INFO = "update_stream_info";
         public static readonly string PROFILE_COMMANDS = "profile_commands";
         public static readonly string PROFILE_CHANGED_MENU_ITEM = "profile_changed_menu_item";
         public static readonly string PROFILE_RESET = "profile_reset";
         public static readonly string PROFILE_LOCK_ALL = "profile_lock_all";
         public static readonly string PROFILE_UNLOCK_ALL = "profile_unlock_all";
-        public static readonly string OVERLAY_CHAT_MESSAGE = "overlay_chat_message";
-        public static readonly string CHAT_DELETE_MESSAGES = "chat_delete_messages";
 
         private static readonly Dictionary<string, ACanalManager> ms_Managers = [];
 
@@ -150,15 +146,12 @@ namespace StreamGlass.Core
 
         static StreamGlassCanals()
         {
-            NewCanal<SendMessageEventArgs>(SEND_MESSAGE);
             NewCanal<UpdateStreamInfoArgs>(UPDATE_STREAM_INFO);
             NewCanal<ProfileCommandEventArgs>(PROFILE_COMMANDS);
             NewCanal<string>(PROFILE_CHANGED_MENU_ITEM);
             NewCanal(PROFILE_RESET);
             NewCanal(PROFILE_LOCK_ALL);
             NewCanal(PROFILE_UNLOCK_ALL);
-            NewCanal<Message>(OVERLAY_CHAT_MESSAGE);
-            NewCanal<DeleteMessagesEventArgs>(CHAT_DELETE_MESSAGES);
         }
     }
 }

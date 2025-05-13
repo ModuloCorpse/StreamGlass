@@ -1,18 +1,38 @@
-class ChatModule extends StreamGlassEventWebsocket
+class ChatModule
 {
 	#textColor;
 	#size;
 	#margin;
+	#socket;
+	#parameters;
 
-	#CreateBadges(data)
-	{
+	constructor() {
+		this.#parameters = new URLSearchParams(window.location.search);
+		this.#socket = new WebSocket('ws://' + location.host + '/overlay/chat');
+		this.#socket.onopen = this.#Init.bind(this);
+		this.#socket.onmessage = this.#OnMessage.bind(this);
+	}
+
+	#SendMessage(type, payload) {
+        var message = {
+            'type': type,
+            'payload': payload
+        };
+        this.#socket.send(JSON.stringify(message));
+	}
+
+	#GetParameterOr(name, value) {
+		if (this.#parameters.has(name))
+			return this.#parameters.get(name);
+		return value;
+	}
+
+	#CreateBadges(data) {
 		var chat_message_badges = document.createElement('span');
 		chat_message_badges.className = 'chat_message_badges';
-		if (data.hasOwnProperty('badges'))
-		{
+		if (data.hasOwnProperty('badges')) {
 			var badges = data['badges'];
-			for(var i = 0; i < badges.length; i++)
-			{
+			for(var i = 0; i < badges.length; i++) {
 				var url = badges[i];
 				var chat_message_badge_div = document.createElement('div');
 				chat_message_badge_div.className = 'chat_message_badge_div';
@@ -29,15 +49,13 @@ class ChatModule extends StreamGlassEventWebsocket
 		return chat_message_badges;
 	}
 
-	#CreateChatMessageAuthor(data, user)
-	{
+	#CreateChatMessageAuthor(data, user) {
 		var chat_message_author = document.createElement('div');
 		chat_message_author.className = 'chat_message_author';
 		var chat_message_badges = this.#CreateBadges(data);
 		var chat_message_author_name = document.createElement('span');
 		chat_message_author_name.className = 'chat_message_author_name';
-		if (user.hasOwnProperty('color'))
-		{
+		if (user.hasOwnProperty('color')) {
 			var color = user['color'];
 			if (color.hasOwnProperty('r') && color.hasOwnProperty('g') && color.hasOwnProperty('b') && color.hasOwnProperty('a'))
 				chat_message_author_name.style.color = 'rgba(' + color['r'] + ',' + color['g'] + ',' + color['b'] + ',' + color['a'] + ')';
@@ -52,8 +70,7 @@ class ChatModule extends StreamGlassEventWebsocket
 		return chat_message_author;
 	}
 
-	#CreateTextSparator()
-	{
+	#CreateTextSparator() {
 		var chat_message_separator = document.createElement('span');
 		chat_message_separator.className = 'chat_message_separator';
 		chat_message_separator.textContent = ': ';
@@ -63,8 +80,7 @@ class ChatModule extends StreamGlassEventWebsocket
 		return chat_message_separator;
 	}
 
-	#CreateEmote(content)
-	{
+	#CreateEmote(content) {
 		var chat_message_emote_div = document.createElement('div');
 		chat_message_emote_div.className = 'chat_message_emote_div';
 		var chat_message_emote = document.createElement('img');
@@ -77,8 +93,7 @@ class ChatModule extends StreamGlassEventWebsocket
 		return chat_message_emote_div;
 	}
 
-	#CreateMessageText(content)
-	{
+	#CreateMessageText(content) {
 		var chat_message_text = document.createElement('span');
 		chat_message_text.className = 'chat_message_text';
 		chat_message_text.textContent = content;
@@ -88,21 +103,17 @@ class ChatModule extends StreamGlassEventWebsocket
 		return chat_message_text;
 	}
 
-	#CreateMessageContent(data)
-	{
+	#CreateMessageContent(data) {
 		var chat_message_content = document.createElement('span');
 		chat_message_content.className = 'chat_message_content';
 		var chat_message_content_body = document.createElement('span');
 		chat_message_content_body.className = 'chat_message_content_body';
 		var message = data['message'];
-		if (message.hasOwnProperty('sections'))
-		{
+		if (message.hasOwnProperty('sections')) {
 			var sections = message['sections'];
-			for(var i = 0; i < sections.length; i++)
-			{
+			for(var i = 0; i < sections.length; i++) {
 				var section = sections[i];
-				if (section.hasOwnProperty('content') && section.hasOwnProperty('type'))
-				{
+				if (section.hasOwnProperty('content') && section.hasOwnProperty('type')) {
 					var content = section['content'];
 					var type = section['type'];
 					if (type === 0) //Text
@@ -117,13 +128,10 @@ class ChatModule extends StreamGlassEventWebsocket
 		return chat_message_content;
 	}
 
-	#OnChatMessage(data)
-	{
-		if (data.hasOwnProperty('message') && data.hasOwnProperty('user'))
-		{
+	#OnChatMessage(data) {
+		if (data.hasOwnProperty('message') && data.hasOwnProperty('user')) {
 			var user = data['user'];
-			if (user.hasOwnProperty('name'))
-			{
+			if (user.hasOwnProperty('name')) {
 				var chat_message = document.createElement('div');
 				chat_message.className = 'chat_message';
 				if (data.hasOwnProperty('id'))
@@ -133,8 +141,7 @@ class ChatModule extends StreamGlassEventWebsocket
 				var chat_message_separator = this.#CreateTextSparator();
 				var chat_message_content = this.#CreateMessageContent(data);
 
-				if (chat_message_content.hasChildNodes())
-				{
+				if (chat_message_content.hasChildNodes()) {
 					chat_message.appendChild(chat_message_author);
 					chat_message.appendChild(chat_message_separator);
 					chat_message.appendChild(chat_message_content);
@@ -144,76 +151,81 @@ class ChatModule extends StreamGlassEventWebsocket
 		}
 	}
 
-	#OnLoadMessage(response)
-	{
-		try
-		{
-			var data = JSON.parse(response);
-			if (data.hasOwnProperty('messages'))
-			{
-				var messages = data['messages'];
-				for(var i = 0; i < messages.length; i++)
-					this.#OnChatMessage(messages[i]);
-			}
-			if (data.hasOwnProperty('page'))
-				super.Get('/messages?page=' + data['page'], this.#OnLoadMessage.bind(this));
-			else
-			{
-				document.getElementById("full_chat").style.display = 'block';
-				super.UnholdEvents();
-			}
-		} catch(e)
-		{
-			console.error(`${e.name}: ${e.message}`);
-			console.log(response);
+	#OnLoadPage(data) {
+		if (data.hasOwnProperty('messages')) {
+			var messages = data['messages'];
+			for (var i = 0; i < messages.length; i++)
+				this.#OnChatMessage(messages[i]);
+		}
+		if (data.hasOwnProperty('page')) {
+			var payload = { 'page': data['page'] };
+			this.#SendMessage('page', payload);
+		}
+		else {
+			document.getElementById("full_chat").style.display = 'block';
 		}
 	}
 
-	#OnChatMessagesDelete(data)
-	{
+	#OnChatMessagesDelete(data) {
         var ids = data['ids'];
 		for (var i = 0; i < ids.length; i++)
 			document.getElementById(ids[i]).remove();
 	}
 
-	Init()
-	{
-		this.#textColor = super.GetParameterOr('color', '#ffffff');
-		this.#size = super.GetParameterOr('size', '22');
-		this.#margin = super.GetParameterOr('margin', '5');
+	#Init() {
+		this.#textColor = this.#GetParameterOr('color', '#ffffff');
+		this.#size = this.#GetParameterOr('size', '22');
+		this.#margin = this.#GetParameterOr('margin', '5');
 		var chatDiv = document.getElementById('chat');
-		if (super.HaveParameter("to_bottom"))
-		{
-			if (super.HaveParameter("reverse"))
-			{
+		if (this.#parameters.has("to_bottom")) {
+			if (this.#parameters.has("reverse")) {
 				chatDiv.style.top = 0;
 				chatDiv.style.flexDirection = 'column-reverse';
 			}
-			else
-			{
+			else {
 				//TODO
 			}
 		}
-		else
-		{
-			if (super.HaveParameter("reverse"))
-			{
+		else {
+			if (this.#parameters.has("reverse")) {
 				//TODO
 			}
-			else
-			{
+			else {
 				chatDiv.style.bottom = 0;
 				chatDiv.style.flexDirection = 'column';
 			}
 		}
 		document.getElementById("full_chat").style.display = 'none';
-		if (super.HaveParameter("limit"))
-			super.Get('/messages?limit=' + super.GetParameter("limit"), this.#OnLoadMessage.bind(this));
-		else
-			super.Get('/messages', this.#OnLoadMessage.bind(this));
-		super.HoldEvents();
-		super.RegisterToEvent('overlay_chat_message', this.#OnChatMessage.bind(this));
-		super.RegisterToEvent('chat_delete_messages', this.#OnChatMessagesDelete.bind(this));
+		var payload = {};
+		if (this.#parameters.has("limit"))
+			payload = { 'limit': this.#parameters.get("limit") };
+		this.#SendMessage('page', payload);
+	}
+
+	#OnMessage(event) {
+		var eventJson = JSON.parse(event.data);
+		if (eventJson.hasOwnProperty('type') && eventJson.hasOwnProperty('payload')) {
+			var type = eventJson['type'];
+			var payload = eventJson['payload'];
+			switch (type) {
+				case 'message':
+					{
+						if (payload.hasOwnProperty('message'))
+							this.#OnChatMessage(payload['message']);
+						break;
+					}
+				case 'delete':
+					{
+						this.#OnChatMessagesDelete(payload);
+						break;
+					}
+				case 'page':
+					{
+						this.#OnLoadPage(payload);
+						break;
+					}
+			}
+		}
 	}
 }
 

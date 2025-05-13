@@ -1,9 +1,6 @@
 ﻿using CorpseLib.DataNotation;
-using CorpseLib.Translation;
 using StreamGlass.Core.Controls;
 using System.Collections.Concurrent;
-using static StreamGlass.Core.StreamChat.MessageSource;
-using static StreamGlass.Core.StreamGlassProcessListener;
 
 namespace StreamGlass.Core.StreamChat
 {
@@ -150,7 +147,6 @@ namespace StreamGlass.Core.StreamChat
                 messageReceiver.RemoveMessages(messageIDs);
         }
 
-        //TODO Handle in message source the destruction of the message
         private void DeleteMessage(Window _, Message message)
         {
             RemoveMessages([message.ID]);

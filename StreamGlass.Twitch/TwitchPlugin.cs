@@ -97,14 +97,12 @@ namespace StreamGlass.Twitch
             public static readonly TranslationKey ALERT_CHAT_MESSAGE = new("twitch_alert_chat_message");
         }
 
-        private static readonly Metadata ms_PluginMetadata;
+        private static readonly Metadata ms_PluginMetadata = Metadata.CreateNativeMetadata<TwitchPlugin>("twitch", "StreamGlass.Twitch.dll");
 
         public static Metadata PluginMetadata => ms_PluginMetadata;
 
         static TwitchPlugin()
         {
-            ms_PluginMetadata = Metadata.CreateNativeMetadata<TwitchPlugin>("StreamGlass.Twitch.dll");
-
             DataHelper.RegisterSerializer(new TwitchUser.DataSerializer());
             DataHelper.RegisterSerializer(new TwitchBadgeInfo.DataSerializer());
             DataHelper.RegisterSerializer(new BanEventArgs.DataSerializer());

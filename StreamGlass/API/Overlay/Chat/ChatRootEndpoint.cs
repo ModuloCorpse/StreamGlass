@@ -1,17 +1,21 @@
 ﻿using CorpseLib.DataNotation;
 using CorpseLib.Json;
+using CorpseLib.Web;
 using CorpseLib.Web.API;
 using CorpseLib.Web.Http;
 using StreamGlass.Core;
+using StreamGlass.Core.API.Overlay;
 using StreamGlass.Core.StreamChat;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System;
+using System.Reflection;
 using System.Linq;
+using StreamGlass.Twitch.Moderation;
 
 namespace StreamGlass.API.Overlay.Chat
 {
-    public class MessagesEndpoint : AHTTPEndpoint, IMessageReceiver
+    public class ChatRootEndpoint : AssemblyResource, IMessageReceiver
     {
         private class Page
         {
@@ -21,7 +25,7 @@ namespace StreamGlass.API.Overlay.Chat
 
             public Guid ID => m_ID;
 
-            public Page(MessagesEndpoint endpoint, List<Message> messages)
+            public Page(ChatRootEndpoint endpoint, List<Message> messages)
             {
                 List<Message> messagesRet = [];
                 bool keepPaging = true;
@@ -60,66 +64,90 @@ namespace StreamGlass.API.Overlay.Chat
         }
 
         private readonly Dictionary<Guid, Page> m_Pages = [];
+        private readonly Dictionary<string, WebsocketReference> m_Clients = [];
         private readonly ConcurrentDictionary<string, Message> m_Messages = [];
 
-        public MessagesEndpoint() : base("/messages")
+        public ChatRootEndpoint() : base(Assembly.GetCallingAssembly(), "StreamGlass.API.Overlay.Chat.chat.html", MIME.TEXT.HTML)
         {
             StreamGlassChat.RegisterMessageReceiver(this);
         }
 
         private void AddPage(Page page) => m_Pages[page.ID] = page;
 
-        protected override Response OnGetRequest(Request request)
+        private void SendMessage(string type, DataObject payload)
         {
-            if (request.HaveParameter("page"))
+            DataObject message = new() { { "type", type }, { "payload", payload } };
+            string messageStr = JsonParser.NetStr(message);
+            foreach (WebsocketReference wsReference in m_Clients.Values)
+                wsReference.Send(messageStr);
+        }
+
+        private void SendMessage(WebsocketReference wsReference, string type, DataObject payload)
+        {
+            DataObject message = new() { { "type", type }, { "payload", payload } };
+            string messageStr = JsonParser.NetStr(message);
+            wsReference.Send(messageStr);
+        }
+
+        protected void GetPage(WebsocketReference wsReference, DataObject payload)
+        {
+            if (payload.TryGet("page", out Guid guid))
             {
-                Guid guid = Guid.Parse(request.GetParameter("page"));
                 if (m_Pages.TryGetValue(guid, out Page? page))
                 {
-                    Response response = new(200, "Ok", JsonParser.NetStr(page.ToJObject()));
+                    SendMessage(wsReference, "page", page.ToJObject());
                     m_Pages.Remove(guid);
-                    return response;
                 }
                 else
-                    return new(404, "Page not found");
+                    SendMessage(wsReference, "error", new DataObject() { { "message", "Page not found" } });
             }
-            else if (request.HaveParameter("id"))
+            else if (payload.TryGet("id", out string? id))
             {
-                string id = request.GetParameter("id");
-                if (m_Messages.TryGetValue(id, out Message? message))
-                {
-                    List<Message> messages = [ message ];
-                    return new(200, "Ok", JsonParser.NetStr(new DataObject() { { "messages", messages } }));
-                }
+                if (m_Messages.TryGetValue(id!, out Message? message))
+                    SendMessage(wsReference, "message", new DataObject() { { "message", message } });
                 else
-                    return new(404, "Message not found");
+                    SendMessage(wsReference, "error", new DataObject() { { "message", "Message not found" } });
             }
             else
             {
                 Page page;
-                if (request.HaveParameter("limit"))
+                if (payload.TryGet("limit", out int limit))
                 {
-                    int limit = int.Parse(request.GetParameter("limit"));
                     List<Message> limitedMessages = [.. m_Messages.Values.Skip(Math.Max(0, m_Messages.Count - limit))];
                     page = new(this, limitedMessages);
                 }
                 else
                     page = new(this, [.. m_Messages.Values]);
-                return new(200, "Ok", JsonParser.NetStr(page.ToJObject()));
+                SendMessage(wsReference, "page", page.ToJObject());
             }
         }
 
         public void AddMessage(Message message)
         {
+            //TODO Handle clients that are retrieving pages
             m_Messages.TryAdd(message.ID, message);
-            StreamGlassCanals.Emit(StreamGlassCanals.OVERLAY_CHAT_MESSAGE, message);
+            SendMessage("message", new DataObject() { { "message", message } });
         }
 
         public void RemoveMessages(string[] messageIDs)
         {
             foreach (string messageID in messageIDs)
                 m_Messages.TryRemove(messageID, out Message? _);
-            StreamGlassCanals.Emit(StreamGlassCanals.CHAT_DELETE_MESSAGES, new DeleteMessagesEventArgs(messageIDs));
+            SendMessage("delete", new DataObject() { { "messages", messageIDs } });
         }
+
+        protected override void OnClientRegistered(Path path, WebsocketReference wsReference) => m_Clients[wsReference.ClientID] = wsReference;
+
+        protected override void OnClientMessage(Path path, WebsocketReference wsReference, string message)
+        {
+            DataObject data = JsonParser.Parse(message);
+            if (data.TryGet("type", out string? type) && data.TryGet("payload", out DataObject? payload))
+            {
+                if (type == "page")
+                    GetPage(wsReference, payload!);
+            }
+        }
+
+        protected override void OnClientUnregistered(Path path, WebsocketReference wsReference) => m_Clients.Remove(wsReference.ClientID, out WebsocketReference? _);
     }
 }

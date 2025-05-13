@@ -1,13 +1,11 @@
 ﻿using CorpseLib.Web.API;
 using CorpseLib.Web.Http;
-using System.Collections.Generic;
 using Path = CorpseLib.Web.Http.Path;
 
 namespace StreamGlass.Core.API.Overlay
 {
     public class OverlayEndpoint : AEndpoint
     {
-        private readonly Dictionary<string, Overlay> m_WebSocketOverlays = [];
         private readonly PathTreeNode<Overlay> m_OverlayTree = new();
 
         public OverlayEndpoint() : base("/overlay", false, true, true) { }
