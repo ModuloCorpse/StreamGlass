@@ -4,14 +4,12 @@ using CorpseLib.Web;
 using CorpseLib.Web.API;
 using CorpseLib.Web.Http;
 using StreamGlass.Core;
-using StreamGlass.Core.API.Overlay;
 using StreamGlass.Core.StreamChat;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System;
 using System.Reflection;
 using System.Linq;
-using StreamGlass.Twitch.Moderation;
 
 namespace StreamGlass.API.Overlay.Chat
 {
@@ -67,7 +65,7 @@ namespace StreamGlass.API.Overlay.Chat
         private readonly Dictionary<string, WebsocketReference> m_Clients = [];
         private readonly ConcurrentDictionary<string, Message> m_Messages = [];
 
-        public ChatRootEndpoint() : base(Assembly.GetCallingAssembly(), "StreamGlass.API.Overlay.Chat.chat.html", MIME.TEXT.HTML)
+        public ChatRootEndpoint() : base(true, Assembly.GetCallingAssembly(), "StreamGlass.API.Overlay.Chat.chat.html", MIME.TEXT.HTML)
         {
             StreamGlassChat.RegisterMessageReceiver(this);
         }
@@ -82,7 +80,7 @@ namespace StreamGlass.API.Overlay.Chat
                 wsReference.Send(messageStr);
         }
 
-        private void SendMessage(WebsocketReference wsReference, string type, DataObject payload)
+        private static void SendMessage(WebsocketReference wsReference, string type, DataObject payload)
         {
             DataObject message = new() { { "type", type }, { "payload", payload } };
             string messageStr = JsonParser.NetStr(message);
@@ -136,9 +134,9 @@ namespace StreamGlass.API.Overlay.Chat
             SendMessage("delete", new DataObject() { { "messages", messageIDs } });
         }
 
-        protected override void OnClientRegistered(Path path, WebsocketReference wsReference) => m_Clients[wsReference.ClientID] = wsReference;
+        protected override void OnClientRegistered(WebsocketReference wsReference) => m_Clients[wsReference.ClientID] = wsReference;
 
-        protected override void OnClientMessage(Path path, WebsocketReference wsReference, string message)
+        protected override void OnClientMessage(WebsocketReference wsReference, string message)
         {
             DataObject data = JsonParser.Parse(message);
             if (data.TryGet("type", out string? type) && data.TryGet("payload", out DataObject? payload))
@@ -148,6 +146,6 @@ namespace StreamGlass.API.Overlay.Chat
             }
         }
 
-        protected override void OnClientUnregistered(Path path, WebsocketReference wsReference) => m_Clients.Remove(wsReference.ClientID, out WebsocketReference? _);
+        protected override void OnClientUnregistered(WebsocketReference wsReference) => m_Clients.Remove(wsReference.ClientID, out WebsocketReference? _);
     }
 }

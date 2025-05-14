@@ -314,10 +314,10 @@ namespace StreamGlass.Twitch
             StreamGlassCanals.NewCanal<bool>(Canals.ALLOW_AUTOMOD);
         }
 
-        public AEndpoint[] GetEndpoints() => [
-            new ClearMessageEndpoint(),
-            new ModerateAutoModEndpoint()
-        ];
+        public Dictionary<CorpseLib.Web.Http.Path, AEndpoint> GetEndpoints() => new() {
+            { new("/clear_chat"), new ClearMessageEndpoint() },
+            { new("/automod"), new ModerateAutoModEndpoint() }
+        };
 
         protected override void OnUnload()
         {

@@ -8,7 +8,7 @@ class ChatModule
 
 	constructor() {
 		this.#parameters = new URLSearchParams(window.location.search);
-		this.#socket = new WebSocket('ws://' + location.host + '/overlay/chat');
+		this.#socket = new WebSocket('ws://' + location.host + '/overlay/chat/');
 		this.#socket.onopen = this.#Init.bind(this);
 		this.#socket.onmessage = this.#OnMessage.bind(this);
 	}

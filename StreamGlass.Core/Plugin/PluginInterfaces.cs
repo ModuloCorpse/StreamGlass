@@ -1,4 +1,5 @@
 ﻿using CorpseLib.Web.API;
+using CorpseLib.Web.Http;
 using StreamGlass.Core.API.Overlay;
 using StreamGlass.Core.Settings;
 using System.Windows.Controls;
@@ -22,7 +23,7 @@ namespace StreamGlass.Core.Plugin
 
     public interface IAPIPlugin : IPlugin
     {
-        public AEndpoint[] GetEndpoints();
+        public Dictionary<Path, AEndpoint> GetEndpoints();
     }
 
     public interface IUpdatablePlugin : IPlugin

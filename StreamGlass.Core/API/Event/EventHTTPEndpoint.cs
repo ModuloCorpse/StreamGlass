@@ -4,7 +4,7 @@ using CorpseLib.Web.Http;
 
 namespace StreamGlass.Core.API.Event
 {
-    public class EventHTTPEndpoint(APIWebsocketEndpoint websocketEndpoint) : AHTTPEndpoint("/event/custom", false)
+    public class EventHTTPEndpoint(APIWebsocketEndpoint websocketEndpoint) : AHTTPEndpoint(false)
     {
         private readonly APIWebsocketEndpoint m_WebsocketEndpoint = websocketEndpoint;
 

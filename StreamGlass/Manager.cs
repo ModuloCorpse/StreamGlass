@@ -3,6 +3,7 @@ using CorpseLib.Json;
 using CorpseLib.Translation;
 using CorpseLib.Web.API;
 using CorpseLib.Web.API.Event;
+using CorpseLib.Web.Http;
 using StreamGlass.API.Overlay.Chat;
 using StreamGlass.Core;
 using StreamGlass.Core.API;
@@ -12,7 +13,6 @@ using StreamGlass.Core.Profile;
 using StreamGlass.Twitch;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Windows.Controls;
 
@@ -71,16 +71,19 @@ namespace StreamGlass
 
             foreach (var pair in m_API.FlattenEndpoints())
             {
-                AEndpoint endpoint = pair.Value;
-                StringBuilder builder = new("- ");
-                if (endpoint.IsHTTPEndpoint)
-                    builder.Append("HTTP ");
-                if (endpoint.IsWebsocketEndpoint)
-                    builder.Append("Websocket ");
-                builder.Append(pair.Key);
-                builder.Append(" => ");
-                builder.Append(endpoint.GetType().Name);
-                StreamGlassContext.LOGGER.Log(builder.ToString());
+                ResourceSystem.Resource resource = pair.Value;
+                if (resource is AEndpoint endpoint)
+                {
+                    StringBuilder builder = new("- ");
+                    if (endpoint.IsHTTPEndpoint)
+                        builder.Append("HTTP ");
+                    if (endpoint.IsWebsocketEndpoint)
+                        builder.Append("Websocket ");
+                    builder.Append(pair.Key);
+                    builder.Append(" => ");
+                    builder.Append(endpoint.GetType().Name);
+                    StreamGlassContext.LOGGER.Log(builder.ToString());
+                }
             }
 
             splashScreen.UpdateProgressBar(80);
@@ -212,23 +215,23 @@ namespace StreamGlass
                 overlayWebsocketEndpoint.RegisterJCanal(manager.Type, manager.JCanal);
             StreamGlassCanals.OnManagerAdded += (StreamGlassCanals.ACanalManager manager) => overlayWebsocketEndpoint.RegisterJCanal(manager.Type, manager.JCanal);
             StreamGlassCanals.OnManagerRemoved += (StreamGlassCanals.ACanalManager manager) => overlayWebsocketEndpoint.UnregisterJCanal(manager.Type, manager.JCanal);
-            m_API.AddEndpoint(new EventRegisterEndpoint("/event/register", overlayWebsocketEndpoint));
-            m_API.AddEndpoint(new EventUnregisterEndpoint("/event/unregister", overlayWebsocketEndpoint));
-            m_API.AddEndpoint(overlayWebsocketEndpoint);
-            m_API.AddEndpoint(new EventHTTPEndpoint(overlayWebsocketEndpoint));
+            m_API.AddEndpoint(new("/event/register"), new EventRegisterEndpoint(overlayWebsocketEndpoint));
+            m_API.AddEndpoint(new("/event/unregister"), new EventUnregisterEndpoint(overlayWebsocketEndpoint));
+            m_API.AddEndpoint(new("/event"), overlayWebsocketEndpoint);
+            m_API.AddEndpoint(new("/event/custom"), new EventHTTPEndpoint(overlayWebsocketEndpoint));
 
-            OverlayEndpoint overlayEndpoint = new();
+            ResourceSystem.Directory overlayDirectory = new();
             // '/overlay'
-            Overlay defaultOverlay = new();
+            Overlay defaultOverlay = new(string.Empty);
             defaultOverlay.AddAssemblyResource("StreamGlass.js", "StreamGlass.API.Overlay.StreamGlass.js");
-            overlayEndpoint.AddOverlay(new(), defaultOverlay);
+            overlayDirectory.Add(new(), defaultOverlay);
             // '/overlay/chat'
             Overlay chatOverlay = new("chat");
             chatOverlay.AddRootResource("chat.html", new ChatRootEndpoint());
             chatOverlay.AddAssemblyResource("chat.css", "StreamGlass.API.Overlay.Chat.chat.css");
             chatOverlay.AddAssemblyResource("chat.js", "StreamGlass.API.Overlay.Chat.chat.js");
-            overlayEndpoint.AddOverlay(new("chat"), chatOverlay);
-            m_PluginManager.RegisterOverlays(overlayEndpoint);
+            overlayDirectory.Add(new("chat"), chatOverlay);
+            m_PluginManager.RegisterOverlays(overlayDirectory);
 
             //Local overlay will always be loaded last to allow overriding plugin overlay
             if (Directory.Exists("overlay/"))
@@ -238,10 +241,10 @@ namespace StreamGlass
                 foreach (string directory in directories)
                 {
                     LocalOverlay localOverlay = new(directory);
-                    overlayEndpoint.AddOverlay(CorpseLib.Web.Http.Path.Append(localPath, localOverlay.RootPath), localOverlay);
+                    overlayDirectory.Add(CorpseLib.Web.Http.Path.Append(localPath, new(localOverlay.Name)), localOverlay);
                 }
             }
-            m_API.AddEndpoint(overlayEndpoint);
+            m_API.AddDirectory(new("/overlay"), overlayDirectory);
 
             m_PluginManager.RegisterToAPI(m_API);
         }

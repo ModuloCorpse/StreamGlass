@@ -45,7 +45,7 @@ namespace StreamGlass.Core.API.Overlay
             }
 
             root = (root[^1] == '/') ? root : string.Format("{0}/", root);
-            CorpseLib.Web.Http.Path path = RootPath.Duplicate();
+            CorpseLib.Web.Http.Path path = new(Name);
             string indexFilePath = Path.GetFullPath(Path.Combine(root, indexFile));
             if (File.Exists(indexFilePath))
                 AddRootLocalFileResource(path, indexFilePath, MIME.GetMIME(indexFilePath));

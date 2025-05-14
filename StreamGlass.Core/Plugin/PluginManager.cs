@@ -2,6 +2,7 @@
 using CorpseLib.Json;
 using CorpseLib.Logging;
 using CorpseLib.Web.API;
+using CorpseLib.Web.Http;
 using StreamGlass.Core.API.Overlay;
 using StreamGlass.Core.Plugin;
 using StreamGlass.Core.Settings;
@@ -111,7 +112,7 @@ namespace StreamGlass.Core
             tickManager.RegisterTickFunction(Update);
         }
 
-        public void RegisterOverlays(OverlayEndpoint overlayEndpoint)
+        public void RegisterOverlays(ResourceSystem.Directory overlayDirectory)
         {
             foreach (APlugin plugin in m_ActivePlugins)
             {
@@ -119,7 +120,7 @@ namespace StreamGlass.Core
                 {
                     Overlay[] overlays = overlayPlugin.GetOverlays();
                     foreach (Overlay overlay in overlays)
-                        overlayEndpoint.AddOverlay(CorpseLib.Web.Http.Path.Append(new($"/plugin/{plugin.Namespace.ToLower()}"), overlay.RootPath), overlay);
+                        overlayDirectory.Add(CorpseLib.Web.Http.Path.Append(new($"/plugin/{plugin.Namespace.ToLower()}"), new(overlay.Name)), overlay);
                 }
             }
         }
@@ -131,9 +132,10 @@ namespace StreamGlass.Core
                 if (plugin is IAPIPlugin apiPlugin)
                 {
                     CorpseLib.Web.Http.Path path = new($"/{plugin.Namespace.ToLower()}");
-                    EndpointTreeNode endpointTree = new();
-                    endpointTree.Add(apiPlugin.GetEndpoints());
-                    api.AddEndpointTreeNode(path, endpointTree);
+                    ResourceSystem.Directory endpointTree = new();
+                    foreach (var pair in apiPlugin.GetEndpoints())
+                        endpointTree.Add(pair.Key, pair.Value);
+                    api.AddDirectory(path, endpointTree);
                 }
             }
         }
