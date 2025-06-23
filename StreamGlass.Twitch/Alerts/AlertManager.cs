@@ -6,7 +6,7 @@ using StreamGlass.Core;
 using StreamGlass.Core.Audio;
 using StreamGlass.Core.StreamChat;
 using StreamGlass.Twitch.Events;
-using TwitchCorpse;
+using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch.Alerts
 {

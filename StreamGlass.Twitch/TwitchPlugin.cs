@@ -1,6 +1,7 @@
 ﻿using CorpseLib.DataNotation;
 using CorpseLib.Encryption;
 using CorpseLib.Json;
+using CorpseLib.Logging;
 using CorpseLib.Translation;
 using CorpseLib.Web.API;
 using StreamGlass.Core;
@@ -15,7 +16,6 @@ using StreamGlass.Twitch.Moderation;
 using System.Globalization;
 using System.IO;
 using System.Windows.Controls;
-using TwitchCorpse;
 using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch
@@ -97,12 +97,15 @@ namespace StreamGlass.Twitch
             public static readonly TranslationKey ALERT_CHAT_MESSAGE = new("twitch_alert_chat_message");
         }
 
+        public static readonly Logger TWITCH_PLUGIN_LOGGER = new("[${d}-${M}-${y} ${h}:${m}:${s}.${ms}] ${log}") { new LogInFile("./log/${y}${M}${d}${h}_TwitchPlugin.log") };
         private static readonly Metadata ms_PluginMetadata = Metadata.CreateNativeMetadata<TwitchPlugin>("twitch", "StreamGlass.Twitch.dll");
 
         public static Metadata PluginMetadata => ms_PluginMetadata;
 
         static TwitchPlugin()
         {
+            TWITCH_PLUGIN_LOGGER.Start();
+
             DataHelper.RegisterSerializer(new TwitchUser.DataSerializer());
             DataHelper.RegisterSerializer(new TwitchBadgeInfo.DataSerializer());
             DataHelper.RegisterSerializer(new BanEventArgs.DataSerializer());
@@ -122,7 +125,6 @@ namespace StreamGlass.Twitch
             DataHelper.RegisterSerializer(new Settings.DataSerializer());
         }
 
-        private readonly WindowsEncryptionAlgorithm m_WindowsEncryptionAlgorithm = new([95, 239, 5, 252, 160, 29, 242, 88, 31, 3]);
         private readonly Core m_Core = new();
         private readonly AlertManager m_AlertManager = new();
         private readonly AlertScrollPanel m_StreamAlertPanel = new();

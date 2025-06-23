@@ -142,7 +142,10 @@ namespace StreamGlass.Core.StreamChat
         private void DeleteMessages(string[] messageIDs)
         {
             foreach (string messageID in messageIDs)
+            {
+                StreamGlassContext.LOGGER.Log($"Treating deletion of message {messageID}");
                 m_Messages.Remove(messageID);
+            }
             foreach (IMessageReceiver messageReceiver in m_MessageReceivers)
                 messageReceiver.RemoveMessages(messageIDs);
         }
@@ -163,6 +166,7 @@ namespace StreamGlass.Core.StreamChat
                 if (result is MessageEvent messageEvent)
                 {
                     Message message = messageEvent.m_Message;
+                    StreamGlassContext.LOGGER.Log($"Treating received message {message.ID} from {message.User.ID}");
                     m_Messages[message.ID] = message;
                     foreach (IMessageReceiver messageReceiver in m_MessageReceivers)
                         messageReceiver.AddMessage(message);

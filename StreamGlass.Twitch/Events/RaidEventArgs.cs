@@ -1,6 +1,6 @@
 ﻿using CorpseLib;
 using CorpseLib.DataNotation;
-using TwitchCorpse;
+using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch.Events
 {

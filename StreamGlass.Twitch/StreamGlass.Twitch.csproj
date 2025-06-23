@@ -19,13 +19,13 @@
     <Compile Update="CategorySearchDialog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Alert\AlertControl.xaml.cs">
+    <Compile Update="Alerts\AlertControl.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Alert\AlertEditor.xaml.cs">
+    <Compile Update="Alerts\AlertEditor.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Alert\StreamAlertSettingsItem.xaml.cs">
+    <Compile Update="Alerts\StreamAlertSettingsItem.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Moderation\HeldMessage.xaml.cs">

@@ -128,7 +128,7 @@ namespace StreamGlass.Twitch
             m_Users[user.ID] = user;
             MessageInfo messageInfo = new(userID, message, timestamp);
             foreach (TwitchBadgeInfo badgeInfo in user.Badges)
-                messageInfo.AddBadge(badgeInfo.URL4x);
+                messageInfo.AddBadge(badgeInfo.Image[4]);
             if (m_MessageAssociationTable.TryGetValue(chatMessage.ReplyID, out string? replyID))
                 messageInfo.SetReplyID(replyID!);
             if (!string.IsNullOrEmpty(chatMessage.AnnouncementColor))
@@ -158,7 +158,7 @@ namespace StreamGlass.Twitch
             StreamGlassCanals.Emit(TwitchPlugin.Canals.RAID, new RaidEventArgs(self, user, nbViewer, false));
         }
 
-        public void OnReward(TwitchUser user, string reward, string input) => StreamGlassCanals.Emit(TwitchPlugin.Canals.REWARD, new RewardEventArgs(user, reward, input));
+        public void OnRewardClaimed(TwitchUser user, TwitchRewardRedemptionInfo redemption, Text input) => m_Core.ClaimChannelReward(user, redemption, input);
 
         public void OnStreamStart()
         {
@@ -229,6 +229,21 @@ namespace StreamGlass.Twitch
 
         public void OnSharedChatStart() { }
         public void OnSharedChatStop() { }
+
+        public void OnRewardCreated(TwitchRewardInfo reward)
+        {
+            //TODO
+        }
+
+        public void OnRewardUpdated(TwitchRewardInfo reward)
+        {
+            //TODO
+        }
+
+        public void OnRewardDeleted(string rewardID)
+        {
+            //TODO
+        }
 
         public TwitchUser? GetUserFromMessage(StreamGlass.Core.StreamChat.Message message)
         {

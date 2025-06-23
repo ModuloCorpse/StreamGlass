@@ -1,10 +1,11 @@
 ﻿using CorpseLib;
 using CorpseLib.DataNotation;
-using TwitchCorpse;
+using CorpseLib.StructuredText;
+using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch.Events
 {
-    public class RewardEventArgs(TwitchUser from, string reward, string input)
+    public class RewardEventArgs(TwitchUser from, string reward, Text input)
     {
         public class DataSerializer : ADataSerializer<RewardEventArgs>
         {
@@ -12,7 +13,7 @@ namespace StreamGlass.Twitch.Events
             {
                 if (reader.TryGet("from", out TwitchUser? from) &&
                     reader.TryGet("reward", out string? reward) &&
-                    reader.TryGet("input", out string? input))
+                    reader.TryGet("input", out Text? input))
                     return new(new(from!, reward!, input!));
                 return new("Bad json", string.Empty);
             }
@@ -27,10 +28,10 @@ namespace StreamGlass.Twitch.Events
 
         private readonly TwitchUser m_From = from;
         private readonly string m_Reward = reward;
-        private readonly string m_Input = input;
+        private readonly Text m_Input = input;
 
         public TwitchUser From => m_From;
         public string Reward => m_Reward;
-        public string Input => m_Input;
+        public Text Input => m_Input;
     }
 }

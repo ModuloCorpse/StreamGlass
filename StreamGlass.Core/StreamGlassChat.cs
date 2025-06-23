@@ -1,10 +1,5 @@
 ﻿using CorpseLib.DataNotation;
-using CorpseLib.StructuredText;
-using CorpseLib.Translation;
-using CorpseLib.Wpf;
 using StreamGlass.Core.StreamChat;
-using static StreamGlass.Core.StreamChat.MessageSource;
-using static StreamGlass.Core.StreamChat.UserMessageScrollPanel;
 
 namespace StreamGlass.Core
 {

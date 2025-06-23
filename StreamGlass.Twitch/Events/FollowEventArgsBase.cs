@@ -1,5 +1,5 @@
 ﻿using CorpseLib.StructuredText;
-using TwitchCorpse;
+using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch.Events
 {

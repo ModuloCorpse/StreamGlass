@@ -65,7 +65,7 @@ namespace StreamGlass.API.Overlay.Chat
         private readonly Dictionary<string, WebsocketReference> m_Clients = [];
         private readonly ConcurrentDictionary<string, Message> m_Messages = [];
 
-        public ChatRootEndpoint() : base(true, Assembly.GetCallingAssembly(), "StreamGlass.API.Overlay.Chat.chat.html", MIME.TEXT.HTML)
+        public ChatRootEndpoint() : base(true, null, "StreamGlass.API.Overlay.Chat.chat.html", MIME.TEXT.HTML)
         {
             StreamGlassChat.RegisterMessageReceiver(this);
         }

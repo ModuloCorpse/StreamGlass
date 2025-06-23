@@ -26,7 +26,7 @@ namespace StreamGlass.Twitch.Moderation
                     { "Margin-Right", 3.0 }
                 };
                 foreach (TwitchBadgeInfo badgeInfo in user.Badges)
-                    displayedMessage.AddImage(badgeInfo.URL4x, badgeProperties);
+                    displayedMessage.AddImage($"url:{badgeInfo.Image[4]}", badgeProperties);
             }
             Dictionary<string, object> properties = [];
             if (!string.IsNullOrWhiteSpace(message.Color))

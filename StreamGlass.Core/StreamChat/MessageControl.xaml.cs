@@ -68,7 +68,7 @@ namespace StreamGlass.Core.StreamChat
                     { "Margin-Right", 3.0 }
                 };
                 foreach (string badge in message.Badges)
-                    displayedMessage.AddImage(badge, badgeProperties);
+                    displayedMessage.AddImage($"url:{badge}", badgeProperties);
             }
 
             Dictionary<string, object> properties = [];

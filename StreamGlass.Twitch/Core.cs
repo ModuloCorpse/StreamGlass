@@ -2,6 +2,7 @@
 using CorpseLib.DataNotation;
 using CorpseLib.Network;
 using CorpseLib.Placeholder;
+using CorpseLib.StructuredText;
 using StreamGlass.Core;
 using StreamGlass.Core.Controls;
 using StreamGlass.Core.Profile;
@@ -18,6 +19,7 @@ namespace StreamGlass.Twitch
     {
         private static readonly string AUTHENTICATOR_PAGE_CONTENT = "<!DOCTYPE html><html><head><title>StreamGlass Twitch Auth</title></head><body><p>You can close this page</p></body></html>";
 
+        private readonly ChannelRewardManager m_ChannelRewardManager = new();
         private readonly RecurringAction m_GetViewerCount = new(500);
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
         private Settings m_Settings = null;
@@ -33,7 +35,6 @@ namespace StreamGlass.Twitch
             SubscriptionType.ChannelSubscribe,
             SubscriptionType.ChannelSubscriptionGift,
             SubscriptionType.ChannelRaid,
-            SubscriptionType.ChannelChannelPointsCustomRewardRedemptionAdd,
             SubscriptionType.StreamOnline,
             SubscriptionType.StreamOffline,
             SubscriptionType.ChannelShoutoutCreate,
@@ -46,7 +47,12 @@ namespace StreamGlass.Twitch
             SubscriptionType.AutomodMessageHeld,
             SubscriptionType.AutomodMessageUpdate,
             SubscriptionType.SharedChatBegin,
-            SubscriptionType.SharedChatEnd
+            SubscriptionType.SharedChatEnd,
+            SubscriptionType.ChannelPointsAutomaticRewardRedemptionAdd,
+            SubscriptionType.ChannelPointsCustomRewardRedemptionAdd,
+            SubscriptionType.ChannelPointsCustomRewardAdd,
+            SubscriptionType.ChannelPointsCustomRewardRemove,
+            SubscriptionType.ChannelPointsCustomRewardUpdate
         ];
 
         public Core()
@@ -110,6 +116,8 @@ namespace StreamGlass.Twitch
                 StreamGlassContext.RegisterVariable("Self", broadcasterName);
             }
 
+            m_ChannelRewardManager.AddChannelRewards(m_BroadcasterAPI!.GetChannelRewards());
+
             TwitchEventSub? eventSub = m_BroadcasterAPI.EventSubConnection(broadcasterInfo.ID, m_SubscriptionTypes);
             if (eventSub != null)
             {
@@ -137,8 +145,6 @@ namespace StreamGlass.Twitch
 
         public void OnPluginInit()
         {
-            StreamGlassCanals.Register(TwitchPlugin.Canals.STREAM_START, OnStreamStart);
-            StreamGlassCanals.Register<TwitchUser>(TwitchPlugin.Canals.USER_JOINED, OnUserJoinedChannel);
             StreamGlassCanals.Register<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
             StreamGlassCanals.Register<MessageAllowedEventArgs>(TwitchPlugin.Canals.ALLOW_MESSAGE, AllowMessage);
         }
@@ -266,8 +272,6 @@ namespace StreamGlass.Twitch
                 m_GetViewerCount.Stop();
                 m_EventSub?.Disconnect();
                 m_IsConnected = false;
-                StreamGlassCanals.Unregister(TwitchPlugin.Canals.STREAM_START, OnStreamStart);
-                StreamGlassCanals.Unregister<TwitchUser>(TwitchPlugin.Canals.USER_JOINED, OnUserJoinedChannel);
                 StreamGlassCanals.Unregister<UpdateStreamInfoArgs>(StreamGlassCanals.UPDATE_STREAM_INFO, SetStreamInfo);
                 StreamGlassCanals.Unregister<MessageAllowedEventArgs>(TwitchPlugin.Canals.ALLOW_MESSAGE, AllowMessage);
                 StreamGlassContext.UnregisterFunction("Game");
@@ -289,9 +293,12 @@ namespace StreamGlass.Twitch
             m_GetViewerCount.Stop();
         }
 
-        private void OnStreamStart() => m_GetViewerCount.Start();
+        internal void AddChannelReward(TwitchRewardInfo info) => m_ChannelRewardManager.AddChannelReward(info);
+        internal void RemoveChannelReward(string rewardID) => m_ChannelRewardManager.DeleteChannelReward(rewardID);
 
-        private void OnUserJoinedChannel(TwitchUser? _) { }
+        internal void ClaimChannelReward(TwitchUser user, TwitchRewardRedemptionInfo redemption, Text input) => m_ChannelRewardManager.ClaimReward(user, redemption, input);
+
+        internal void OnStreamStart() => m_GetViewerCount.Start();
 
         private void SetStreamInfo(UpdateStreamInfoArgs? arg)
         {
@@ -389,7 +396,7 @@ namespace StreamGlass.Twitch
             StreamGlassContext.LOGGER.Log("Testing incomming raid");
             StreamGlassCanals.Emit(TwitchPlugin.Canals.RAID, new RaidEventArgs(m_StreamGlass, m_Self, 40, true));
             StreamGlassContext.LOGGER.Log("Testing reward");
-            StreamGlassCanals.Emit(TwitchPlugin.Canals.REWARD, new RewardEventArgs(m_StreamGlass, "Chante", "J'aime le Pop-Corn"));
+            StreamGlassCanals.Emit(TwitchPlugin.Canals.REWARD, new RewardEventArgs(m_StreamGlass, "Chante", [new TextSection("J'aime le Pop-Corn")]));
             StreamGlassContext.LOGGER.Log("Testing shoutout");
             StreamGlassCanals.Emit(TwitchPlugin.Canals.SHOUTOUT, new ShoutoutEventArgs(m_StreamGlass, m_Self));
             StreamGlassContext.LOGGER.Log("Testing incomming shoutout");

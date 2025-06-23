@@ -8,13 +8,13 @@
     <Page Update="CategorySearchDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Alert\AlertControl.xaml">
+    <Page Update="Alerts\AlertControl.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Alert\AlertEditor.xaml">
+    <Page Update="Alerts\AlertEditor.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Alert\StreamAlertSettingsItem.xaml">
+    <Page Update="Alerts\StreamAlertSettingsItem.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Moderation\HeldMessage.xaml">

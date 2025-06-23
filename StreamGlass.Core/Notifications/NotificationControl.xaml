@@ -1,0 +1,30 @@
+﻿<ui:UserControl x:Class="StreamGlass.Core.Notifications.NotificationControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ui="clr-namespace:StreamGlass.Core.Controls"
+             mc:Ignorable="d"
+             d:DesignWidth="350"
+             d:DesignHeight="76">
+    <ui:Grid x:Name="MessagePanel" ShowGridLines="False" MinHeight="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <ui:StackPanel Grid.Column="0">
+            <ui:DockPanel x:Name="NotificationImagePanel" Width="50" Height="Auto">
+                <ui:Image x:Name="NotificationImage" Margin="5,5,5,0" SourcePath="${ExeDir}/Assets/stream-glass-logo.png" Width="40" Height="40" />
+            </ui:DockPanel>
+            <ui:StackPanel x:Name="ConfirmationButtonPanel" Orientation="Horizontal" Margin="0,5,0,0">
+                <ui:Button x:Name="AllowButton" Width="25" Height="25" Margin="5,0,0,0" Click="AllowButton_Click" Background="Transparent" BorderBrush="Transparent">
+                    <ui:Image Height="21" Width="21" SourcePath="${ExeDir}/Assets/confirmed.png" />
+                </ui:Button>
+                <ui:Button x:Name="DenyButton" Width="25" Height="25" Margin="0,0,5,0" Click="DenyButton_Click" Background="Transparent" BorderBrush="Transparent">
+                    <ui:Image Height="21" Width="21" SourcePath="${ExeDir}/Assets/cancel.png" />
+                </ui:Button>
+            </ui:StackPanel>
+        </ui:StackPanel>
+        <ui:StructuredLabel Margin="0,5,0,0" x:Name="NotificationMessage" Grid.Column="1" BorderThickness="0"/>
+    </ui:Grid>
+</ui:UserControl>

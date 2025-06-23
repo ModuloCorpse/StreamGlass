@@ -24,6 +24,9 @@
     <Compile Update="Controls\NumericUpDown.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Notifications\NotificationControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Profile\ChatCommandEditor.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

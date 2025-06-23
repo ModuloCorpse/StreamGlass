@@ -34,6 +34,8 @@ class ChatModule
 			var badges = data['badges'];
 			for(var i = 0; i < badges.length; i++) {
 				var url = badges[i];
+				if (url.startsWith('url:'))
+                    url = url.substring(4);
 				var chat_message_badge_div = document.createElement('div');
 				chat_message_badge_div.className = 'chat_message_badge_div';
 				var chat_message_badge = document.createElement('img');
@@ -81,6 +83,8 @@ class ChatModule
 	}
 
 	#CreateEmote(content) {
+		if (content.startsWith('url:'))
+			content = content.substring(4);
 		var chat_message_emote_div = document.createElement('div');
 		chat_message_emote_div.className = 'chat_message_emote_div';
 		var chat_message_emote = document.createElement('img');
