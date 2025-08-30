@@ -2,7 +2,6 @@
 using StreamGlass.Core;
 using StreamGlass.Twitch.Events;
 using System.Windows;
-using TwitchCorpse;
 using TwitchCorpse.API;
 
 namespace StreamGlass.Twitch.Moderation

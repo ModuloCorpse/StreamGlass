@@ -16,11 +16,11 @@ namespace StreamGlass.Core.Notifications
             UpdateControlsPosition();
         }
 
-        public void NewNotification(Notification? notification)
+        public void NewNotification(Notification notification)
         {
             Dispatcher.Invoke(() =>
             {
-                NotificationControl alertControl = new(this, notification!, m_MessageContentFontSize);
+                NotificationControl alertControl = new(this, notification, m_MessageContentFontSize);
                 alertControl.NotificationMessage.Loaded += (sender, e) => { UpdateControlsPosition(); };
                 AddControl(alertControl);
             });
