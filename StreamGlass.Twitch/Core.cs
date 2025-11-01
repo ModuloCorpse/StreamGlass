@@ -122,7 +122,7 @@ namespace StreamGlass.Twitch
             if (eventSub != null)
             {
                 m_EventSub = eventSub;
-                m_EventSub.SetMonitor(new DebugLogMonitor(TwitchEventSub.LOGGER));
+                m_EventSub.AddMonitor(new DebugLogMonitor(TwitchEventSub.LOGGER));
                 m_EventSub.OnWelcome += (object? sender, EventArgs e) =>
                 {
                     if (m_Settings.DoWelcome)
